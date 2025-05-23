@@ -4,10 +4,14 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       selectInput("score_type", "Select Score to Display:",
-                  choices = c("Mean Inequality" = "mean_ineq",
-                              "Government Effectiveness" = "mean_gov",
-                              "Voice & Accountability" = "mean_voice"),
-                  selected = "mean_ineq")
+                  choices = c(
+                    "Governance Quality" = "governance_score",
+                    "Social Inequality" = "inequality_score",
+                    "Economic Dependence" = "economic_dependence_score",
+                    "Coastal Exposure" = "coastal_exposure_score"
+                  ),
+                  selected = "inequality_score"
+      )
     ),
     
     mainPanel(

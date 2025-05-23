@@ -12,7 +12,7 @@ server <- function(input, output, session) {
       addPolygons(
         fillColor = ~pal(world_joined[[input$score_type]]),
         weight = 1,
-        color = "#555555",
+        color = "grey",
         fillOpacity = 0.8,
         label = ~paste0(
           name, ": ", round(world_joined[[input$score_type]], 2)
