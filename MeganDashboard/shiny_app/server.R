@@ -1,15 +1,31 @@
 server <- function(input, output, session) {
-  output$mymap <- renderLeaflet({
-    leaflet(data = df_sample) |>
+  
+  pal_reactive <- reactive({
+    colorNumeric("YlOrRd", world_joined[[input$score_type]], na.color = "transparent")
+  })
+  
+  output$map <- renderLeaflet({
+    pal <- pal_reactive()
+    
+    leaflet(data = world_joined) |>
       addTiles() |>
-      addCircleMarkers(
-        radius = 5,
-        stroke = FALSE,
-        fillOpacity = 0.7,
-        popup = ~paste(
-          "<b>Country:</b>", name_en, "<br>",
-          "<b>Voice & Accountability:</b>", round(Voice_account.sc, 2)
+      addPolygons(
+        fillColor = ~pal(world_joined[[input$score_type]]),
+        weight = 1,
+        color = "#555555",
+        fillOpacity = 0.8,
+        label = ~paste0(
+          name, ": ", round(world_joined[[input$score_type]], 2)
+        ),
+        highlightOptions = highlightOptions(
+          weight = 2,
+          color = "black",
+          bringToFront = TRUE
         )
+      ) |>
+      addLegend(
+        pal = pal, values = ~world_joined[[input$score_type]],
+        title = input$score_type
       )
   })
 }
