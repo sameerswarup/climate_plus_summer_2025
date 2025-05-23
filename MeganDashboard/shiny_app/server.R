@@ -1,7 +1,15 @@
 server <- function(input, output, session) {
   output$mymap <- renderLeaflet({
-    leaflet() %>%
-      addTiles() %>%  # OpenStreetMap basemap
-      setView(lng = 0, lat = 0, zoom = 2)  # Centered at the equator
+    leaflet(data = df_sample) |>
+      addTiles() |>
+      addCircleMarkers(
+        radius = 5,
+        stroke = FALSE,
+        fillOpacity = 0.7,
+        popup = ~paste(
+          "<b>Country:</b>", name_en, "<br>",
+          "<b>Voice & Accountability:</b>", round(Voice_account.sc, 2)
+        )
+      )
   })
 }
