@@ -107,7 +107,7 @@ ggplot() +
   scale_color_manual(values = palette_colors, name = NULL) +
   labs(
     title = "Exposure to Sea-Level Rise (0–5m LECZ)",
-    subtitle = "Top 5 Countries with Highest Growth in % Population Exposed (1990–2015)",
+    subtitle = "Top 5 Nations with Highest Growth in % Population Exposed (1990–2015)",
     x = "Year",
     y = "% Population in 0–5m LECZ"
   ) +
