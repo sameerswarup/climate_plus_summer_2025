@@ -60,7 +60,21 @@ ui <- fluidPage(
   titlePanel("Low Elevation Coastal Zone Analysis"),
   tabsetPanel(
     tabPanel("Map (2015)", leafletOutput("lecz_map", height = 600)),
-    tabPanel("Trend Over Time", plotOutput("trend_plot", height = 500))
+    tabPanel("Trend Over Time", plotOutput("trend_plot", height = 500)),
+    tabPanel("Country Comparison",
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput("country1", "Select First Country:", choices = unique(data$Country), selected = "Bangladesh"),
+                 selectInput("country2", "Select Second Country:", choices = unique(data$Country), selected = "Vietnam")
+               ),
+               mainPanel(
+                 fluidRow(
+                   column(6, leafletOutput("map1", height = 300), verbatimTextOutput("summary1")),
+                   column(6, leafletOutput("map2", height = 300), verbatimTextOutput("summary2"))
+                 )
+               )
+             )
+    )
   )
 )
 
@@ -105,6 +119,52 @@ server <- function(input, output, session) {
         plot.subtitle = element_text(size = 11),
         legend.position = "bottom"
       )
+  })
+  
+  output$map1 <- renderLeaflet({
+    req(input$country1)
+    iso <- unique(data$ISO3[data$Country == input$country1])
+    country_shape <- world[world$iso_a3 == iso, ]
+    stats <- map_data[map_data$ISO3 == iso, ]
+    
+    leaflet(country_shape) |>
+      addTiles() |>
+      addPolygons(
+        fillColor = "orange",
+        fillOpacity = 0.7,
+        color = "#333333",
+        weight = 1,
+        label = paste(input$country1, "<br>% Exposed:", round(stats$PERCENT_EXPOSED, 1), "%")
+      )
+  })
+  
+  output$map2 <- renderLeaflet({
+    req(input$country2)
+    iso <- unique(data$ISO3[data$Country == input$country2])
+    country_shape <- world[world$iso_a3 == iso, ]
+    stats <- map_data[map_data$ISO3 == iso, ]
+    
+    leaflet(country_shape) |>
+      addTiles() |>
+      addPolygons(
+        fillColor = "purple",
+        fillOpacity = 0.7,
+        color = "#333333",
+        weight = 1,
+        label = paste(input$country2, "<br>% Exposed:", round(stats$PERCENT_EXPOSED, 1), "%")
+      )
+  })
+  
+  output$summary1 <- renderPrint({
+    stats <- map_data |>
+      filter(ISO3 == unique(data$ISO3[data$Country == input$country1]))
+    paste("2015 Exposure for", input$country1, ":", round(stats$PERCENT_EXPOSED, 1), "%")
+  })
+  
+  output$summary2 <- renderPrint({
+    stats <- map_data |>
+      filter(ISO3 == unique(data$ISO3[data$Country == input$country2]))
+    paste("2015 Exposure for", input$country2, ":", round(stats$PERCENT_EXPOSED, 1), "%")
   })
 }
 
