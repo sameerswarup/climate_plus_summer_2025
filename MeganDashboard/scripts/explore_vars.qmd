@@ -1,0 +1,90 @@
+---
+title: "explore_vars"
+format: html
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(viridis)
+library(sf)
+
+df_no_geom <- st_drop_geometry(df)
+df_numeric <- df_no_geom %>% select(where(is.numeric))
+df_clean <- df_numeric[complete.cases(df_numeric), ]
+
+pca <- prcomp(df_clean, scale. = TRUE)
+df_pca <- as.data.frame(pca$x)
+
+df_pca$var_of_interest <- df_clean$Gov_effect.sc
+
+ggplot(df_pca, aes(x = PC1, y = PC2, color = var_of_interest)) +
+  geom_point(alpha = 0.6) +
+  scale_color_viridis_c() +
+  labs(title = "PCA Colored by Government Effectiveness", color = "Gov_effect.sc") +
+  theme_minimal()
+```
+```{r}
+governance_vars <- c("Voice_account.sc", "Gov_effect.sc", "Reg_quality.sc", 
+                     "Rule_law.sc", "control_corr.sc", "Political_stab.sc")
+
+inequality_vars <- c("gender.ineq.sc", "income.ineq.sc", "le.ineq.log.sc", 
+                     "ineq.score.rank", "hierachical.score.rank.ineq")
+
+ecological_vars <- c("mean.count.grav.V2.log.sc", "vulnerab.score.rank", 
+                     "Nutritional.dependence.sc", "Economic.dependence.sc")
+
+deprivation_vars <- c("povmap.grdi.v1.sc", "income.ineq.change.sc", "le.ineq.change.sc")
+
+exposure_vars <- c("perc.pop.world.coastal.merit.10m.log.sc")
+
+```
+
+```{r}
+library(dplyr)
+library(scales)
+
+df_scores <- df %>%
+  st_drop_geometry() %>%
+  group_by(name_en) %>%
+  summarise(
+    governance_score = mean(across(all_of(governance_vars)), na.rm = TRUE),
+    inequality_score = mean(across(all_of(inequality_vars)), na.rm = TRUE),
+    ecological_score = mean(across(all_of(ecological_vars)), na.rm = TRUE),
+    deprivation_score = mean(across(all_of(deprivation_vars)), na.rm = TRUE),
+    exposure_score = mean(across(all_of(exposure_vars)), na.rm = TRUE)
+  ) %>%
+  ungroup()
+
+
+```
+```{r}
+
+
+df_scores <- df_scores %>%
+  mutate(across(where(is.numeric), ~rescale(.)))
+
+
+
+```
+```{r}
+
+df_scores <- df_scores %>%
+  mutate(risk_score = (1 - governance_score) + 
+                      inequality_score + 
+                      ecological_score + 
+                      exposure_score)
+
+```
+
+
+```{r}
+
+
+world <- ne_countries(returnclass = "sf")
+world_joined <- world %>%
+  left_join(df_scores, by = c("name" = "name_en"))
+
+
+```
+
