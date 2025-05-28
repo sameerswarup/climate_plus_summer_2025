@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ui <- fluidPage(
   title = "Mapping High Stakes Coastal Zones",
   tabsetPanel(
@@ -9,6 +10,11 @@ ui <- fluidPage(
   page_sidebar(
     title = tags$h1("Generalized Coastal Inequity Dashboard",
                     style = "color: #003087;
+=======
+ui <- page_sidebar(
+  title = tags$h1("Generalized Coastal Inequity Dashboard",
+                  style = "color: #003087;
+>>>>>>> 5f5bec581aab93e4ce480c971c5b523090d90e4d
                   font-weight: bold;"),
   sidebar = sidebar(
     width = 500,
@@ -62,6 +68,7 @@ ui <- fluidPage(
     "Here we can put the descriptions of the
     factors to calculate this indicator",
     
+<<<<<<< HEAD
     # selectInput(inputID = "factorSelect",
     #             label = "Select a factor!",
     #             choices = c("A" = "a",
@@ -70,6 +77,9 @@ ui <- fluidPage(
     #             selected = "a"),
     
     tableOutput("country_scores")
+=======
+    tableOutput("country_scores"),
+>>>>>>> 5f5bec581aab93e4ce480c971c5b523090d90e4d
     
   ),
   leafletOutput("map", width = "90%", height = 200)

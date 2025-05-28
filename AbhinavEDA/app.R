@@ -10,8 +10,13 @@ library(DT)
 library(tidyr)
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 # Load data once at start
 data <- read_excel("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Coastal Climate Vulnerability/$lecz-v3.xlsm", sheet = "Raw-Combined-Data")
+=======
+# Load and process data
+data <- read_excel("../Data/Coastal Climate Vulnerability/LECZ_data/lecz-v3.xlsm", sheet = "Raw-Combined-Data")
+>>>>>>> 5f5bec581aab93e4ce480c971c5b523090d90e4d
 =======
 # Load and process data
 data <- read_excel("../Data/Coastal Climate Vulnerability/LECZ_data/lecz-v3.xlsm", sheet = "Raw-Combined-Data")
