@@ -1,11 +1,12 @@
 server <- function(input, output, session) {
   
   pal_reactive <- reactive({
-    colorNumeric("YlOrRd", world_joined[[input$score_type]], na.color = "transparent")
+    colorNumeric("Blues", world_joined[[input$score_type]], na.color = "transparent")
   })
   
   output$map <- renderLeaflet({
     pal <- pal_reactive()
+    
     
     leaflet(data = world_joined) |>
       addTiles() |>
@@ -59,17 +60,30 @@ server <- function(input, output, session) {
   })
   
   output$country_flag <- renderImage({
-    req(clicked_country()) # wait for click
-    filename <- findPNGpath(clicked_country())
-    # Return a list containing the filename
-    list(src = filename,
-         contentType = "image/png",
-         alt = "Country flag",
-         width = 160,
-         height = 120
-         )
-    
+    # before click
+    if (is.null(clicked_country())) {
+      list(src = "www/globe.png",
+           contentType = "image/png",
+           alt = "Globe",
+           width = 120,
+           height = 120
+          )
+    # after click
+    } else {
+      filename <- findPNGpath(clicked_country())
+      # Return a list containing the filename
+      list(src = filename,
+           contentType = "image/png",
+           alt = "Country flag",
+           width = 160,
+           height = 120
+      )
+    }
   }, deleteFile = FALSE)
+  
+  # renderImage() function must return a 
+  # list with specific named elements that 
+  # tell Shiny how to display the image
   
   output$scoreInQuestion <- renderText({
     req(clicked_country())  # Wait for click
@@ -110,6 +124,19 @@ server <- function(input, output, session) {
     description <- descriptions %>%
       filter(id == clicked_indicator()) %>%
       pull(label)
+  })
+  
+  output$histogram <- renderPlot({
+    req(clicked_indicator)
+    label <- descriptions %>%
+      filter(id == clicked_indicator()) %>%
+      pull(label)
+    label <- paste(label, "Score", sep = " ")
+    label1 <- paste(label, "Distribution", sep = " ")
+    score <- input$score_type
+    histogram <- hist(x = df_country[[score]], # have to use [[]] to access a column by name stored in a variable
+                      main = label1,
+                      xlab = label)
   })
   
 }

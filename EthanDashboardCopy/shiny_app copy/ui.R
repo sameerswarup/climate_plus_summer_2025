@@ -1,8 +1,10 @@
 ui <- page_sidebar(
-  title = "Generalized Coastal Inequity Dashboard",
+  title = tags$h1("Generalized Coastal Inequity Dashboard",
+                  style = "color: #003087;
+                  font-weight: bold;"),
   sidebar = sidebar(
     width = 500,
-    selectInput("score_type", "Select Score to Display:",
+    selectInput("score_type", "Select Indicator to Display:",
                                   choices = c(
                                     "Governance Quality" = "governance_score",
                                     "Social Inequality" = "inequality_score",
@@ -11,27 +13,46 @@ ui <- page_sidebar(
                                   ),
                                   selected = "inequality_score"
                       ),
-    tags$h2(textOutput("clicked_country")),
-    "Here will go the descriptions
-    of the data!",
-    tableOutput("data_descriptions"),
-    #tags#
-    tags$h2("Indicator Description", style = "color: blue;"),
+    # "Here will go the descriptions
+    # of the data!",
+    # tableOutput("data_descriptions"),
+    tags$h2("Indicator Description", 
+            style = "color: #003087; 
+            font-weight: bold;"),
     textOutput("description"),
+  
     
     tags$div(
       style = "text-align: center;",
-      imageOutput("country_flag", height = 120)
+      tags$h3(textOutput("clicked_country"))
+    ),
+
+    # Could include a short description of the country here
+    
+    tags$div(
+      style = "text-align: center;",
+      imageOutput("country_flag", height = "120px")
     ),
     value_box(
       title = textOutput("label"),
       value = uiOutput("scoreInQuestion"),
-      theme = "teal"
+      showcase = bs_icon("person-arms-up"),
+      theme = value_box_theme(fg = "white", bg = "#003087")
     ),
+    
+    # could use ggplot for histogram to make prettier
+    
+    plotOutput("histogram"),
     
     # NOTE: could be cool to show a histogram in the
     # value box that shows where the country lies
     # in comparison to every other country
+    
+    tags$h3("Factor Descriptions",
+            style = "color: #003087;"),
+    
+    "Here we can put the descriptions of the
+    factors to calculate this indicator",
     
     tableOutput("country_scores"),
     
