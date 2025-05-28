@@ -8,7 +8,7 @@ library(rnaturalearth)
 library(scales)
 
 # Load data once at start
-data <- read_excel("../Data/Coastal Climate Vulnerability/lecz-v3.xlsm", sheet = "Raw-Combined-Data")
+data <- read_excel("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Coastal Climate Vulnerability/~$lecz-v3.xlsm", sheet = "Raw-Combined-Data")
 world <- ne_countries(scale = "medium", returnclass = "sf")
 
 # Preprocess: 2015 exposure choropleth

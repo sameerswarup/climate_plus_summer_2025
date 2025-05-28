@@ -5,6 +5,8 @@ library(sf)
 library(rnaturalearth)
 library(bslib)
 library(bsicons)
+library(ggplot2)
+library(plotly)
 
 df <- readRDS("data copy/df.cont.inequity.compo.coastal.scores_sr.rds") %>%
   st_transform(4326)

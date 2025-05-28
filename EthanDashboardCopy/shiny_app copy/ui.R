@@ -54,6 +54,13 @@ ui <- page_sidebar(
     "Here we can put the descriptions of the
     factors to calculate this indicator",
     
+    selectInput(inputID = "factorSelect",
+                label = "Select a factor!",
+                choices = c("A" = "a",
+                            "B" = "b",
+                            "C" = "c"),
+                selected = "a"),
+    
     tableOutput("country_scores"),
     
   ),
