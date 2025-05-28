@@ -1,0 +1,198 @@
+---
+title: "EDA for the Previous Dashboard Data"
+#format: html
+output: html_document
+classoption: landscape
+---
+
+```{r include=FALSE}
+library(naniar)
+library(DataExplorer)
+library(corrplot)
+library(ggplot2)
+
+library(tibble)
+library(dplyr)
+library(factoextra)  # For PCA visualization
+library(tidyr)
+library(readr)
+```
+
+```{r include=FALSE}
+data <- readRDS('df.cont.inequity.compo.coastal.scores_sr.rds')
+
+data <- data |>
+  rename( Degraded_Ecosystems = mean.count.grav.V2.log.sc,
+          Relative_Deprivation_Index= povmap.grdi.v1.sc,
+          Climate_Vulnerability = perc.pop.world.coastal.merit.10m.log.sc,
+         Marine_Employment_Dependency = Economic.dependence.sc,
+         Marine_Nutritional_Dependency = Nutritional.dependence.sc,
+         Low_Voice_And_Accountability = Voice_account.sc,
+         Weak_Rule_Of_Law = Rule_law.sc,
+         Weak_Control_Of_Corruption = control_corr.sc,
+         Political_Instability = Political_stab.sc,
+         Government_Ineffectiveness = Gov_effect.sc,
+         Poor_Regulatory_Quality = Reg_quality.sc,
+         Gender_Inequality = gender.ineq.sc,
+         Inequality_Adjusted_Life_Expectancy = le.ineq.log.sc,
+         Income_Inequality = income.ineq.sc,
+         Income_Inequality_Change = income.ineq.change.sc,
+         Inequality_Adjusted_Life_Expectancy_Change = le.ineq.change.sc)
+```
+
+```{r echo = FALSE}
+
+cat("Number of Null Values\n************************************************************")
+cat("")
+
+as.data.frame(colSums(is.na(data)))
+#cat("\n")
+```
+
+```{r}
+cat("Total number of null values in the database is:", sum(is.na(data))) 
+```
+
+```{r echo = FALSE}
+vis_miss(data, warn_large_data = FALSE)
+cat("\n")
+```
+
+```{r echo = FALSE}
+#cat("\\newpage")
+
+cat("Dimensions of the data\n************************************************************")
+cat("")
+dim(data)
+cat("\n")
+```
+
+```{r echo = FALSE}
+cat("Structure: column types and first few entries\n************************************************************")
+cat("")
+str(data[ , !(names(data) == "geometry")])
+cat("\n")
+```
+
+```{r echo = FALSE}
+cat("Summary of each column\n************************************************************")
+cat("")
+summary(data[ , !(names(data) == "geometry")])
+cat("\n")
+```
+
+```{r echo = FALSE}
+cat("Number of Unique Values\n************************************************************")
+cat("")
+# Unique values (good for categoricals)
+unique_df <- as.data.frame(sapply(data, function(x) length(unique(x))))
+colnames(unique_df) <- c("Unique Values")
+unique_df
+cat("\n")
+```
+
+```{r echo = FALSE}
+# Distributions of numeric variables
+# Histograms
+
+hist(data$Degraded_Ecosystems)
+hist(data$Relative_Deprivation_Index)
+hist(data$Climate_Vulnerability)
+hist(data$Marine_Employment_Dependency)
+hist(data$Marine_Nutritional_Dependency)
+hist(data$Low_Voice_And_Accountability)
+hist(data$Weak_Rule_Of_Law)
+hist(data$Weak_Control_Of_Corruption)
+hist(data$Political_Instability)
+hist(data$Government_Ineffectiveness)
+hist(data$Poor_Regulatory_Quality)
+hist(data$Gender_Inequality)
+hist(data$Inequality_Adjusted_Life_Expectancy)
+hist(data$Income_Inequality)
+
+```
+
+```{r echo=FALSE}
+#cat("\\newpage")
+
+cat("Percentage Frequency of the Types of Economy (%) \n************************************************************")
+cat("")
+prop_data <- prop.table(table(data$income_grp)) * 100
+print(round(prop_data, 2))
+cat("\n")
+
+cat("Percentage Frequency of the Income Groups (%) \n************************************************************")
+cat("")
+prop_data <- prop.table(table(data$income_grp)) * 100
+print(round(prop_data, 2))
+cat("\n")
+
+
+```
+
+```{r echo = FALSE}
+#cat("\\newpage")
+
+cat("Visualization of the Correlation Matrix\n************************************************************")
+cat("")
+corrplot(cor(data[sapply(data, is.numeric)], use = "complete.obs"),  tl.cex = 0.7, tl.col = "black", tl.srt = 45)
+cat("\n")
+```
+
+```{r echo = FALSE}
+
+
+vars <- c("Degraded_Ecosystems",
+          "Relative_Deprivation_Index",
+          "Climate_Vulnerability",
+         "Marine_Employment_Dependency",
+         "Marine_Nutritional_Dependency",
+         "Low_Voice_And_Accountability",
+         "Weak_Rule_Of_Law",
+         "Weak_Control_Of_Corruption",
+         "Political_Instability",
+         "Government_Ineffectiveness",
+         "Poor_Regulatory_Quality",
+         "Gender_Inequality",
+         "Inequality_Adjusted_Life_Expectancy",
+         "Income_Inequality",
+         "Income_Inequality_Change",
+         "Inequality_Adjusted_Life_Expectancy_Change")
+
+df <- as.data.frame(matrix(rnorm(100 * length(vars)), ncol = length(vars)))
+colnames(df) <- vars
+
+df = na.omit(df)
+
+# Standardize the data
+df_scaled <- scale(df)
+
+# Run PCA
+pca_result <- prcomp(df_scaled, center = TRUE, scale. = TRUE)
+
+# Scree plot (explained variance)
+#cat("\\newpage")
+
+cat("Scree diagram:\n************************************************************")
+fviz_eig(pca_result, addlabels = TRUE, barfill = "skyblue", barcolor = "black") +
+  ggtitle("Explained Variance by Principal Components")
+
+# PCA Loadings (variable contributions)
+loadings <- as.data.frame(pca_result$rotation)
+loadings <- rownames_to_column(loadings, var = "Variable")
+head(loadings)
+
+# View top contributing variables for PC1 and PC2
+top_pc1 <- loadings %>% arrange(desc(abs(PC1))) %>% head(10)
+top_pc2 <- loadings %>% arrange(desc(abs(PC2))) %>% head(10)
+
+cat("Top PC1 contributors:\n************************************************************")
+print(top_pc1)
+cat("")
+
+
+cat("Top PC2 contributors:\n************************************************************")
+print(top_pc2)
+cat("")
+
+```
