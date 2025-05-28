@@ -1,0 +1,105 @@
+---
+title: "explore_vars"
+format: html
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(viridis)
+library(sf)
+library(scales)
+
+df <- readRDS("../data/df.cont.inequity.compo.coastal.scores_sr.rds") |>
+  st_transform(4326)
+
+```
+
+```{r}
+
+df_no_geom <- st_drop_geometry(df)
+df_numeric <- df_no_geom |> select(where(is.numeric))
+df_clean_pca <- df_numeric[complete.cases(df_numeric), ]
+
+pca <- prcomp(df_clean_pca, scale. = TRUE)
+df_pca <- as.data.frame(pca$x)
+
+df_pca$var_of_interest <- df_clean_pca$Gov_effect.sc
+
+ggplot(df_pca, aes(x = PC1, y = PC2, color = var_of_interest)) +
+  geom_point(alpha = 0.6) +
+  scale_color_viridis_c() +
+  labs(title = "PCA Colored by Government Effectiveness", color = "Gov_effect.sc") +
+  theme_minimal()
+
+```
+
+
+```{r}
+# Variable group definitions
+governance_vars <- c("Voice_account.sc", "Gov_effect.sc", "Reg_quality.sc", 
+                     "Rule_law.sc", "control_corr.sc", "Political_stab.sc")
+
+inequality_vars <- c("gender.ineq.sc", "income.ineq.sc", "le.ineq.log.sc", 
+                     "ineq.score.rank", "hierachical.score.rank.ineq")
+
+ecological_vars <- c("mean.count.grav.V2.log.sc", "vulnerab.score.rank", 
+                     "Nutritional.dependence.sc", "Economic.dependence.sc")
+
+deprivation_vars <- c("povmap.grdi.v1.sc", "income.ineq.change.sc", "le.ineq.change.sc")
+
+exposure_vars <- c("perc.pop.world.coastal.merit.10m.log.sc")
+
+df_clean <- df |>
+  st_drop_geometry() |>
+  select(name_en, all_of(c(governance_vars, inequality_vars, ecological_vars, deprivation_vars, exposure_vars))) |>
+  filter(if_all(everything(), ~ !is.na(.)))
+
+df_scores <- df_clean |>
+  group_by(name_en) |>
+  summarise(
+    governance_score = mean(c_across(all_of(governance_vars)), na.rm = TRUE),
+    inequality_score = mean(c_across(all_of(inequality_vars)), na.rm = TRUE),
+    ecological_score = mean(c_across(all_of(ecological_vars)), na.rm = TRUE),
+    deprivation_score = mean(c_across(all_of(deprivation_vars)), na.rm = TRUE),
+    exposure_score = mean(c_across(all_of(exposure_vars)), na.rm = TRUE)
+  ) |>
+  ungroup() |>
+  mutate(across(where(is.numeric), rescale)) |>
+  mutate(
+    risk_score = (1 - governance_score) + inequality_score + ecological_score + exposure_score
+  )
+
+```
+
+```{r}
+
+top_risk <- df_scores |> arrange(desc(risk_score)) |> slice_head(n = 10)
+low_risk <- df_scores |> arrange(risk_score) |> slice_head(n = 10)
+
+cat("Highest risk:\n")
+print(top_risk$name_en)
+
+cat("\nLwest Risk:\n")
+print(low_risk$name_en)
+
+```
+```{r}
+
+print_top_bottom <- function(df, var, n = 5) {
+  top <- df |> arrange(desc(.data[[var]])) |> slice_head(n = n)
+  bottom <- df |> arrange(.data[[var]]) |> slice_head(n = n)
+
+  cat("Top", n, var, "countries:\n")
+  print(top |> select(name_en, !!sym(var)))
+  cat("\nBottom", n, var, "countries:\n")
+  print(bottom |> select(name_en, !!sym(var)))
+}
+
+score_vars <- c("governance_score", "inequality_score", "ecological_score", "deprivation_score", "exposure_score")
+
+for (v in score_vars) {
+  print_top_bottom(df_scores, v)
+}
+
+```

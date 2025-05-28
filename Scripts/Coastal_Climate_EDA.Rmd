@@ -1,0 +1,28 @@
+---
+title: "Coastal_Climate_EDA"
+author: "Sameer"
+date: "2025-05-23"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(mapview)
+library(tidyverse)
+library(readxl)
+```
+
+```{r}
+setwd("/Users/sameerswarup/Documents/Ocean Synthesis Lab/Climate+/Data and Scripts/Data_Processing/")
+```
+
+```{r}
+abw_gpw <- read_csv("../Data/Coastal Climate Vulnerability/gpw_v4_admin_unit_center_points_population_estimates_rev11_abw.csv")
+```
+```{r}
+lecz <- read_excel("../Data/Coastal Climate Vulnerability/lecz-v3.xlsm", sheet = "Raw-Combined-Data")
+```
+
