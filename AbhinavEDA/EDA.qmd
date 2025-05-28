@@ -15,7 +15,7 @@ library(scales)
 ```
 
 ```{r}
-data <- read_excel("../Data/Coastal Climate Vulnerability/lecz-v3.xlsm", sheet = "Raw-Combined-Data")
+data <- read_excel("../Data/Coastal Climate Vulnerability/LECZ_data/lecz-v3.xlsm", sheet = "Raw-Combined-Data")
 ```
 
 ```{r}

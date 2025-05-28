@@ -9,26 +9,28 @@ library(scales)
 library(DT)
 library(tidyr)
 
-data <- read_excel("../Data/Coastal Climate Vulnerability/lecz-v3.xlsm", sheet = "Raw-Combined-Data")
+# Load and process data
+data <- read_excel("../Data/Coastal Climate Vulnerability/LECZ_data/lecz-v3.xlsm", sheet = "Raw-Combined-Data")
 world <- ne_countries(scale = "medium", returnclass = "sf")
 
 total_2015 <- data |>
   filter(Year == "2015") |>
   group_by(ISO3) |>
-  summarise(Total_POP = sum(`GHS-POP`, na.rm = TRUE))
+  summarise(Total_POP = sum(`GHS-POP`, na.rm = TRUE), .groups = "drop")
 
 lecz_2015 <- data |>
   filter(`LECZ Description` == "0 to 5 Meters", Year == "2015") |>
   group_by(ISO3) |>
-  summarise(LECZ_POP = sum(`GHS-POP`, na.rm = TRUE))
+  summarise(LECZ_POP = sum(`GHS-POP`, na.rm = TRUE), .groups = "drop")
 
 map_data <- left_join(lecz_2015, total_2015, by = "ISO3") |>
-  mutate(PERCENT_EXPOSED = 100 * (LECZ_POP / Total_POP))
+  mutate(PERCENT_EXPOSED = ifelse(Total_POP > 0, 100 * (LECZ_POP / Total_POP), NA))
 
 world_exposed <- left_join(world, map_data, by = c("iso_a3" = "ISO3"))
 
 lecz_levels <- c("0 to 5 Meters", "6 to 10 Meters", "Over 10 Meters")
 
+# UI
 ui <- fluidPage(
   titlePanel("Low Elevation Coastal Zone Analysis"),
   tabsetPanel(
@@ -38,9 +40,7 @@ ui <- fluidPage(
                sidebarPanel(
                  selectInput("country1", "Select First Country:", choices = unique(data$Country), selected = "Bangladesh"),
                  selectInput("country2", "Select Second Country:", choices = unique(data$Country), selected = "Vietnam"),
-                 selectInput("lecz_level", "Select LECZ Level:",
-                             choices = lecz_levels,
-                             selected = "0 to 5 Meters")
+                 selectInput("lecz_level", "Select LECZ Level:", choices = lecz_levels, selected = "0 to 5 Meters")
                ),
                mainPanel(
                  fluidRow(
@@ -54,8 +54,9 @@ ui <- fluidPage(
   )
 )
 
+# Server
 server <- function(input, output, session) {
-  color_pal <- colorQuantile("YlOrRd", map_data$PERCENT_EXPOSED, n = 5)
+  color_pal <- colorQuantile("YlOrRd", map_data$PERCENT_EXPOSED, n = 5, na.color = "#cccccc")
   
   output$lecz_map <- renderLeaflet({
     leaflet(world_exposed) |>
@@ -79,6 +80,9 @@ server <- function(input, output, session) {
     iso <- unique(data$ISO3[data$Country == country_input])
     shape <- world[world$iso_a3 == iso, ]
     stats <- map_data[map_data$ISO3 == iso, ]
+    
+    if (nrow(shape) == 0 || nrow(stats) == 0) return(NULL)
+    
     leaflet(shape) |>
       addTiles() |>
       addPolygons(
@@ -116,11 +120,11 @@ server <- function(input, output, session) {
         `% Exposed` = round(100 * (LECZ_POP / Total_POP), 1),
         `LECZ Level` = input$lecz_level
       ) |>
-      select(`LECZ Level`, Country, Total_POP, LECZ_POP, `% Exposed`) |>
       rename(
-        `Total Population` = Total_POP,
-        `Population in LECZ` = LECZ_POP
-      )
+        `Total Coastal Population` = Total_POP,
+        `Population in LECZ Level` = LECZ_POP
+      ) |>
+      select(`LECZ Level`, Country, `Total Coastal Population`, `Population in LECZ Level`, `% Exposed`)
     
     datatable(combined, rownames = FALSE, options = list(dom = 't'))
   })
