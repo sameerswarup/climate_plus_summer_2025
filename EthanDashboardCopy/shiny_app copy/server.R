@@ -147,3 +147,6 @@ server <- function(input, output, session) {
   # input that captures click events on 
   # shapes (like polygons) in a leaflet map.
 
+
+
+# make your own graph tab

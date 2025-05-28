@@ -1,6 +1,14 @@
-ui <- page_sidebar(
-  title = tags$h1("Generalized Coastal Inequity Dashboard",
-                  style = "color: #003087;
+ui <- fluidPage(
+  title = "Mapping High Stakes Coastal Zones",
+  tabsetPanel(
+  
+  tabPanel(
+    title = tags$h6("Dashboard",
+                    style = "font-family: Papyrus; color: #003087;"),
+  
+  page_sidebar(
+    title = tags$h1("Generalized Coastal Inequity Dashboard",
+                    style = "color: #003087;
                   font-weight: bold;"),
   sidebar = sidebar(
     width = 500,
@@ -61,9 +69,33 @@ ui <- page_sidebar(
     #                         "C" = "c"),
     #             selected = "a"),
     
-    tableOutput("country_scores"),
+    tableOutput("country_scores")
     
   ),
-  leafletOutput("map", height = 800)
-    
+  leafletOutput("map", width = "90%", height = 200)
+  #find a way so that it doesn't scroll with
+)
+
+),
+
+tabPanel(
+  title = tags$h6("Custom Graphs",
+                  style = "font-family: Courier New;
+                  color: #003087;"),
+),
+
+tabPanel(
+  title = tags$h6("Country Comparison",
+                  style = "font-famiily: Verdana;
+                  color: #003087;"),
+),
+
+tabPanel(
+  title = tags$h6("Resources",
+                  style = "font-family: Lucida Handwriting;
+                  color: #003087;"),
+)
+
+)
+
 )
