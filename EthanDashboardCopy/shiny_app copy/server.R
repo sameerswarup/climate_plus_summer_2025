@@ -134,8 +134,11 @@ server <- function(input, output, session) {
     label <- paste(label, "Score", sep = " ")
     label1 <- paste(label, "Distribution", sep = " ")
     score <- input$score_type
+<<<<<<< HEAD
     # ggplot(df_country, aes (x = score)) +
     #   geom_histogram(binwidth =0.1)
+=======
+>>>>>>> 5f5bec581aab93e4ce480c971c5b523090d90e4d
     histogram <- hist(x = df_country[[score]], # have to use [[]] to access a column by name stored in a variable
                       main = label1,
                       xlab = label)
