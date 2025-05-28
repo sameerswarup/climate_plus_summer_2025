@@ -4,7 +4,7 @@ library(dplyr)
 library(sf)
 library(rnaturalearth)
 
-df <- readRDS("../data/df.cont.inequity.compo.coastal.scores_sr.rds") %>%
+df <- readRDS("../data/df.cont.inequity.compo.coastal.scores_sr.rds") |>
   st_transform(4326)
 
 df_country <- df |>
@@ -35,3 +35,5 @@ df_country <- df |>
 world <- ne_countries(returnclass = "sf")
 world_joined <- world |>
   left_join(df_country, by = c("name" = "name_en"))
+
+
