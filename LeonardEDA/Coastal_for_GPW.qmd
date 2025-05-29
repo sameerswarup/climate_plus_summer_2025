@@ -1,0 +1,47 @@
+---
+title: "Coastal GPW"
+#format: html
+output: html_document
+classoption: landscape
+---
+
+
+```{r}
+
+install.packages(c("sf", "rnaturalearth", "rnaturalearthdata", "geosphere"))
+
+
+library(sf)
+
+# Example: your data frame with longitude and latitude
+coords <- read.csv("~/Library/CloudStorage/Dropbox/Duke/Data+/Megan Dashboard/Data/Coastal Climate Vulnerability/GPW_v4_Data/gpw_v4_admin_unit_center_points_population_estimates_rev11_fra.csv") #"../Data/Coastal Climate Vulnerability/GPW_v4_Data/gpw_v4_admin_unit_center_points_population_estimates_rev11_abw.csv")
+
+points_sf <- st_as_sf(coords, coords = c("CENTROID_X", "CENTROID_Y"), crs = 4326)
+
+
+library(rnaturalearth)
+
+coastline <- ne_download(scale = 10, type = "coastline", category = "physical", returnclass = "sf")
+
+
+# Transform both to a projected CRS for accurate distance (e.g., meters)
+points_proj <- st_transform(points_sf, 3857)
+coast_proj <- st_transform(coastline, 3857)
+
+# Calculate distance in meters
+distances <- st_distance(points_proj, coast_proj)
+
+# Get the minimum distance from each point to the entire coastline
+min_distances <- apply(distances, 1, min)
+
+# Check which are within 5 km
+within_5km <- min_distances <= 5000
+
+# Add to data frame
+coords$within_5km_of_coast <- within_5km
+coords$distance_to_coast_km <- as.numeric(min_distances) / 1000
+print(coords)
+
+
+
+```
