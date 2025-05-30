@@ -1,0 +1,87 @@
+---
+title: "Coastal GPW"
+#format: html
+output: html_document
+classoption: landscape
+---
+
+```{r}
+#install.packages(c("sf", "rnaturalearth", "rnaturalearthdata", "geosphere"))
+
+library(sf)
+library(rnaturalearth)
+library(readr)
+
+```
+
+
+```{r}
+
+process_chunk <- function(chunk, pos) {
+  dir.create("Filtered_Files", showWarnings = FALSE)  # Creates the directory if it doesn't exist
+  filename <- paste0("Filtered_Files/filtered_", pos, ".csv")
+  
+  # 'chunk' is a tibble containing the data
+  print(paste("Processing rows starting at position", pos))
+  #gc()
+  # Example: Print the mean of a column named 'value'
+  if ("CENTROID_X" %in% colnames(chunk)) {
+    points_sf <- st_as_sf(chunk, coords = c("CENTROID_X", "CENTROID_Y"), crs = 4326)
+
+    if (!file.exists("coastline")) { 
+      download.file('https://naturalearth.s3.amazonaws.com/10m_physical/ne_10m_coastline.zip', destfile = "coastline.zip", mode = "wb")
+      #write_file(ne_download(scale = 10, type = "coastline", category = "physical", returnclass = "sf"), "coastline")
+      #unzip("coastline.zip", list = TRUE)
+      }
+    
+    coastline <- st_read("coastline/ne_10m_coastline.shp")
+    
+    # Transform both to a projected CRS for accurate distance (e.g., meters)
+    points_proj <- st_transform(points_sf, 3857)
+    coast_proj <- st_transform(coastline, 3857)
+    
+    # Calculate distance in meters
+    distances <- st_distance(points_proj, coast_proj)
+  
+    # Get the minimum distance from each point to the entire coastline
+    min_distances <- apply(distances, 1, min)
+    
+    # Check which are within 5 km
+    within_5km <- min_distances <= 5000
+    
+    # Add to data frame
+    chunk$within_5km_of_coast <- within_5km
+    chunk$distance_to_coast_km <- as.numeric(min_distances) / 1000
+  }
+
+
+  chunk_filtered <- chunk[chunk$within_5km_of_coast  == TRUE, ]
+  
+  # You can save results, write to file, etc.
+  print("Writing to to file")
+  write.csv(chunk_filtered, filename)
+  
+  # Return the chunk to be accumulated
+  return(chunk_filtered)
+};
+```
+
+
+```{r}
+
+# List to store processed chunks
+processed_chunks <- list()
+
+processed_chunks <- append(processed_chunks, read_csv_chunked(
+  file = "/Users/leonard/Downloads/gpw-v4-admin-unit-center-points-population-estimates-rev11_global_csv/gpw_v4_admin_unit_center_points_population_estimates_rev11_global.csv",
+  callback = SideEffectChunkCallback$new(process_chunk),
+  chunk_size = 100000,    # Adjust based on memory
+  progress = TRUE))
+
+# Combine all chunks into one sf object
+chunks_combined <- do.call(rbind, processed_chunks)
+
+write.csv(chunks_combined, "gpw_v4_admin_unit_center_points_population_estimates_rev11_global_FILTERED.csv")
+```
+
+
