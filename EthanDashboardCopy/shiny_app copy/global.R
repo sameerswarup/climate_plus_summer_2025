@@ -56,3 +56,5 @@ findPNGpath <- function(name_en) {
   pngFinal <- paste0(pngDefaultPath, alpha2, ".png")
   return(pngFinal)
 }
+
+fra <-

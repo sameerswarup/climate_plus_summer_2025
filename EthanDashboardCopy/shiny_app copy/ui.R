@@ -5,11 +5,17 @@ ui <- fluidPage(
   tabPanel(
     title = tags$h6("Dashboard",
                     style = "font-family: Papyrus; color: #003087;"),
+    
   
   page_sidebar(
     title = tags$h1("Generalized Coastal Inequity Dashboard",
                     style = "color: #003087;
                   font-weight: bold;"),
+    
+    tags$h4("A nice little description of the dashboard and what we are
+            trying to do with it!",
+            style = "color: #003087;
+            font-style: italic"),
   sidebar = sidebar(
     width = 500,
     selectInput("score_type", "Select Indicator to Display:",
@@ -82,6 +88,17 @@ tabPanel(
   title = tags$h6("Custom Graphs",
                   style = "font-family: Courier New;
                   color: #003087;"),
+  
+  tags$div(
+    tags$h2("Hi, do you want a custom graph?
+            Here we will give you one!",
+            style = "font-family: Courier New;
+                  color: #003087;"),
+    
+    page_sidebar(
+      
+    )
+  )
 ),
 
 tabPanel(
