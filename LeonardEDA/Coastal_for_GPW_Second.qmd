@@ -20,9 +20,6 @@ library(readr)
 process_chunk <- function(chunk, pos) {
   dir.create("Filtered_Files", showWarnings = FALSE)  # Creates the directory if it doesn't exist
   filename <- paste0("Filtered_Files/filtered_", pos, ".csv")
-  if (!file.exists(filename)) { 
-    return(read.csv(filename))
-  }
   
   # 'chunk' is a tibble containing the data
   print(paste("Processing rows starting at position", pos))
