@@ -42,6 +42,29 @@ coords$within_5km_of_coast <- within_5km
 coords$distance_to_coast_km <- as.numeric(min_distances) / 1000
 print(coords)
 
+fra <- read.csv("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Coastal Climate Vulnerability/GPW_v4_Data/gpw_v4_admin_unit_center_points_population_estimates_rev11_fra_FILTERED.csv")
+
+
+fra_filtered <- filter(fra, within_5km_of_coast == TRUE)
+
+
+
+plot <- st_as_sf(fra_filtered,
+                   coords = c("CENTROID_X", "CENTROID_Y"),
+                   crs = 4326)
+
+fra_pop_2020 <- dplyr::select(plot, "ISOALPHA", "COUNTRYNM", 
+                       "NAME1", "NAME2", "NAME3", "NAME4",
+                       "NAME5", "NAME6", 
+                       "UN_2020_E")
+
+ggplot(fra_pop_2020) +
+  geom_sf(aes(color = UN_2020_E)) +
+  scale_color_viridis_c() +
+  theme_minimal() +
+  ggtitle("France Admin Units by 2020 Population")
+
+
 
 
 ```
