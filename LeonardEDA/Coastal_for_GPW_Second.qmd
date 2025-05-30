@@ -21,6 +21,10 @@ process_chunk <- function(chunk, pos) {
   dir.create("Filtered_Files", showWarnings = FALSE)  # Creates the directory if it doesn't exist
   filename <- paste0("Filtered_Files/filtered_", pos, ".csv")
   
+  if (file.exists(filename)) { 
+    return(read.csv(filename))
+  }
+  
   # 'chunk' is a tibble containing the data
   print(paste("Processing rows starting at position", pos))
   #gc()
@@ -72,7 +76,7 @@ process_chunk <- function(chunk, pos) {
 # List to store processed chunks
 processed_chunks <- list()
 
-processed_chunks <- append(read_csv_chunked(
+processed_chunks <- append(processed_chunks, read_csv_chunked(
   file = "/Users/leonard/Downloads/gpw-v4-admin-unit-center-points-population-estimates-rev11_global_csv/gpw_v4_admin_unit_center_points_population_estimates_rev11_global.csv",
   callback = SideEffectChunkCallback$new(process_chunk),
   chunk_size = 100000,    # Adjust based on memory
