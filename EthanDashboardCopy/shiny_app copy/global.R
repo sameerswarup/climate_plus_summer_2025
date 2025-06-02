@@ -7,9 +7,11 @@ library(bslib)
 library(bsicons)
 library(ggplot2)
 library(plotly)
+library(data.table)
 
 df <- readRDS("data copy/df.cont.inequity.compo.coastal.scores_sr.rds") %>%
   st_transform(4326)
+
 
 df_country <- df |>
   st_drop_geometry() |>
@@ -40,6 +42,9 @@ world <- ne_countries(returnclass = "sf")
 world_joined <- world |>
   left_join(df_country, by = c("name" = "name_en"))
 
+
+
+
 descriptions <- suppressWarnings(read.csv("data copy/dataDescriptions.csv"))
 
 countryCodes <- suppressWarnings(read.csv("data copy/countries_codes_and_coordinates.csv"))
@@ -57,4 +62,29 @@ findPNGpath <- function(name_en) {
   return(pngFinal)
 }
 
-fra <-
+
+bounding_boxes <- do.call(rbind, lapply(1:nrow(world), function(i) {
+  bb <- st_bbox(world[i, ])
+  data.frame(
+    name = world$admin[i],
+    xmin = bb["xmin"],
+    ymin = bb["ymin"],
+    xmax = bb["xmax"],
+    ymax = bb["ymax"]
+  )
+}))
+
+
+csv_folder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/LeonardEDA/Filtered_Files"
+
+csv_files <- list.files(path = csv_folder, pattern = "\\.csv$", full.names = TRUE)
+
+worldData <- rbindlist(lapply(csv_files, fread), use.names = TRUE, fill = TRUE)
+
+worldData <- st_as_sf(worldData,
+                      coords = c("CENTROID_X", "CENTROID_Y"),
+                      crs = 4326)
+worldData_pop_2020 <- dplyr::select(worldData, "ISOALPHA", "COUNTRYNM", 
+                               "NAME1", "NAME2", "NAME3", "NAME4",
+                               "NAME5", "NAME6", 
+                               "UN_2020_E")
