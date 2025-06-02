@@ -141,12 +141,73 @@ server <- function(input, output, session) {
                       xlab = label)
   })
   
+  pal_reactive_pop <- reactive({
+    colorNumeric("Blues", world_joined_pop$population, na.color = "transparent")
+  })
+  
+  output$popmap <- renderLeaflet({
+    pal <- pal_reactive_pop()
+    
+    
+    leaflet(data = world_joined_pop) |>
+      addTiles() |>
+      addPolygons(
+        fillColor = ~pal(population),
+        layerId = ~name,
+        # layerId is an identifier you assign 
+        # to each shape (polygon, marker, etc.) 
+        # you add to a Leaflet map in Shiny.
+        weight = 1,
+        color = "grey",
+        fillOpacity = 0.8,
+        label = ~paste0(
+          name, ": ", world_joined_pop$population
+        ),
+        highlightOptions = highlightOptions(
+          weight = 2,
+          color = "black",
+          bringToFront = TRUE
+        )
+      ) |>
+      addLegend(
+        pal = pal, values = ~world_joined_pop$population,
+        title = "Population"
+      )
+  })
+  
+  # Action Button for searching for countries 
+  # in "Individual Country Inspection
+  
+  observeEvent(input$submit_search, {
+    session$sendCustomMessage(type = 'testmessage',
+                              message = 'Thank you for clicking')
+  })
+  
+  output$indCountryMap <- renderPlot({
+    countryName <- input$search
+    bbox <- bounding_boxes %>% filter(name == input$search)
+    
+    req(nrow(bbox) > 0)
+    data<-filter(worldData_pop_2020, COUNTRYNM == countryName)
+    
+    xmin <- bbox$xmin
+    ymin <- bbox$ymin
+    xmax <- bbox$xmax
+    ymax <- bbox$ymax
+    
+    ggplot(data) +
+      geom_sf(data = world, fill = "#ADD8E6", color = "white") +
+      geom_sf(aes(color = UN_2020_E)) +
+      scale_color_viridis_c() +
+      coord_sf(xlim = c(xmin, xmax), ylim = c(ymin, ymax), expand = FALSE) +
+      theme_minimal() 
+  })
+  
 }
   
   # map_shape_click is a built-in Shiny 
   # input that captures click events on 
   # shapes (like polygons) in a leaflet map.
-
 
 
 # make your own graph tab

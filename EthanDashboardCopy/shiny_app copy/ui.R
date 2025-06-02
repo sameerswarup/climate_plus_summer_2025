@@ -89,16 +89,16 @@ tabPanel(
                   style = "font-family: Courier New;
                   color: #003087;"),
   
+  leafletOutput("popmap", width = "90%", height = 500),
+  
   tags$div(
     tags$h2("Hi, do you want a custom graph?
             Here we will give you one!",
             style = "font-family: Courier New;
                   color: #003087;"),
     
-    page_sidebar(
-      
     )
-  )
+  
 ),
 
 tabPanel(
@@ -108,9 +108,20 @@ tabPanel(
 ),
 
 tabPanel(
-  title = tags$h6("Resources",
+  title = tags$h6("Individual Country Inspection",
                   style = "font-family: Lucida Handwriting;
                   color: #003087;"),
+  
+  page_sidebar(
+    sidebar = sidebar(
+      width = 500,
+      textInput("search", label = h3("Country Inspection"), value = "Enter a country..."),
+      actionButton("submit_search", "Search")
+    ),
+    
+    plotOutput("indCountryMap")
+  )
+  
 )
 
 )
