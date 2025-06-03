@@ -147,7 +147,7 @@ Attaching package: 'scales'</code></pre>
 <span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_pca, <span class="fu">aes</span>(<span class="at">x =</span> PC1, <span class="at">y =</span> PC2, <span class="at">color =</span> var_of_interest)) <span class="sc">+</span></span>
 <span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
 <span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_viridis_c</span>() <span class="sc">+</span></span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"PCA Colored by Government Effectiveness"</span>, <span class="at">color =</span> <span class="st">"Gov_effect.sc"</span>) <span class="sc">+</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"PCA by gov Effectiveness"</span>, <span class="at">color =</span> <span class="st">"Gov_effect.sc"</span>) <span class="sc">+</span></span>
 <span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
@@ -158,39 +158,38 @@ Attaching package: 'scales'</code></pre>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Variable group definitions</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>governance_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Voice_account.sc"</span>, <span class="st">"Gov_effect.sc"</span>, <span class="st">"Reg_quality.sc"</span>, </span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"Rule_law.sc"</span>, <span class="st">"control_corr.sc"</span>, <span class="st">"Political_stab.sc"</span>)</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>inequality_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"gender.ineq.sc"</span>, <span class="st">"income.ineq.sc"</span>, <span class="st">"le.ineq.log.sc"</span>, </span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"ineq.score.rank"</span>, <span class="st">"hierachical.score.rank.ineq"</span>)</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>ecological_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"mean.count.grav.V2.log.sc"</span>, <span class="st">"vulnerab.score.rank"</span>, </span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"Nutritional.dependence.sc"</span>, <span class="st">"Economic.dependence.sc"</span>)</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>deprivation_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"povmap.grdi.v1.sc"</span>, <span class="st">"income.ineq.change.sc"</span>, <span class="st">"le.ineq.change.sc"</span>)</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>exposure_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"perc.pop.world.coastal.merit.10m.log.sc"</span>)</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>df_clean <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name_en, <span class="fu">all_of</span>(<span class="fu">c</span>(governance_vars, inequality_vars, ecological_vars, deprivation_vars, exposure_vars))) <span class="sc">|&gt;</span></span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">if_all</span>(<span class="fu">everything</span>(), <span class="sc">~</span> <span class="sc">!</span><span class="fu">is.na</span>(.)))</span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>df_scores <span class="ot">&lt;-</span> df_clean <span class="sc">|&gt;</span></span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(name_en) <span class="sc">|&gt;</span></span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">governance_score =</span> <span class="fu">mean</span>(<span class="fu">c_across</span>(<span class="fu">all_of</span>(governance_vars)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">inequality_score =</span> <span class="fu">mean</span>(<span class="fu">c_across</span>(<span class="fu">all_of</span>(inequality_vars)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">ecological_score =</span> <span class="fu">mean</span>(<span class="fu">c_across</span>(<span class="fu">all_of</span>(ecological_vars)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">deprivation_score =</span> <span class="fu">mean</span>(<span class="fu">c_across</span>(<span class="fu">all_of</span>(deprivation_vars)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">exposure_score =</span> <span class="fu">mean</span>(<span class="fu">c_across</span>(<span class="fu">all_of</span>(exposure_vars)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
-<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), rescale)) <span class="sc">|&gt;</span></span>
-<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">risk_score =</span> (<span class="dv">1</span> <span class="sc">-</span> governance_score) <span class="sc">+</span> inequality_score <span class="sc">+</span> ecological_score <span class="sc">+</span> exposure_score</span>
-<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>governance_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Voice_account.sc"</span>, <span class="st">"Gov_effect.sc"</span>, <span class="st">"Reg_quality.sc"</span>, </span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"Rule_law.sc"</span>, <span class="st">"control_corr.sc"</span>, <span class="st">"Political_stab.sc"</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>inequality_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"gender.ineq.sc"</span>, <span class="st">"income.ineq.sc"</span>, <span class="st">"le.ineq.log.sc"</span>, </span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"ineq.score.rank"</span>, <span class="st">"hierachical.score.rank.ineq"</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>ecological_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"mean.count.grav.V2.log.sc"</span>, <span class="st">"vulnerab.score.rank"</span>, </span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>                     <span class="st">"Nutritional.dependence.sc"</span>, <span class="st">"Economic.dependence.sc"</span>)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>deprivation_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"povmap.grdi.v1.sc"</span>, <span class="st">"income.ineq.change.sc"</span>, <span class="st">"le.ineq.change.sc"</span>)</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>exposure_vars <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"perc.pop.world.coastal.merit.10m.log.sc"</span>)</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>df_clean <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(name_en, <span class="fu">all_of</span>(<span class="fu">c</span>(governance_vars, inequality_vars, ecological_vars, deprivation_vars, exposure_vars))) <span class="sc">|&gt;</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">if_all</span>(<span class="fu">everything</span>(), <span class="sc">~</span> <span class="sc">!</span><span class="fu">is.na</span>(.)))</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>df_scores <span class="ot">&lt;-</span> df_clean <span class="sc">|&gt;</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(name_en) <span class="sc">|&gt;</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">governance_score =</span> <span class="fu">mean</span>(<span class="fu">c_across</span>(<span class="fu">all_of</span>(governance_vars)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">inequality_score =</span> <span class="fu">mean</span>(<span class="fu">c_across</span>(<span class="fu">all_of</span>(inequality_vars)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">ecological_score =</span> <span class="fu">mean</span>(<span class="fu">c_across</span>(<span class="fu">all_of</span>(ecological_vars)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">deprivation_score =</span> <span class="fu">mean</span>(<span class="fu">c_across</span>(<span class="fu">all_of</span>(deprivation_vars)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">exposure_score =</span> <span class="fu">mean</span>(<span class="fu">c_across</span>(<span class="fu">all_of</span>(exposure_vars)), <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">where</span>(is.numeric), rescale)) <span class="sc">|&gt;</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">risk_score =</span> (<span class="dv">1</span> <span class="sc">-</span> governance_score) <span class="sc">+</span> inequality_score <span class="sc">+</span> ecological_score <span class="sc">+</span> exposure_score</span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>top_risk <span class="ot">&lt;-</span> df_scores <span class="sc">|&gt;</span> <span class="fu">arrange</span>(<span class="fu">desc</span>(risk_score)) <span class="sc">|&gt;</span> <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>)</span>
@@ -332,6 +331,89 @@ Bottom 5 exposure_score countries:
 3 India                          0.000462
 4 Chile                          0.00199 
 5 Turkey                         0.00203 </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co">#outliers</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>df_scores <span class="sc">|&gt;</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(governance_score <span class="sc">&gt;</span> <span class="fl">0.8</span>, risk_score <span class="sc">&gt;</span> <span class="fl">0.7</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 8 × 7
+  name_en   governance_score inequality_score ecological_score deprivation_score
+  &lt;fct&gt;                &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;             &lt;dbl&gt;
+1 Angola               0.806            0.991           0.122              0.693
+2 Cameroon             0.813            0.996           0.111              0.621
+3 Democrat…            0.982            0.951           0.0287             0.757
+4 Guinea               0.819            0.931           0.125              0.838
+5 Iran                 0.830            0.755           0.0975             0.468
+6 Pakistan             0.820            0.936           0.110              0.644
+7 Sudan                0.979            1               0.0581             0.761
+8 Yemen                1                0.897           0.129              0.325
+# ℹ 2 more variables: exposure_score &lt;dbl&gt;, risk_score &lt;dbl&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>df_scores <span class="sc">|&gt;</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(inequality_score <span class="sc">&lt;</span> <span class="fl">0.1</span>, risk_score <span class="sc">&gt;</span> <span class="fl">0.7</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 9 × 7
+  name_en governance_score inequality_score ecological_score deprivation_score
+  &lt;fct&gt;              &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;             &lt;dbl&gt;
+1 Belgium          0.153            0.0517            0.0450             0.226
+2 Croatia          0.408            0.0869            0.110              0.539
+3 Cyprus           0.255            0.0799            0.145              0.318
+4 Denmark          0.0241           0.00971           0.112              0.330
+5 Estonia          0.186            0.0771            0.0544             0.650
+6 Finland          0.00233          0                 0.141              0.419
+7 Iceland          0.0909           0.0723            0.429              0.591
+8 Ireland          0.112            0.0845            0.103              0.636
+9 Sweden           0.0261           0.0117            0.101              0.243
+# ℹ 2 more variables: exposure_score &lt;dbl&gt;, risk_score &lt;dbl&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>df_scores <span class="sc">|&gt;</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(ecological_score <span class="sc">&lt;</span> <span class="fl">0.025</span>, risk_score <span class="sc">&gt;</span> <span class="fl">0.7</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 7 × 7
+  name_en   governance_score inequality_score ecological_score deprivation_score
+  &lt;fct&gt;                &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;             &lt;dbl&gt;
+1 Bulgaria             0.479            0.233          0                   0.405
+2 Georgia              0.440            0.405          0.00991             0.834
+3 Guatemala            0.701            0.715          0.0200              0.790
+4 Jordan               0.552            0.661          0.00576             0.436
+5 Poland               0.304            0.162          0.0135              0.373
+6 Romania              0.465            0.291          0.0131              0.686
+7 Turkey               0.603            0.561          0.0219              0.801
+# ℹ 2 more variables: exposure_score &lt;dbl&gt;, risk_score &lt;dbl&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>df_scores <span class="sc">|&gt;</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(deprivation_score <span class="sc">&lt;</span> <span class="fl">0.2</span>, risk_score <span class="sc">&gt;</span> <span class="fl">0.7</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 7
+  name_en   governance_score inequality_score ecological_score deprivation_score
+  &lt;fct&gt;                &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;             &lt;dbl&gt;
+1 Malta                0.217            0.259           0.314             0     
+2 Mauritius            0.293            0.603           0.337             0.0465
+3 United S…            0.176            0.333           0.0805            0.193 
+# ℹ 2 more variables: exposure_score &lt;dbl&gt;, risk_score &lt;dbl&gt;</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>df_scores <span class="sc">|&gt;</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(exposure_score <span class="sc">&lt;</span> <span class="fl">0.005</span>, risk_score <span class="sc">&gt;</span> <span class="fl">0.7</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 13 × 7
+   name_en  governance_score inequality_score ecological_score deprivation_score
+   &lt;fct&gt;               &lt;dbl&gt;            &lt;dbl&gt;            &lt;dbl&gt;             &lt;dbl&gt;
+ 1 Chile               0.226            0.456           0.0874             0.446
+ 2 India               0.584            0.846           0.0448             0.636
+ 3 Indones…            0.598            0.650           0.308              0.587
+ 4 Italy               0.369            0.231           0.116              0.303
+ 5 Japan               0.145            0.258           0.239              0.396
+ 6 Madagas…            0.742            0.865           0.101              0.742
+ 7 Mexico              0.607            0.636           0.0804             0.691
+ 8 Mozambi…            0.700            0.993           0.127              0.727
+ 9 Philipp…            0.614            0.542           0.355              0.631
+10 Spain               0.279            0.175           0.160              0.364
+11 Turkey              0.603            0.561           0.0219             0.801
+12 United …            0.117            0.162           0.0817             0.412
+13 United …            0.176            0.333           0.0805             0.193
+# ℹ 2 more variables: exposure_score &lt;dbl&gt;, risk_score &lt;dbl&gt;</code></pre>
 </div>
 </div>
 

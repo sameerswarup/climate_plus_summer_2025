@@ -3,40 +3,88 @@ title: "explore_vars"
 format: html
 ---
 
-```{r}
-library(dplyr)
-library(ggplot2)
-library(viridis)
-library(sf)
-library(scales)
 
-df <- readRDS("../data/df.cont.inequity.compo.coastal.scores_sr.rds") |>
+
+```{r}
+library(sf)
+library(dplyr)
+
+##CODE TO FILTER INEQUITY DATA down to only points within coastal regions 
+
+#df_points <- readRDS("C:/Users/mk616/Documents/climate_plus_summer_2025/MeganDashboard/data/df.cont.inequity.compo.coastal.scores_sr.rds") |>
   st_transform(4326)
 
+#coastal_regions <- readRDS("C:/Users/mk616/Documents/climate_plus_summer_2025/MeganDashboard/data/worldcoastalregions.rds") |>
+#  st_transform(4326) |>
+#  st_make_valid()  
+
+#df_points_coastal <- st_join(df_points, coastal_regions, left = FALSE)
+
+#saveRDS(df_points_coastal, "C:/Users/mk616/Documents/climate_plus_summer_2025/MeganDashboard/data/df_points_within_coastal_regions.rds")
+
+#cat("retained within coastal regions:", nrow(df_points_coastal), "\n")
+
+```
+
+```{r}
+#DO NOT RUN THIS AGAIN
+#loads all the datasets and saves into a file
+
+#iso_list <- unique(ne_countries(returnclass = "sf")$iso_a3)
+#coastline <- ne_download(scale = "medium", type = "coastline", category = "physical", returnclass = "sf")
+#coastline_proj <- st_transform(coastline, 3857)
+#coastal_buffer <- st_buffer(st_union(coastline_proj), dist = 5000)
+#coastal_regions_list <- list()
+
+#for (iso in iso_list) {
+#  try({
+#    gadm2 <- gadm(iso, level = 2, path = "gadm_cache") |> 
+#             st_as_sf() |> st_transform(3857)
+#    coastal <- gadm2[st_intersects(gadm2, coastal_buffer, sparse = FALSE), ]
+#    if (nrow(coastal) > 0) {
+#      coastal$iso_a3 <- iso
+#      coastal_regions_list[[iso]] <- coastal
+#    }
+#  }, silent = TRUE)
+#}
+
+#global_coastal_gadm2 <- do.call(rbind, coastal_regions_list) |> st_transform(4326)
+#saveRDS(global_coastal_gadm2, "global_gadm_level2_coastal_5km.rds")
+#plot(st_geometry(global_coastal_gadm2), col = "lightblue", border = "gray", main = "Global Coastal Level 2 Regions (within 5km)")
+
+##dataset has been renamed to worldcoastalregions.rds
+```
+
+```{r}
+library(sf)
+library(leaflet)
+library(dplyr)
+
+##Checking out the regions just for the US
+
+global_coastal_gadm2 <- readRDS("C:/Users/mk616/Documents/climate_plus_summer_2025/MeganDashboard/data/worldcoastalregions.rds")
+us_coastal_regions <- global_coastal_gadm2 %>% filter(iso_a3 == "USA")
+
+#making the map
+leaflet(us_coastal_regions) %>%
+  addTiles() %>%
+  addPolygons(
+    fillColor = "skyblue",
+    fillOpacity = 0.6,
+    color = "darkblue",
+    weight = 0.5,
+    popup = ~paste(NAME_2, ", ", NAME_1)
+  ) %>%
+  setView(lng = -95, lat = 37.5, zoom = 4)
 ```
 
 ```{r}
 
-df_no_geom <- st_drop_geometry(df)
-df_numeric <- df_no_geom |> select(where(is.numeric))
-df_clean_pca <- df_numeric[complete.cases(df_numeric), ]
-
-pca <- prcomp(df_clean_pca, scale. = TRUE)
-df_pca <- as.data.frame(pca$x)
-
-df_pca$var_of_interest <- df_clean_pca$Gov_effect.sc
-
-ggplot(df_pca, aes(x = PC1, y = PC2, color = var_of_interest)) +
-  geom_point(alpha = 0.6) +
-  scale_color_viridis_c() +
-  labs(title = "PCA Colored by Government Effectiveness", color = "Gov_effect.sc") +
-  theme_minimal()
 
 ```
 
 
 ```{r}
-# Variable group definitions
 governance_vars <- c("Voice_account.sc", "Gov_effect.sc", "Reg_quality.sc", 
                      "Rule_law.sc", "control_corr.sc", "Political_stab.sc")
 
@@ -102,4 +150,22 @@ for (v in score_vars) {
   print_top_bottom(df_scores, v)
 }
 
+```
+
+```{r}
+#outliers
+df_scores |>
+  filter(governance_score > 0.8, risk_score > 0.7) 
+
+df_scores |>
+  filter(inequality_score < 0.1, risk_score > 0.7)
+
+df_scores |>
+  filter(ecological_score < 0.025, risk_score > 0.7) 
+
+df_scores |>
+  filter(deprivation_score < 0.2, risk_score > 0.7) 
+
+df_scores |>
+  filter(exposure_score < 0.005, risk_score > 0.7) 
 ```
