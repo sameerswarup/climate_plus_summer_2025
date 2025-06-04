@@ -1,5 +1,0 @@
----
-title: "GPW_exploring"
-format: html
----
-

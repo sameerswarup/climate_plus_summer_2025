@@ -1,0 +1,49 @@
+---
+title: "GPW_reformatting"
+format: html
+---
+
+<!-- ```{r} -->
+<!-- library(data.table) -->
+
+<!-- # Use full absolute paths -->
+<!-- input_folder <- "path to GPW_v4_Data folder goes here" -->
+<!-- output_file <- "path to gpw_all_countries.rds goes here" -->
+
+<!-- dir.create(dirname(output_file), recursive = TRUE, showWarnings = FALSE) -->
+
+<!-- # Columns to keep -->
+<!-- keep_cols <- c( -->
+<!--   "CENTROID_X", "CENTROID_Y", -->
+<!--   "UN_2000_E", "UN_2005_E", "UN_2010_E", "UN_2015_E", "UN_2020_E", -->
+<!--   "UN_2000_DS", "UN_2005_DS", "UN_2010_DS", "UN_2015_DS", "UN_2020_DS" -->
+<!-- ) -->
+
+<!-- # Read and combine -->
+<!-- csv_files <- list.files(input_folder, pattern = "\\.csv$", full.names = TRUE) -->
+
+<!-- all_gpw <- rbindlist( -->
+<!--   lapply(csv_files, function(file) { -->
+<!--     message("Reading: ", file) -->
+
+<!--     dt <- tryCatch({ -->
+<!--       fread(file)[, ..keep_cols] -->
+<!--     }, error = function(e) { -->
+<!--       message(sprintf("Skipping file %s due to error: %s", file, e$message)) -->
+<!--       return(NULL) -->
+<!--     }) -->
+
+<!--     if (!is.null(dt)) { -->
+<!--       country_code <- gsub("^.*_([a-z]{3})\\.csv$", "\\1", tolower(basename(file))) -->
+<!--       dt[, country := toupper(country_code)] -->
+<!--     } -->
+
+<!--     return(dt) -->
+<!--   }), -->
+<!--   fill = TRUE -->
+<!-- ) -->
+
+<!-- setnames(all_gpw, old = c("CENTROID_X", "CENTROID_Y"), new = c("lon", "lat"), skip_absent = TRUE) -->
+<!-- saveRDS(all_gpw, file = output_file) -->
+
+<!-- ``` -->
