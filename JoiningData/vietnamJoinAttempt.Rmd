@@ -1,0 +1,142 @@
+---
+title: "Vietnam Join Attempt"
+author: "Ethan Cho"
+date: "2025-06-02"
+output: html_document
+---
+
+
+Load Libraries
+
+```{r setup, include=FALSE}
+library(readxl)
+library(shiny)
+library(dplyr)
+library(ggplot2)
+library(leaflet)
+library(sf)
+library(rnaturalearth)
+library(scales)
+library(DT)
+library(tidyr)
+```
+
+Read GPW data, this is already filtered by Leonard.
+
+```{r}
+csv_folder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/LeonardEDA/Filtered_Files"
+csv_files <- list.files(path = csv_folder, pattern = "\\.csv$", full.names = TRUE)
+gpw <- rbindlist(lapply(csv_files, fread), use.names = TRUE, fill = TRUE)
+gpw <- st_as_sf(gpw,
+                      coords = c("CENTROID_X", "CENTROID_Y"),
+                      crs = 4326)
+
+```
+
+Read LECZ data, raw combined data.
+
+```{r}
+lecz <- read_excel("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Coastal Climate Vulnerability/LECZ_Data/lecz-v3.xlsm", sheet = "Raw-Combined-Data")
+
+```
+
+Read inequity dataset data, RDS file.
+
+```{r}
+inequity <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/EthanDashboardCopy/shiny_app copy/data copy/df.cont.inequity.compo.coastal.scores_sr.rds") %>%
+    st_transform(4326)
+```
+
+Filter so it's only data for Vietnam.
+```{r}
+lecz_vnm <- filter(lecz, ISO3 == "VNM")
+gpw_vnm <- filter(gpw, ISOALPHA == "VNM")
+gpw_vnm_2020 <- select(gpw_vnm, "ISOALPHA", "COUNTRYNM", 
+                              "NAME1", "NAME2", "NAME3", "NAME4",
+                              "NAME5", "NAME6", 
+                              "UN_2020_E")
+
+inequity_vnm <- filter(inequity, iso_a3 == "VNM") 
+
+```
+
+lecz_vnm has 384 observations/locations. 
+gpw_vnm has 61 observations/locations. 
+inequity_vnm has 10592 observations/locations.
+
+We can try mapping them out, at least for GPW and inequity data.
+
+First map out GPW data for Vietnam. This is specifically for UN_2020_E
+
+```{r}
+
+gpw_vnm_sf <- st_as_sf(gpw_vnm, 
+                       coords = c("CENTROID_X", "CENTROID_Y"),
+                       crs = 4326)
+
+ggplot(gpw_vnm_sf) +
+  geom_sf(data = world, fill = "#ADD8E6", color = "white") +
+  geom_sf(aes(color = UN_2020_E)) +
+  coord_sf(xlim = c(102, 110), ylim = c(8, 24), expand = FALSE) +
+  scale_color_viridis_c() +
+  theme_minimal() + 
+  ggtitle("Vietnam Admin Units (UN_2020_E)")
+
+```
+Next we can map out the inequity data. Since there are multiple variables, let's only do it only for the coastal ones, so that would be the perc.pop.world.coastal.merit.10m.log.sc variable. 
+
+Definition: Percentage of the total population that lives below 10 m.
+
+Estimates the proportion of coastal populations globally that are vulnerable to sea level rise by calculating the share of population located within 10 meters of elevation and 100 km from the coastline. The data is derived from the Gridded Population of the World v4 (GPWv4) and processed into a coastal raster with 5 km resolution. The final value is log-transformed to reduce skew and better represent relative differences across regions.
+
+```{r}
+
+inequity_vnm_perc <- dplyr::select(inequity_vnm, "name_en", "iso_a3", "perc.pop.world.coastal.merit.10m.log.sc")
+
+inequity_vnm_perc <- filter(inequity_vnm_perc, perc.pop.world.coastal.merit.10m.log.sc > 0)
+
+print(inequity_vnm_perc)
+
+```
+
+Now it's only filtered so that it has the name, ISO code, perc variable, and geometry. This should also only be the coastal areas as outlined by the definition of the variable (within 10m elevation and 100 km distance from coast). Let's map it out!
+
+```{r}
+ggplot(inequity_vnm_perc) +
+  geom_sf(data = world, fill = "#ADD8E6", color = "white") +
+  geom_sf(aes(color = perc.pop.world.coastal.merit.10m.log.sc)) +
+  scale_color_viridis_c() +
+  coord_sf(xlim = c(102, 110), ylim = c(8, 24), expand = FALSE) +
+  theme_minimal() +
+  ggtitle("Inequity Vietnam (Coastal)")
+```
+Let's also look at the LECZ data, specifically for the GPW stuff.
+```{r}
+
+lecz_vnm_select <- select(lecz_vnm, "ISO3", "Country", "LECZ Description Filter", "LECZ Description", "Year Filter",
+                       "Year", "GPW411", "LandArea", "MeanAdminArea-GPW411")
+print(lecz_vnm_select)
+
+```
+
+And then only look at the GPW411 columns.
+
+```{r}
+
+lecz_vnm_GPW <- lecz_vnm %>%
+  select("Year", "GPW411") %>%
+  filter(Year == "2000")
+
+print(lecz_vnm_GPW)
+
+```
+
+```{r}
+
+gpw_vnm_2000 <- select(gpw_vnm, "ISOALPHA", "TOTAL_A_KM",
+                              "UN_2000_E", "UN_2000_DS")
+
+print(gpw_vnm_2000)
+
+```
+
