@@ -1,0 +1,96 @@
+---
+title: "Join_By_Coordinates"
+format: html
+---
+
+```{r}
+library(sf)
+library(dplyr)
+library(ggplot2)
+library(maps)
+library(sf)
+library(dplyr)
+library(leaflet)
+library(raster)
+library(data.table)
+```
+
+
+```{r}
+inequity_df = readRDS("../Data/Previous_combined_data/df.cont.inequity.compo.coastal.scores_sr.rds")
+# gpw_df = read.csv("gpw_v4_admin_unit_center_points_population_estimates_rev11_global_FILTERED.csv")
+
+csv_folder <- "../LeonardEDA/Filtered_Files"
+csv_files <- list.files(path = csv_folder, pattern = "\\.csv$", full.names = TRUE)
+gpw <- rbindlist(lapply(csv_files, fread), use.names = TRUE, fill = TRUE)
+gpw <- st_as_sf(gpw,
+                      coords = c("CENTROID_X", "CENTROID_Y"),
+                      crs = 4326)
+
+# Convert dataframes to sf POINTs
+sf1 <- st_as_sf(inequity_df, coords = "geometry", crs = 4326)
+sf2 <- st_as_sf(gpw, coords = c("CENTROID_X", "CENTROID_Y"), crs = 4326)
+
+
+```
+
+
+```{r}
+# Perform a spatial join using st_join with a buffer (e.g. 1 km)
+sf1 <- st_transform(sf1, 3857)  # project to meters
+sf2 <- st_transform(sf2, 3857)
+
+buffered_sf2 <- st_buffer(sf2, dist = 1000)  
+
+joined <- st_join(buffered_sf2, sf1, join = st_intersects)
+
+joined <- st_transform(joined, 4326)
+
+```
+
+
+```{r}
+
+joined_nogeo <- st_drop_geometry(joined)
+
+common_cols <- intersect(names(gpw), names(joined_nogeo))
+
+gpw_and_joined <- left_join(gpw, joined_nogeo, by = common_cols)
+
+
+
+```
+
+```{r}
+
+gpw_and_joined_new <- gpw_and_joined%>%
+  filter(! is.na(hierachical.score.rank.ineq) ) %>%
+  filter(! is.na(ineq.score.rank)) %>%
+  filter(! is.na(gov.score.rank))
+
+```
+
+
+AVERAGING THE SCORES OF EACH GEOMETRIC COORDINATE
+
+```{r}
+
+gpw_and_joined_final <- gpw_and_joined_new |>
+  group_by(geometry)|>
+  summarise(across(where(is.numeric), mean, na.rm = TRUE), .groups = "drop")
+
+
+```
+
+
+```{r}
+gpw_and_joined$geom_id <- st_as_text(st_set_precision(gpw_and_joined$geometry, 1e4))
+
+# 2. Group by this hash instead of the full geometry object
+gpw_summary <- gpw_and_joined %>%
+  group_by(geom_id) %>%
+  summarise(across(where(is.character), ~ first(.x), .names = "{.col}"),
+            across(where(is.numeric), mean, na.rm = TRUE), 
+            .groups = "drop")
+```
+

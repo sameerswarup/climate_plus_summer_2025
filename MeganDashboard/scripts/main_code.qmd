@@ -1,0 +1,238 @@
+---
+title: "explore_vars"
+format: html
+---
+
+
+```{r}
+
+
+```
+
+```{r}
+library(sf)
+library(dplyr)
+
+##CODE TO FILTER INEQUITY DATA down to only points within coastal regions 
+
+#df_points <- readRDS("C:/Users/mk616/Documents/climate_plus_summer_2025/MeganDashboard/data/df.cont.inequity.compo.coastal.scores_sr.rds") |>
+ # st_transform(4326)
+
+#coastal_regions <- readRDS("C:/Users/mk616/Documents/climate_plus_summer_2025/MeganDashboard/data/worldcoastalregions.rds") |>
+#  st_transform(4326) |>
+#  st_make_valid()  
+
+#df_points_coastal <- st_join(df_points, coastal_regions, left = FALSE)
+
+#saveRDS(df_points_coastal, "C:/Users/mk616/Documents/climate_plus_summer_2025/MeganDashboard/data/df_points_within_coastal_regions.rds")
+
+#cat("retained within coastal regions:", nrow(df_points_coastal), "\n")
+
+```
+
+```{r}
+#DO NOT RUN THIS AGAIN
+#loads all the datasets and saves into a file
+
+#iso_list <- unique(ne_countries(returnclass = "sf")$iso_a3)
+#coastline <- ne_download(scale = "medium", type = "coastline", category = "physical", returnclass = "sf")
+#coastline_proj <- st_transform(coastline, 3857)
+#coastal_buffer <- st_buffer(st_union(coastline_proj), dist = 5000)
+#coastal_regions_list <- list()
+
+#for (iso in iso_list) {
+#  try({
+#    gadm2 <- gadm(iso, level = 2, path = "gadm_cache") |> 
+#             st_as_sf() |> st_transform(3857)
+#    coastal <- gadm2[st_intersects(gadm2, coastal_buffer, sparse = FALSE), ]
+#    if (nrow(coastal) > 0) {
+#      coastal$iso_a3 <- iso
+#      coastal_regions_list[[iso]] <- coastal
+#    }
+#  }, silent = TRUE)
+#}
+
+#global_coastal_gadm2 <- do.call(rbind, coastal_regions_list) |> st_transform(4326)
+#saveRDS(global_coastal_gadm2, "global_gadm_level2_coastal_5km.rds")
+#plot(st_geometry(global_coastal_gadm2), col = "lightblue", border = "gray", main = "Global Coastal Level 2 Regions (within 5km)")
+
+##dataset has been renamed to worldcoastalregions.rds
+```
+
+```{r}
+library(sf)
+library(leaflet)
+library(dplyr)
+
+##read dataset of regions
+global_coastal_gadm2 <- readRDS(".../MeganDashboard/data/worldcoastalregions.rds")
+
+##filter by country if you want
+us_coastal_regions <- global_coastal_gadm2 |> filter(iso_a3 == "USA")
+
+##read joined dataset and filter by country
+gpw_inequity_average <- readRDS(".../MeganDashboard/data/gpw_inequity_average.rds")
+
+gpw_inequity_average <- st_transform(gpw_inequity_average, st_crs(us_coastal_regions))
+gpw_us_points <- gpw_inequity_average[st_intersects(gpw_inequity_average, us_coastal_regions, sparse = FALSE) |> apply(1, any), ]
+
+##read inequity dataset. this is the one i filtered for only points in coastal districts
+inequity_compo_within <- readRDS("C:/Users/mk616/Documents/climate_plus_summer_2025/MeganDashboard/data/inequity.compo_within_coastal_region.rds")
+
+##filter by country
+gpw_inequity_average <- st_transform(gpw_inequity_average, st_crs(us_coastal_regions))
+inequity_compo_within <- st_transform(inequity_compo_within, st_crs(us_coastal_regions))
+
+##read gpw data
+just_gpw_raw <- read.csv("C:/Users/mk616/Documents/climate_plus_summer_2025/MeganDashboard/data/just_gpw.csv")
+
+##filter gpw by country
+just_gpw <- st_as_sf(just_gpw_raw, coords = c("INSIDE_X", "INSIDE_Y"), crs = 4326)
+just_gpw <- st_transform(just_gpw, st_crs(us_coastal_regions))
+just_gpw_us <- just_gpw[st_intersects(just_gpw, us_coastal_regions, sparse = FALSE) |> apply(1, any), ]
+
+#finish filtering datasets by country
+gpw_us_points <- gpw_inequity_average[st_intersects(gpw_inequity_average, us_coastal_regions, sparse = FALSE) |> apply(1, any), ]
+inequity_us_points <- inequity_compo_within[st_intersects(inequity_compo_within, us_coastal_regions, sparse = FALSE) |> apply(1, any), ]
+
+
+```
+```{r}
+
+
+##creating the leaflet map
+
+leaflet(us_coastal_regions) |>
+  addTiles() |>
+  addPolygons(
+    fillColor = "skyblue",
+    fillOpacity = 0.6,
+    color = "darkblue",
+    weight = 0.5,
+    popup = ~paste(NAME_2, ", ", NAME_1)
+  ) |>
+  addCircleMarkers(
+    data = gpw_us_points,
+    radius = 1,
+    color = "red",
+    stroke = FALSE,
+    fillOpacity = 0.6,
+    group = "GPW and Inequity Average"
+  ) |>
+  addCircleMarkers(
+    data = inequity_us_points,
+    radius = 1,
+    color = "purple",
+    stroke = FALSE,
+    fillOpacity = 0.6,
+    group = "Inequity Compo"
+  ) |>
+  addCircleMarkers(
+    data = just_gpw_us,
+    radius = 1,
+    color = "green",
+    stroke = FALSE,
+    fillOpacity = 0.6,
+    group = "Just GPW"
+  ) |>
+  addLayersControl(
+    overlayGroups = c("GPW and Inequity Average", "Inequity Compo", "Just GPW"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) |>
+  setView(lng = -95, lat = 37.5, zoom = 4)
+
+```
+
+
+```{r}
+
+
+##Creating divisions based on EDA
+
+governance_vars <- c("Voice_account.sc", "Gov_effect.sc", "Reg_quality.sc", 
+                     "Rule_law.sc", "control_corr.sc", "Political_stab.sc")
+
+inequality_vars <- c("gender.ineq.sc", "income.ineq.sc", "le.ineq.log.sc", 
+                     "ineq.score.rank", "hierachical.score.rank.ineq")
+
+ecological_vars <- c("mean.count.grav.V2.log.sc", "vulnerab.score.rank", 
+                     "Nutritional.dependence.sc", "Economic.dependence.sc")
+
+deprivation_vars <- c("povmap.grdi.v1.sc", "income.ineq.change.sc", "le.ineq.change.sc")
+
+exposure_vars <- c("perc.pop.world.coastal.merit.10m.log.sc")
+
+df_clean <- df |>
+  st_drop_geometry() |>
+  select(name_en, all_of(c(governance_vars, inequality_vars, ecological_vars, deprivation_vars, exposure_vars))) |>
+  filter(if_all(everything(), ~ !is.na(.)))
+
+df_scores <- df_clean |>
+  group_by(name_en) |>
+  summarise(
+    governance_score = mean(c_across(all_of(governance_vars)), na.rm = TRUE),
+    inequality_score = mean(c_across(all_of(inequality_vars)), na.rm = TRUE),
+    ecological_score = mean(c_across(all_of(ecological_vars)), na.rm = TRUE),
+    deprivation_score = mean(c_across(all_of(deprivation_vars)), na.rm = TRUE),
+    exposure_score = mean(c_across(all_of(exposure_vars)), na.rm = TRUE)
+  ) |>
+  ungroup() |>
+  mutate(across(where(is.numeric), rescale)) |>
+  mutate(
+    risk_score = (1 - governance_score) + inequality_score + ecological_score + exposure_score
+  )
+
+```
+
+```{r}
+
+
+## Idenifying high risk areas
+
+top_risk <- df_scores |> arrange(desc(risk_score)) |> slice_head(n = 10)
+low_risk <- df_scores |> arrange(risk_score) |> slice_head(n = 10)
+
+cat("Highest risk:\n")
+print(top_risk$name_en)
+
+cat("\nLwest Risk:\n")
+print(low_risk$name_en)
+
+```
+```{r}
+
+print_top_bottom <- function(df, var, n = 5) {
+  top <- df |> arrange(desc(.data[[var]])) |> slice_head(n = n)
+  bottom <- df |> arrange(.data[[var]]) |> slice_head(n = n)
+
+  cat("Top", n, var, "countries:\n")
+  print(top |> select(name_en, !!sym(var)))
+  cat("\nBottom", n, var, "countries:\n")
+  print(bottom |> select(name_en, !!sym(var)))
+}
+
+score_vars <- c("governance_score", "inequality_score", "ecological_score", "deprivation_score", "exposure_score")
+
+for (v in score_vars) {
+  print_top_bottom(df_scores, v)
+}
+
+```
+
+```{r}
+#outliers
+df_scores |>
+  filter(governance_score > 0.8, risk_score > 0.7) 
+
+df_scores |>
+  filter(inequality_score < 0.1, risk_score > 0.7)
+
+df_scores |>
+  filter(ecological_score < 0.025, risk_score > 0.7) 
+
+df_scores |>
+  filter(deprivation_score < 0.2, risk_score > 0.7) 
+
+df_scores |>
+  filter(exposure_score < 0.005, risk_score > 0.7) 
+```
