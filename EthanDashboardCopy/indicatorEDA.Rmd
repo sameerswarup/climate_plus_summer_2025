@@ -1,0 +1,121 @@
+---
+title: "indicatorEDA"
+output: html_document
+date: "2025-06-05"
+---
+
+```{r setup, include=FALSE}
+
+library(dplyr)
+library(shiny)
+library(leaflet)
+library(dplyr)
+library(sf)
+library(rnaturalearth)
+library(bslib)
+library(bsicons)
+library(ggplot2)
+library(plotly)
+library(data.table)
+library(corrplot)
+
+average <- readRDS("/Users/student/Desktop/EthanDashboardCopy copy/custom_graph_app/data copy/gpw_inequity_average copy.rds") %>%
+  st_transform(4326)
+average_nogeo <- st_drop_geometry(average)
+
+
+```
+
+Filter it by the four we want.
+
+
+```{r}
+
+selected_vars <- average_nogeo[, c("distance_to_coast_km", 
+                               "mean.count.grav.V2.log.sc",
+                               "povmap.grdi.v1.sc",
+                               "perc.pop.world.coastal.merit.10m.log.sc")]
+cor_matrix <- cor(selected_vars, use = "complete.obs")
+corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8, 
+         title = "Correlation Matrix for World")
+
+print(cor_matrix)
+
+
+```
+
+Make the graphs for the national level ones.
+
+```{r}
+
+average_country_nogeo <- average_nogeo |>
+  group_by(ISOALPHA) |>
+  summarize (
+    COUNTRYNM = first(COUNTRYNM),
+    across(99:119, ~mean(.x, na.rm = TRUE))
+  )
+
+cols <- colnames(average_country_nogeo)
+cols_to_remove <- c("vulnerab.score.rank", "gov.score.rank", "ineq.score.rank", "hierachical.score.rank.ineq")
+
+average_country_nogeo <- average_country_nogeo %>% select(-all_of(cols_to_remove))
+
+
+```
+
+Let's make some histograms.
+
+```{r}
+
+cols <- names(average_country_nogeo)
+
+for (col in cols) {
+  if (is.numeric(average_country_nogeo[[col]])) {
+    hist(average_country_nogeo[[col]],
+         xlab = col,
+         main = paste0("Histogram of ", col))
+  }
+}
+
+
+```
+
+Let's make some plots for the important ones.
+
+```{r}
+
+for (col1 in cols) {
+  for (col2 in cols) {
+    if (col1 == col2) next
+    if (is.numeric(average_country_nogeo[[col1]]) && is.numeric(average_country_nogeo[[col2]])) {
+      
+      spr_corr = cor(average_country_nogeo[[col1]], average_country_nogeo[[col2]], method = "spearman")
+      pear_corr = cor(average_country_nogeo[[col1]], average_country_nogeo[[col2]], method = "pearson")
+      spr_abs = abs(spr_corr)
+      pear_abs = abs(pear_corr)
+    
+      if(! is.na(spr_abs) && ! is.na(pear_abs)) {
+        if((spr_corr > 0.6 && spr_corr != 1) || (pear_corr >0.6 && pear_corr != 1)) {
+                  filename <- paste0("plot_", gsub("[^a-zA-Z0-9]", "_", col1), "_vs_", gsub("[^a-zA-Z0-9]", "_", col2), ".png")
+
+          
+                          png(filename, width = 800, height = 600)
+
+          spr_corr = round(spr_corr, 4)
+          pear_corr = round(pear_corr, 4)
+          plot(average_country_nogeo[[col1]], average_country_nogeo[[col2]],
+               xlab = col1,
+               ylab = col2,
+               main = paste0("Spearman: ", spr_corr, " Pearson: ", pear_corr))
+          
+          dev.off()
+          }
+      }
+        
+    }
+    
+  }
+}
+
+```
+
