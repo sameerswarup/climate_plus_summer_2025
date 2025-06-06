@@ -1,0 +1,188 @@
+---
+title: "averageGPWinequityDataEDA"
+output: html_document
+date: "2025-06-03"
+---
+```{r}
+library(dplyr)
+library(shiny)
+library(leaflet)
+library(dplyr)
+library(sf)
+library(rnaturalearth)
+library(bslib)
+library(bsicons)
+library(ggplot2)
+library(plotly)
+library(data.table)
+library(corrplot)
+
+```
+
+Load average data and the bounding boxes dataset.
+
+```{r}
+# NEW DATA EDA
+
+average <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/gpw_inequity_average.rds") %>%
+  st_transform(4326)
+
+bounding_boxes <- do.call(rbind, lapply(1:nrow(world), function(i) {
+  bb <- st_bbox(world[i, ])
+  data.frame(
+    name = world$admin[i],
+    xmin = bb["xmin"],
+    ymin = bb["ymin"],
+    xmax = bb["xmax"],
+    ymax = bb["ymax"]
+  )
+}))
+```
+
+Let's look into Japan:
+
+```{r}
+
+jpn <- filter(average, ISOALPHA == "JPN")
+ggplot(jpn) +
+  ggtitle(label = "Japan Points Distribution") +
+  geom_sf(data = world, fill = "#ADD8E6", color = "white") +
+  geom_sf() +
+  coord_sf(xlim = c(129.4085, 145.5431), ylim = c(31.02958, 45.55148), expand = FALSE) +
+  theme_minimal()
+```
+
+Let's look into potential correlations between data.
+
+```{r}
+jpn_nogeo <- st_drop_geometry(jpn)
+selected_vars <- jpn_nogeo[, 100:120]
+cor_matrix <- cor(selected_vars, use = "complete.obs")
+```
+
+This checks to see which variables are the same across the entire country
+
+```{r}
+zero_var_cols <- sapply(selected_vars, function(x) sd(x, na.rm = TRUE) == 0) 
+zero_var_cols
+```
+Looks like the only ones we CAN use in the correlation matrix are:
+- distance_to_coast_km
+- mean.count.grav.V2.log.sc 
+- povmap.grdi.v1.sc
+- perc.pop.world.coastal.merit.10m.log.sc
+- vulnerab.score.rank
+- hierachical.score.rank.ineq 
+
+```{r}
+selected_vars <- jpn_nogeo[, c("distance_to_coast_km", 
+                               "mean.count.grav.V2.log.sc",
+                               "povmap.grdi.v1.sc",
+                               "perc.pop.world.coastal.merit.10m.log.sc")]
+cor_matrix <- cor(selected_vars, use = "complete.obs")
+corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8, 
+         title = "Correlation Matrix for Japan")
+```
+```{r}
+print(cor_matrix)
+```
+Looks like the ones that are actually interesting are:
+- povmap.grdi.v1.sc & perc.pop.world.coastal.merit.10m.log.sc (-0.75261687)
+
+Let's try graphing some.
+
+```{r}
+
+variables <- c("vulnerab.score.rank", "hierachical.score.rank.ineq", "povmap.grdi.v1.sc", "perc.pop.world.coastal.merit.10m.log.sc")
+
+```
+
+This accidentally ended up being for the whole entire world
+```{r}
+plot(df$povmap.grdi.v1.sc, df$perc.pop.world.coastal.merit.10m.log.sc)
+```
+```{r}
+average_nogeo <- st_drop_geometry(average)
+selected_vars <- average_nogeo[, c("distance_to_coast_km", 
+                               "mean.count.grav.V2.log.sc",
+                               "povmap.grdi.v1.sc",
+                               "perc.pop.world.coastal.merit.10m.log.sc")]
+cor_matrix <- cor(selected_vars, use = "complete.obs")
+corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8, 
+         title = "Correlation Matrix for World")
+
+```
+```{r}
+average_nogeo <- st_drop_geometry(average)
+selected_vars <- average_nogeo[, c("vulnerab.score.rank", "hierachical.score.rank.ineq", "gov.score.rank", "ineq.score.rank" )]
+cor_matrix <- cor(selected_vars, use = "complete.obs")
+corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8, 
+         title = "Correlation Matrix for World")
+```
+
+```{r}
+print(cor_matrix)
+```
+
+
+
+```{r}
+for (x_var in variables) {
+  for (y_var in variables) {
+    plot(df[[x_var]], df[[y_var]],
+         xlab = x_var,
+         ylab = y_var,
+         main = paste(x_var, "vs", y_var))
+  }
+}
+```
+This one can actually be just for Japan:
+
+```{r}
+for (x_var in variables) {
+  for (y_var in variables) {
+    plot(jpn[[x_var]], jpn[[y_var]],
+         xlab = x_var,
+         ylab = y_var,
+         main = paste(x_var, "vs", y_var))
+  }
+}
+```
+
+Let's try for Australia.
+
+```{r}
+aus <- filter(average, ISOALPHA == "AUS")
+ggplot(aus) +
+  ggtitle(label = "Australia Points Distribution") +
+  geom_sf(data = world, fill = "#ADD8E6", color = "white") +
+  geom_sf() +
+  coord_sf(xlim = c(113.33895308, 153.569469), ylim = c(-43.6345973, -10.6681857), expand = FALSE) +
+  theme_minimal()
+```
+```{r}
+aus_nogeo <- st_drop_geometry(aus)
+selected_vars <- aus_nogeo[, c("distance_to_coast_km", 
+                               "mean.count.grav.V2.log.sc",
+                               "povmap.grdi.v1.sc",
+                               "perc.pop.world.coastal.merit.10m.log.sc")]
+cor_matrix <- cor(selected_vars, use = "complete.obs")
+corrplot(cor_matrix, method = "color", type = "upper", tl.cex = 0.8, 
+         title = "Correlation Matrix for Australia")
+```
+```{r}
+print(cor_matrix)
+
+```
+
+The one that stands out the most is povmap.grdi.v1.sc vs. perc.pop.world.coastal.merit.10m.log.sc
+
+```{r}
+
+plot(aus$perc.pop.world.coastal.merit.10m.log.sc, aus$povmap.grdi.v1.sc)
+
+```
+
+Relative Deprivation Index (povmap.grdi.v1.sc): Relative levels of multidimensional deprivation and poverty based on local socio-economic and demographic conditions. 
+
+Climate Vulnerability (perc.pop.world.coastal.merit.10m.log.sc): Percentage of the total population that lives below 10 m.

@@ -1,0 +1,208 @@
+---
+title: "newGPWEDA"
+output: html_document
+date: "2025-06-06"
+---
+
+```{r setup, include=FALSE}
+
+library(dplyr)
+library(shiny)
+library(leaflet)
+library(dplyr)
+library(sf)
+library(rnaturalearth)
+library(bslib)
+library(bsicons)
+library(ggplot2)
+library(plotly)
+library(data.table)
+library(corrplot)
+
+new_gpw = readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/gpw_filtered5k.rds")
+new_gpw <- new_gpw %>%
+  select(COUNTRY, ISOALPHA, everything())
+
+```
+
+Look for missing countries (there are more but here are some):
+- Greenland (0) --> MISSING --> 100
+- Norway (0) --> MISSING --> 430
+- Svalbard (0) --> MISSING --> 1
+- Libya (0) --> MISSING --> 22
+- Qatar (0) --> MISSING --> 90
+- Puerto Rico (0) --> MISSING --> 76112
+- Kuwait (0) --> MISSING --> 6
+- Tonga (0) --> MISSING --> 5
+
+- U.S.A (794787) --> (794787 / 950831)
+- Cuba (93)
+- Saudi Arabia (26)
+- DPRK (55)
+- Egypt (103)
+- Eritrea (2)
+- Burma (129)
+- Angola (22)
+- Taiwan (342)
+- UAE (5)
+- Gabon (9)
+- Sudan (6)
+- Timor-Leste (211)
+- Guyana (57)
+
+```{r}
+
+greenland <- new_gpw %>%
+  filter(ISOALPHA == "GRL")
+norway <- new_gpw %>%
+  filter(ISOALPHA == "NOR")
+cuba <- new_gpw %>%
+  filter(ISOALPHA == "CUB")
+svalbard <- new_gpw %>%
+  filter(ISOALPHA == "SJM")
+usa <- new_gpw %>%
+  filter(ISOALPHA == "USA")
+saudi <- new_gpw %>%
+  filter(ISOALPHA == "SAU")
+dprk <- new_gpw %>%
+  filter(ISOALPHA == "PRK")
+egypt <- new_gpw %>%
+  filter(ISOALPHA == "EGY")
+eritrea <- new_gpw %>%
+  filter(ISOALPHA == "ERI")
+burma <- new_gpw %>%
+  filter(ISOALPHA == "MMR")
+libya <- new_gpw %>%
+  filter(ISOALPHA == "LBY")
+angola <- new_gpw %>%
+  filter(ISOALPHA == "AGO")
+taiwan <- new_gpw %>%
+  filter(ISOALPHA == "TWN")
+uae <- new_gpw %>%
+  filter(ISOALPHA == "ARE")
+gabon <- new_gpw %>%
+  filter(ISOALPHA == "GAB")
+sudan <- new_gpw %>%
+  filter(ISOALPHA == "SDN")
+timor_leste <- new_gpw %>%
+  filter(ISOALPHA == "TLS")
+qatar <- new_gpw %>%
+  filter(ISOALPHA == "QAT")
+puerto <- new_gpw %>%
+  filter(ISOALPHA == "PRI")
+kuwait <- new_gpw %>%
+  filter(ISOALPHA == "KWT")
+guyana <- new_gpw %>%
+  filter(ISOALPHA == "GUY")
+tonga <- new_gpw %>%
+  filter(ISOALPHA == "TON")
+
+```
+
+Let's try mapping out some of the ones that have a lot of points.
+
+```{r}
+bounding_boxes <- do.call(rbind, lapply(1:nrow(world), function(i) {
+  bb <- st_bbox(world[i, ])
+  data.frame(
+    name = world$admin[i],
+    xmin = bb["xmin"],
+    ymin = bb["ymin"],
+    xmax = bb["xmax"],
+    ymax = bb["ymax"]
+  )
+}))
+```
+
+
+```{r}
+
+ggplot(taiwan) + 
+  geom_sf(data = world, fill = "#ADD8E6", color = "white") +
+  geom_sf() +
+  coord_sf(xlim = c(120.1062, 121.9512), ylim = c(21.97057, 25.29546), expand = FALSE)
+
+```
+```{r}
+original_taiwan <- read.csv("/Users/student/Downloads/gpw-v4-admin-unit-center-points-population-estimates-rev11_twn_csv (1)/gpw_v4_admin_unit_center_points_population_estimates_rev11_twn.csv")
+
+original_dprk <- read.csv("/Users/student/Downloads/gpw-v4-admin-unit-center-points-population-estimates-rev11_prk_csv (1)/gpw_v4_admin_unit_center_points_population_estimates_rev11_prk.csv")
+```
+
+
+```{r}
+library(data.table)
+```
+
+```{r}
+
+
+new_gpw <- original_global_csv
+
+greenland <- new_gpw %>%
+  filter(ISOALPHA == "GRL")
+norway <- new_gpw %>%
+  filter(ISOALPHA == "NOR")
+cuba <- new_gpw %>%
+  filter(ISOALPHA == "CUB")
+svalbard <- new_gpw %>%
+  filter(ISOALPHA == "SJM")
+usa <- new_gpw %>%
+  filter(ISOALPHA == "USA")
+saudi <- new_gpw %>%
+  filter(ISOALPHA == "SAU")
+dprk <- new_gpw %>%
+  filter(ISOALPHA == "PRK")
+egypt <- new_gpw %>%
+  filter(ISOALPHA == "EGY")
+eritrea <- new_gpw %>%
+  filter(ISOALPHA == "ERI")
+burma <- new_gpw %>%
+  filter(ISOALPHA == "MMR")
+libya <- new_gpw %>%
+  filter(ISOALPHA == "LBY")
+angola <- new_gpw %>%
+  filter(ISOALPHA == "AGO")
+taiwan <- new_gpw %>%
+  filter(ISOALPHA == "TWN")
+uae <- new_gpw %>%
+  filter(ISOALPHA == "ARE")
+gabon <- new_gpw %>%
+  filter(ISOALPHA == "GAB")
+sudan <- new_gpw %>%
+  filter(ISOALPHA == "SDN")
+timor_leste <- new_gpw %>%
+  filter(ISOALPHA == "TLS")
+qatar <- new_gpw %>%
+  filter(ISOALPHA == "QAT")
+puerto <- new_gpw %>%
+  filter(ISOALPHA == "PRI")
+kuwait <- new_gpw %>%
+  filter(ISOALPHA == "KWT")
+guyana <- new_gpw %>%
+  filter(ISOALPHA == "GUY")
+tonga <- new_gpw %>%
+  filter(ISOALPHA == "TON")
+
+
+```
+
+Let's map Puerto Rico
+
+-67.24243
+17.94655
+-65.591
+18.5206
+
+```{r}
+
+puerto <- st_as_sf(puerto, 
+                   coords = c("CENTROID_X", "CENTROID_Y"), crs = 4326)
+
+ggplot(puerto) + 
+  geom_sf(data = world, fill = "#ADD8E6", color = "white") +
+  geom_sf() +
+  coord_sf(xlim = c(-67.24243, -65.591), ylim = c(17.94655, 18.5206), expand = FALSE)
+
+```
+

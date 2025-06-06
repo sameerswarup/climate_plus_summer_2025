@@ -26,7 +26,7 @@ world_joined <- world |>
   left_join(df_population, by = c("adm0_a3" = "ISOALPHA"))
 
 findPNGpath <- function(name_en) {
-  pngDefaultPath <- "flags/"
+  pngDefaultPath <- "www/flags/"
   countryCodes <- suppressWarnings(read.csv("data copy/countries_codes_and_coordinates.csv"))
   alpha2 <- countryCodes %>%
     filter(Country == name_en) %>%
@@ -36,3 +36,33 @@ findPNGpath <- function(name_en) {
   pngFinal <- paste0(pngDefaultPath, alpha2, ".png")
   return(pngFinal)
 }
+
+# -----------------------------------------------------------------------------
+
+# GLOBAL-LEVEL VARIABLES (UNCHANGING)
+
+global_level_variables <- names(df)[104:116]
+
+global_level_choices <- c(
+  "Nutritional Dependence" = "Nutritional.dependence.sc" ,
+  "Economic Dependence" = "Economic.dependence.sc"    ,
+  "Low Voice and Accountability" = "Voice_account.sc"        ,  
+  "Political Instability" = "Political_stab.sc"     ,   
+  "Government Ineffectiveness" = "Gov_effect.sc"          ,   
+  "Poor Regulatory Quality" = "Reg_quality.sc"          ,  
+  "Weak Rule of Law" = "Rule_law.sc"              , 
+  "Weak Control of Corruption" = "control_corr.sc"          ,
+  "Gender Inequality" = "gender.ineq.sc"            ,
+  "Income Inequality" = "income.ineq.sc"            ,
+  "Inequality Adjusted Life Expectancy" = "le.ineq.log.sc"            
+
+)
+
+average_country_nogeo <- df |>
+  group_by(ISOALPHA) |>
+  summarize (
+    COUNTRYNM = first(COUNTRYNM),
+    across(99:119, ~mean(.x, na.rm = TRUE))
+  )
+
+average_country_nogeo <- select(average_country_nogeo, all_of(global_level_variables))
