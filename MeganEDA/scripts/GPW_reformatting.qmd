@@ -3,47 +3,128 @@ title: "GPW_reformatting"
 format: html
 ---
 
-<!-- ```{r} -->
-<!-- library(data.table) -->
+```{r}
 
-<!-- # Use full absolute paths -->
-<!-- input_folder <- "path to GPW_v4_Data folder goes here" -->
-<!-- output_file <- "path to gpw_all_countries.rds goes here" -->
+#### DO NOT RUN THIS CELL AGAIN. THIS CREATES CSV FILE FOR GPW DATA
+library(readr)
+library(dplyr)
+library(purrr)
 
-<!-- dir.create(dirname(output_file), recursive = TRUE, showWarnings = FALSE) -->
+urls <- read_lines("gpw_urls")
 
-<!-- # Columns to keep -->
-<!-- keep_cols <- c( -->
-<!--   "CENTROID_X", "CENTROID_Y", -->
-<!--   "UN_2000_E", "UN_2005_E", "UN_2010_E", "UN_2015_E", "UN_2020_E", -->
-<!--   "UN_2000_DS", "UN_2005_DS", "UN_2010_DS", "UN_2015_DS", "UN_2020_DS" -->
-<!-- ) -->
+keep_cols <- c("UN_2000_E", "UN_2005_E", "UN_2010_E", "UN_2015_E", "UN_2020_E",
+               "UN_2000_DS", "UN_2005_DS", "UN_2010_DS", "UN_2015_DS", "UN_2020_DS",
+               "CENTROID_X", "CENTROID_Y", "ISOALPHA")
 
-<!-- # Read and combine -->
-<!-- csv_files <- list.files(input_folder, pattern = "\\.csv$", full.names = TRUE) -->
+read_zipped_csv <- function(url) {
+  temp <- tempfile(fileext = ".zip")
+  tryCatch({
+    download.file(url, temp, mode = "wb", quiet = TRUE)
+    csv_file <- unzip(temp, list = TRUE)$Name[1]
+    data <- read_csv(unz(temp, csv_file), quote = "", show_col_types = FALSE)
 
-<!-- all_gpw <- rbindlist( -->
-<!--   lapply(csv_files, function(file) { -->
-<!--     message("Reading: ", file) -->
+    data <- data |>
+      select(any_of(keep_cols)) |>
+      mutate(across(matches("^UN_\\d+(_DS)?$|^CENTROID_"), as.numeric),
+             ISOALPHA = as.character(ISOALPHA),
+             .keep = "unused")
+    
+    unlink(temp)
+    return(data)
+  }, error = function(e) {
+    message(paste("Error reading", url, ":", e$message))
+    return(NULL)
+  })
+}
 
-<!--     dt <- tryCatch({ -->
-<!--       fread(file)[, ..keep_cols] -->
-<!--     }, error = function(e) { -->
-<!--       message(sprintf("Skipping file %s due to error: %s", file, e$message)) -->
-<!--       return(NULL) -->
-<!--     }) -->
+combined_data <- map(urls, read_zipped_csv) |>
+  compact() |>
+  bind_rows()
 
-<!--     if (!is.null(dt)) { -->
-<!--       country_code <- gsub("^.*_([a-z]{3})\\.csv$", "\\1", tolower(basename(file))) -->
-<!--       dt[, country := toupper(country_code)] -->
-<!--     } -->
+glimpse(combined_data)
+```
 
-<!--     return(dt) -->
-<!--   }), -->
-<!--   fill = TRUE -->
-<!-- ) -->
+```{r}
 
-<!-- setnames(all_gpw, old = c("CENTROID_X", "CENTROID_Y"), new = c("lon", "lat"), skip_absent = TRUE) -->
-<!-- saveRDS(all_gpw, file = output_file) -->
+#Save file as RDS
+saveRDS(combined_data, file = "C:/Users/mk616/Documents/climate_plus_summer_2025/Data/Primary Datasets/gpw_combined_cleaned.rds")
 
-<!-- ``` -->
+```
+
+
+
+```{r}
+
+library(sf)
+library(dplyr)
+library(pbapply)
+
+# 1. Load and prepare GPW points
+#gpw <- readRDS("C:/Users/mk616/Documents/climate_plus_summer_2025/Data/Primary Datasets/gpw_combined_cleaned.rds") %>%
+ # filter(!is.na(CENTROID_X), !is.na(CENTROID_Y))
+
+#gpw_sf <- st_as_sf(gpw, coords = c("CENTROID_X", "CENTROID_Y"), crs = 4326, remove = FALSE) %>%
+ # st_transform(3857)
+
+# 2. Load and simplify regions
+#regions <- readRDS("C:/Users/mk616/Documents/climate_plus_summer_2025/Data/Primary Datasets/regions.rds")
+#regions_simplified <- st_transform(regions, 3857) %>%
+#  st_simplify(dTolerance = 1000)
+
+# 3. Define spatial join function for a chunk
+#spatial_filter_chunk <- function(chunk) {
+ # st_join(chunk, regions_simplified, join = st_within, left = FALSE)
+}
+
+# 4. Break into chunks of 100,000 rows
+#chunk_size <- 100000
+#n_chunks <- ceiling(nrow(gpw_sf) / chunk_size)
+#gpw_chunks <- split(gpw_sf, rep(1:n_chunks, each = chunk_size, length.out = nrow(gpw_sf)))
+
+# 5. Apply spatial join with progress bar
+#gpw_filtered_list <- pblapply(gpw_chunks, spatial_filter_chunk)
+
+# 6. Combine results and reproject
+#gpw_filtered <- do.call(rbind, gpw_filtered_list) %>%
+#  st_transform(4326)
+
+# 7. Save output
+#saveRDS(
+#  gpw_filtered,
+  "C:/Users/mk616/Documents/climate_plus_summer_2025/Data/Primary Datasets/gpw_within_coastal_regions.rds"
+)
+
+```
+
+```{r}
+
+
+###attempting some modelling for year population
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(broom)
+library(sf)
+
+bgd <- gpw_filtered |>
+  filter(ISOALPHA == "VNM") |>
+  st_drop_geometry()
+
+bgd_long <- bgd |>
+  select(UN_2000_E, UN_2005_E, UN_2010_E, UN_2015_E, UN_2020_E) |>
+  pivot_longer(cols = everything(), names_to = "year", values_to = "pop") |>
+  mutate(year = as.numeric(gsub("UN_|_E", "", year)))
+
+model <- lm(pop ~ year, data = bgd_long)
+summary(model)
+
+ggplot(bgd_long, aes(x = year, y = pop)) +
+  geom_point(color = "darkgreen", size = 2) +                  
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +   
+  labs(title = "vietnam pop growth",
+       x = "Year",
+       y = "Population Estimate") +
+  theme_minimal()
+
+
+```
