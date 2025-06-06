@@ -1,0 +1,149 @@
+---
+title: "inequity_prelim"
+format: html
+---
+
+```{r}
+library(tidyverse)
+library(readr)
+library(dplyr)
+library(sf)
+library(purrr)
+library(leaflet)
+library(viridis)
+library(htmlwidgets)
+```
+
+```{r}
+gpw <- readRDS("shiny_app/data/gpw_filtered5k.rds")
+inequity <- readRDS("shiny_app/data/inequity_filtered5k.rds")
+```
+
+```{r}
+names(inequity)
+```
+
+```{r}
+governance_vars <- c("Gov_effect.sc", "Reg_quality.sc", "Rule_law.sc", 
+                     "control_corr.sc", "Voice_account.sc", "gov.score.rank")
+
+inequality_vars <- c("gender.ineq.sc", "income.ineq.sc", "le.ineq.log.sc", 
+                     "ineq.score.rank", "hierachical.score.rank.ineq")
+
+ecological_vars <- c("vulnerab.score.rank", "mean.count.grav.V2.log.sc", 
+                     "Nutritional.dependence.sc", "Economic.dependence.sc")
+
+deprivation_vars <- c("povmap.grdi.v1.sc", "income.ineq.change.sc", 
+                      "le.ineq.change.sc")
+
+exposure_vars <- c("perc.pop.world.coastal.merit.10m.log.sc")
+```
+
+```{r}
+geometric_mean_vec <- function(...) {
+  x <- c(...)
+  if (any(x <= 0, na.rm = TRUE)) return(NA_real_)
+  exp(mean(log(x), na.rm = TRUE))
+}
+
+harmonic_mean_vec <- function(...) {
+  x <- c(...)
+  if (any(x <= 0, na.rm = TRUE)) return(NA_real_)
+  length(x) / sum(1 / x, na.rm = TRUE)
+}
+```
+
+```{r}
+inequity_data <- inequity |>
+  st_drop_geometry()
+
+inequity_data <- inequity_data |>
+  mutate(
+    gov_arith  = rowMeans(select(., all_of(governance_vars)), na.rm = TRUE),
+    ineq_arith = rowMeans(select(., all_of(inequality_vars)), na.rm = TRUE),
+    eco_arith  = rowMeans(select(., all_of(ecological_vars)), na.rm = TRUE),
+    dep_arith  = rowMeans(select(., all_of(deprivation_vars)), na.rm = TRUE),
+    exp_arith  = rowMeans(select(., all_of(exposure_vars)), na.rm = TRUE)
+  )
+
+inequity_data <- inequity_data |>
+  mutate(
+    gov_geom  = pmap_dbl(select(., all_of(governance_vars)),  geometric_mean_vec),
+    ineq_geom = pmap_dbl(select(., all_of(inequality_vars)), geometric_mean_vec),
+    eco_geom  = pmap_dbl(select(., all_of(ecological_vars)),  geometric_mean_vec),
+    dep_geom  = pmap_dbl(select(., all_of(deprivation_vars)), geometric_mean_vec),
+    exp_geom  = pmap_dbl(select(., all_of(exposure_vars)),    geometric_mean_vec)
+  )
+
+inequity_data <- inequity_data |>
+  mutate(
+    gov_harm  = pmap_dbl(select(., all_of(governance_vars)),  harmonic_mean_vec),
+    ineq_harm = pmap_dbl(select(., all_of(inequality_vars)), harmonic_mean_vec),
+    eco_harm  = pmap_dbl(select(., all_of(ecological_vars)),  harmonic_mean_vec),
+    dep_harm  = pmap_dbl(select(., all_of(deprivation_vars)), harmonic_mean_vec),
+    exp_harm  = pmap_dbl(select(., all_of(exposure_vars)),    harmonic_mean_vec)
+  )
+```
+
+```{r}
+geom_data <- inequity |>
+  select(ID, geometry)
+  inequity <- left_join(inequity_data, geom_data, by = "ID") |>
+  st_as_sf()
+
+# Governance scores
+governance_scores <- inequity |>
+  select(ID, COUNTRY, starts_with("gov_"), geometry)
+saveRDS(governance_scores, "shiny_app/data/governance_scores.rds")
+
+# Inequality scores
+inequality_scores <- inequity |>
+  select(ID, COUNTRY, starts_with("ineq_"), geometry)
+saveRDS(inequality_scores, "shiny_app/data/inequality_scores.rds")
+
+# Ecological scores
+ecological_scores <- inequity |>
+  select(ID, COUNTRY, starts_with("eco_"), geometry)
+saveRDS(ecological_scores, "shiny_app/data/ecological_scores.rds")
+
+# Deprivation scores
+deprivation_scores <- inequity |>
+  select(ID, COUNTRY, starts_with("dep_"), geometry)
+saveRDS(deprivation_scores, "shiny_app/data/deprivation_scores.rds")
+
+# Exposure scores
+exposure_scores <- inequity |>
+  select(ID, COUNTRY, starts_with("exp_"), geometry)
+saveRDS(exposure_scores, "shiny_app/data/exposure_scores.rds")
+```
+
+```{r}
+gov <- readRDS("shiny_app/data/governance_scores.rds") #Change Data Here
+var <- "gov_arith"
+layer_name <- "Governance (Arithmetic)"
+
+values <- gov[[var]]
+pal <- colorNumeric("viridis", domain = range(values, na.rm = TRUE), na.color = "transparent")
+
+map <- leaflet(gov) |>
+  addTiles() |>
+  addCircleMarkers(
+    radius = 6,
+    fillColor = ~pal(get(var)),
+    fillOpacity = 0.8,
+    stroke = TRUE,
+    color = "white",
+    weight = 0.5,
+    label = ~paste0(COUNTRY, ": ", round(get(var), 3))
+  ) |>
+  addLegend(
+    pal = pal,
+    values = values,
+    opacity = 0.8,
+    title = layer_name,
+    position = "bottomright"
+  )
+
+saveWidget(map, "map.html", selfcontained = TRUE)
+browseURL("map.html")
+```
