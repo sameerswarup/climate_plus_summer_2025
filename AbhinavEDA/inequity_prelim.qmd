@@ -54,10 +54,10 @@ harmonic_mean_vec <- function(...) {
 ```
 
 ```{r}
-inequity_data <- inequity |>
+inequity_data <- inequity %>%
   st_drop_geometry()
 
-inequity_data <- inequity_data |>
+inequity_data <- inequity_data %>%
   mutate(
     gov_arith  = rowMeans(select(., all_of(governance_vars)), na.rm = TRUE),
     ineq_arith = rowMeans(select(., all_of(inequality_vars)), na.rm = TRUE),
@@ -66,7 +66,7 @@ inequity_data <- inequity_data |>
     exp_arith  = rowMeans(select(., all_of(exposure_vars)), na.rm = TRUE)
   )
 
-inequity_data <- inequity_data |>
+inequity_data <- inequity_data %>%
   mutate(
     gov_geom  = pmap_dbl(select(., all_of(governance_vars)),  geometric_mean_vec),
     ineq_geom = pmap_dbl(select(., all_of(inequality_vars)), geometric_mean_vec),
@@ -75,7 +75,7 @@ inequity_data <- inequity_data |>
     exp_geom  = pmap_dbl(select(., all_of(exposure_vars)),    geometric_mean_vec)
   )
 
-inequity_data <- inequity_data |>
+inequity_data <- inequity_data %>%
   mutate(
     gov_harm  = pmap_dbl(select(., all_of(governance_vars)),  harmonic_mean_vec),
     ineq_harm = pmap_dbl(select(., all_of(inequality_vars)), harmonic_mean_vec),
@@ -86,47 +86,47 @@ inequity_data <- inequity_data |>
 ```
 
 ```{r}
-geom_data <- inequity |>
+geom_data <- inequity %>%
   select(ID, geometry)
-  inequity <- left_join(inequity_data, geom_data, by = "ID") |>
+  inequity <- left_join(inequity_data, geom_data, by = "ID") %>%
   st_as_sf()
 
 # Governance scores
-governance_scores <- inequity |>
+governance_scores <- inequity %>%
   select(ID, COUNTRY, starts_with("gov_"), geometry)
 saveRDS(governance_scores, "shiny_app/data/governance_scores.rds")
 
 # Inequality scores
-inequality_scores <- inequity |>
+inequality_scores <- inequity %>%
   select(ID, COUNTRY, starts_with("ineq_"), geometry)
 saveRDS(inequality_scores, "shiny_app/data/inequality_scores.rds")
 
 # Ecological scores
-ecological_scores <- inequity |>
+ecological_scores <- inequity %>%
   select(ID, COUNTRY, starts_with("eco_"), geometry)
 saveRDS(ecological_scores, "shiny_app/data/ecological_scores.rds")
 
 # Deprivation scores
-deprivation_scores <- inequity |>
+deprivation_scores <- inequity %>%
   select(ID, COUNTRY, starts_with("dep_"), geometry)
 saveRDS(deprivation_scores, "shiny_app/data/deprivation_scores.rds")
 
 # Exposure scores
-exposure_scores <- inequity |>
+exposure_scores <- inequity %>%
   select(ID, COUNTRY, starts_with("exp_"), geometry)
 saveRDS(exposure_scores, "shiny_app/data/exposure_scores.rds")
 ```
 
 ```{r}
 gov <- readRDS("shiny_app/data/governance_scores.rds") #Change Data Here
-var <- "gov_arith"
-layer_name <- "Governance (Arithmetic)"
+var <- "gov_geom"
+layer_name <- "Governance (Geometric)"
 
 values <- gov[[var]]
 pal <- colorNumeric("viridis", domain = range(values, na.rm = TRUE), na.color = "transparent")
 
-map <- leaflet(gov) |>
-  addTiles() |>
+map <- leaflet(gov) %>%
+  addTiles() %>%
   addCircleMarkers(
     radius = 6,
     fillColor = ~pal(get(var)),
@@ -135,7 +135,7 @@ map <- leaflet(gov) |>
     color = "white",
     weight = 0.5,
     label = ~paste0(COUNTRY, ": ", round(get(var), 3))
-  ) |>
+  ) %>%
   addLegend(
     pal = pal,
     values = values,
