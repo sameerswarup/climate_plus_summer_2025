@@ -4,6 +4,65 @@ server <- function(input, output, session) {
     colorNumeric("Blues", world_joined[[input$score_type]], na.color = "transparent")
   })
   
+  rv <- reactiveValues(zoom = 4)
+  
+  countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
+  output$country_selector <- renderUI({
+    choices <- countryCodes %>%
+      na.omit(Alpha.3.code, Country) %>%
+      distinct(Alpha.3.code, Country) %>%
+      { setNames(.$Alpha.3.code, .$Country) }
+    
+    selectInput("selected_country", "Select Country", choices = choices)
+  })
+  
+  regionCodes <- suppressWarnings(readRDS("data/regions.rds"))
+  
+  output$region_selector <- renderUI({
+    req(input$selected_country)  # wait for a country selection
+    country <- gsub("\"", "", trimws(input$selected_country))
+    
+    choices <- regionCodes %>%
+      filter(iso_a3 == country) %>%
+      distinct(GID_2, NAME_2) %>%
+      { setNames(.$GID_2, .$NAME_2) }
+
+    # Handle empty choices
+    if (length(choices) == 0) {
+      choices <- c("No regions available" = "")
+    }
+    
+    selectInput("selected_region", "Select District", choices = choices)
+  })
+  
+  #sample data
+  country_bounds <- list(
+    USA = list(lat = c(24, 49), lng = c(-125, -66)),
+    GHA = list(lat = c(4.5, 11), lng = c(-3, 1.5))
+  )
+  
+  # Zoom Button
+  observeEvent(input$zoom_button, {
+    country <- gsub("\"", "", trimws(input$selected_country))
+    bounds <- country_bounds[[country]]
+    
+    leafletProxy("map") %>%
+      fitBounds(
+        lng1 = bounds$lng[1],
+        lat1 = bounds$lat[1],
+        lng2 = bounds$lng[2],
+        lat2 = bounds$lat[2]
+      ) %>%
+      setView(lng = 0, lat = 0, zoom = 6) #rv$zoom + 
+  })
+  
+#  output$city_ui <- renderUI({
+#    cities <- df %>%
+#      filter(country == input$country) %>%
+#      pull(city)
+#    selectInput("city", "Select City", choices = cities)
+#  })
+  
   output$map <- renderLeaflet({
     pal <- pal_reactive()
     
@@ -122,7 +181,7 @@ server <- function(input, output, session) {
   output$country_flag <- renderImage({
     # before click
     if (is.null(clicked_country())) {
-      list(src = "www/globe.png",
+      list(src = "data/flags/globe.png",
            contentType = "image/png",
            alt = "Globe",
            width = 120,

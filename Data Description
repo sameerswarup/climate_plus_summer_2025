@@ -1,0 +1,19 @@
+Data: Global Population data
+File: gpw_filtered5k.rds
+Description: Filtered to data on 5km from the coastline.
+
+Data: Social inequity data
+File: inequity_filtered5k.rds
+Description: Inequity data filtered with data on 5km from the coastline.
+
+Data: Regions or districts of the world.
+File: regions.rds
+Description: Regional geospatial data filtered to 5km from the coastline.
+
+Data: Country codes and names
+File: counties_codes_and_coordinates.csv
+Description: Dataset of countries in the world and their coordinates.
+
+Data: Inequity Indicators Descriptions
+File: inequity_data_descriptions.csv.csv
+Description: Gives discriptions of the indicators.

@@ -1,0 +1,10 @@
+name: shiny
+title:
+username: coastalzonesmapping
+account: coastalzonesmapping
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 14906201
+bundleId: 10424777
+url: https://coastalzonesmapping.shinyapps.io/shiny/
+version: 1
