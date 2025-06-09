@@ -69,8 +69,12 @@ server <- function(input, output, session) {
                     
         ),
         
+        # DESCRIPTION OF FIRST INDICATOR WILL GO HERE
         
         
+        textOutput("first_indicator_global_description"),
+      
+                
         # CHOOSE SECOND INDICATOR (GLOBAL)
         
         selectInput("second_indicator_global", 
@@ -79,6 +83,10 @@ server <- function(input, output, session) {
                     selected = "le.ineq.log.sc"
                     
         ),
+        
+        # DESCRIPTION OF SECOND INDICATOR WILL GO HERE
+        
+        textOutput("second_indicator_global_description"),
         
         
         # DISPLAYS CUSTOM SCATTERPLOT (GLOBAL-LEVEL)
@@ -394,7 +402,59 @@ server <- function(input, output, session) {
   }, deleteFile = FALSE)
   
   
+  # -----------------------------------------------------------------------------
+
+# Display data descriptions  
+  
+output$first_indicator_country_description <- renderText({
+  indicator <- input$first_indicator
+  indicator <- paste0("")
+  descriptions <- inequity_data_descriptions %>%
+    filter(variable_name == indicator) %>%
+    pull(description)
+  
+  descriptions
+})
+
+output$second_indicator_country_description <- renderText({
+  indicator <- input$second_indicator
+  descriptions <- inequity_data_descriptions %>%
+    filter(variable_name == indicator) %>%
+    pull(description)
+  descriptions
+  
+  
+})
+
+output$first_indicator_global_description <- renderText({
+  indicator <- input$first_indicator_global
+  descriptions <- inequity_data_descriptions %>%
+    filter(variable_name == indicator) %>%
+    pull(description)
+  descriptions
+  
+  
+})
+
+output$second_indicator_global_description <- renderText({
+  indicator <- input$second_indicator_global
+
+  descriptions <- inequity_data_descriptions %>%
+    filter(variable_name%in%indicator) %>%
+    pull(description)
+  descriptions
+  
+  
+})
+
+output$debug_indicator <- renderPrint({
+  str(input$first_indicator_global)
+})
+  
+  
 }
+
+
 
 # NOTE: Could have the side bar show one MAIN indicator they want to see that is displayed on the
 # map, and that displays the histogram. Below that we could have them choose another indicator they'd

@@ -66,3 +66,8 @@ average_country_nogeo <- df |>
   )
 
 average_country_nogeo <- select(average_country_nogeo, all_of(global_level_variables))
+
+inequity_data_descriptions <- read.csv("data copy/inequity_data_descriptions.csv")
+
+inequity_data_descriptions$variable_name <- trimws(as.character(inequity_data_descriptions$variable_name))
+
