@@ -9,7 +9,7 @@ library(ggplot2)
 library(plotly)
 library(data.table)
 
-df <- readRDS("~/Library/CloudStorage/Dropbox/Duke/Data+/Coastal Mapping Dashboard/Data/Primary Datasets/inequity_filtered5k.rds") %>%
+df <- readRDS("data/inequity_filtered5k.rds") %>%
   st_transform(4326)
 
 
@@ -44,21 +44,20 @@ world_joined <- world |>
 
 
 
-#/EthanDashboardCopy/shiny_app copy/data copy
-descriptions <- suppressWarnings(read.csv("~/Library/CloudStorage/Dropbox/Duke/Data+/Coastal Mapping Dashboard/EthanDashboardCopy/shiny_app copy/data copy/dataDescriptions.csv"))
+descriptions <- suppressWarnings(read.csv("data/inequity_data_descriptions.csv"))
 
-countryCodes <- suppressWarnings(read.csv("~/Library/CloudStorage/Dropbox/Duke/Data+/Coastal Mapping Dashboard/EthanDashboardCopy/shiny_app copy/data copy/countries_codes_and_coordinates.csv"))
+countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
 
 
 findPNGpath <- function(name_en) {
-  pngDefaultPath <- "www/flags/"
-  countryCodes <- suppressWarnings(read.csv("~/Library/CloudStorage/Dropbox/Duke/Data+/Coastal Mapping Dashboard/EthanDashboardCopy/shiny_app copy/data copy/countries_codes_and_coordinates.csv"))
+  pngDefaultPath <- "data/flags/flags/"
+  countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
   alpha2 <- countryCodes %>%
     filter(Country == name_en) %>%
-    pull(Alpha.2.code)
-  alpha2<- substring(alpha2, 3, 4)
+    pull("Alpha-2 code")
   alpha2 <- paste0(tolower(alpha2))
   pngFinal <- paste0(pngDefaultPath, alpha2, ".png")
+  print(pngFinal)
   return(pngFinal)
 }
 

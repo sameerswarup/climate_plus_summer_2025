@@ -20,18 +20,25 @@ ui <- fluidPage(
     windowTitle = "High Stakes Socio-Economic Mapping of Coastal Zones"),
   
   
-  
     tabsetPanel(
       tabPanel(
         title = tags$h5(div("Dashboard", class = "font header_color center")),
         
       
         page_sidebar(
-          title = tags$h3(div("Generalized Coastal Inequity Dashboard", class = "font header_color")),
+          title = tags$h3(div("Main Dashboard", class = "font header_color center")),
           
           sidebar = sidebar(
             width = 500,
-            selectInput("score_type", "Select Indicator to Display:",
+
+            uiOutput("country_selector"),
+            
+            uiOutput("region_selector"),
+            
+            actionButton("zoom_button", "Zoom"),
+            
+            
+            selectInput("score_type", "Select Indicator to Display",
                                         choices = c(
                                           "Governance Quality" = "governance_score",
                                           "Social Inequality" = "inequality_score",
@@ -100,9 +107,9 @@ ui <- fluidPage(
     
     
     tabPanel(
-      title = tags$h5(div("Data Comparison", class = "font header_color")),
-      tags$h3("Compare indicators", class="font header_color center", style="margin-top: 2px"),
-      tags$hr(style="margin-top: 2px;margin-bottom: 2px;"),
+      title = tags$h5(div("Compare Indicators", class = "font header_color")),
+      tags$h3("Compare indicators", class="font header_color", style="margin-top: 2px"),
+      tags$hr(style="margin-top: 3px;margin-bottom: 3px; border: 0; border-top: 1px  solid grey "),
       fluidRow(
         column(width = 6,
                style = "height: 25vh;",  # 100% viewport height, light background
