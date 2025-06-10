@@ -160,9 +160,10 @@ server <- function(input, output, session) {
         
         # DESCRIPTION OF FIRST INDICATOR WILL GO HERE
         
-        
-        textOutput("first_indicator_global_description"),
-        
+        tags$small(textOutput("first_indicator_global_description"),
+                style = "font-style: italic"),
+
+
         
         # CHOOSE SECOND INDICATOR (GLOBAL)
         
@@ -175,7 +176,9 @@ server <- function(input, output, session) {
         
         # DESCRIPTION OF SECOND INDICATOR WILL GO HERE
         
-        textOutput("second_indicator_global_description"),
+        tags$small(textOutput("second_indicator_global_description"),
+                style = "font-style: italic"),
+        
         
         
         # DISPLAYS CUSTOM SCATTERPLOT (GLOBAL-LEVEL)
@@ -253,6 +256,11 @@ server <- function(input, output, session) {
                     
         ),
         
+        # DESCRIPTION OF FIRST INDICATOR (COUNTRY-LEVEL)
+        
+        tags$small(textOutput("first_indicator_country_description"),
+                   style = "font-style: italic"),
+        
         # CHOOSE SECOND INDICATOR (COUNTRY-LEVEL)
         
         selectInput("second_indicator", 
@@ -266,6 +274,11 @@ server <- function(input, output, session) {
                     selected = "perc.pop.world.coastal.merit.10m.log.sc"
                     
         ),
+        
+        # DESCRIPTION OF SECOND INDICATOR (COUNTRY-LEVEL)
+        
+        tags$small(textOutput("second_indicator_country_description"),
+                   style = "font-style: italic"),
         
         # DISPLAYS CUSTOM SCATTERPLOT (COUNTRY-LEVEL)
         
@@ -454,5 +467,89 @@ server <- function(input, output, session) {
   }, deleteFile = FALSE)
   
   
+  # -----------------------------------------------------------------------------
+  
+  # Data Descriptions
+  
+  # reactive value for selected indicator
+  clicked_score_first_global <- reactiveVal(NULL)
+  clicked_score_second_global <- reactiveVal(NULL)
+  clicked_score_first_country <- reactiveVal(NULL)
+  clicked_score_second_country <- reactiveVal(NULL)
+  
+  
+  
+  observeEvent(input$second_indicator_global, {
+    click <- input$second_indicator_global
+    clicked_score_second_global(click)  # id of indicator
+  })
+  
+  observeEvent(input$first_indicator_global, {
+    click <- input$first_indicator_global
+    clicked_score_first_global(click)  # id of indicator
+  })
+  
+  observeEvent(input$first_indicator, {
+    click <- input$first_indicator
+    clicked_score_first_country(click)  # id of indicator
+  })
+  
+  observeEvent(input$second_indicator, {
+    click <- input$second_indicator
+    clicked_score_second_country(click)  # id of indicator
+  })
+  
+  output$first_indicator_country_description <- renderText({
+    req(clicked_score_first_country())
+    descriptions <- inequity_data_descriptions %>%
+      filter(variable_name == clicked_score_first_country()) %>%
+      pull(description)
+    
+    return(descriptions)
+  })
+  
+  output$second_indicator_country_description <- renderText({
+    req(clicked_score_second_country())
+    descriptions <- inequity_data_descriptions %>%
+      filter(variable_name == clicked_score_second_country()) %>%
+      pull(description)
+    return(descriptions)
+    
+    
+  })
+  
+  output$first_indicator_global_description <- renderText({
+    req(clicked_score_first_global())
+    descriptions <- inequity_data_descriptions %>%
+      filter(variable_name == clicked_score_first_global()) %>%
+      pull(description)
+    
+    return(descriptions)
+    
+    
+  })
+  
+  output$second_indicator_global_description <- renderText({
+    req(clicked_score_second_global())
+    
 
+    descriptions <- inequity_data_descriptions %>%
+      filter(variable_name == clicked_score_second_global()) %>%
+      pull(description)
+    return(descriptions)
+    
+    
+  })
+
+  
+  # Data+ logo
+  
+  output$dataplus_logo <- renderImage({
+      list(src = "www/data-plus-logo.png",
+           contentType = "image/png",
+           alt = "data_plus",
+           width = 300,
+           height = 120
+      )
+  }, deleteFile = FALSE)
 }

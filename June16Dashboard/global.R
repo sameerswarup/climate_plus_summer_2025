@@ -103,3 +103,5 @@ average_country_nogeo <- df |>
   )
 
 average_country_nogeo <- select(average_country_nogeo, all_of(global_level_variables))
+
+inequity_data_descriptions <- read.csv("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/inequity_data_descriptions.csv")
