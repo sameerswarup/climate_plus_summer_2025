@@ -29,6 +29,11 @@ server <- function(input, output, session) {
     selectInput("selected_region", "Select District", choices = choices)
   })
   
+  observe({
+    invalidateLater(60000)  # Every 5 seconds
+    cat("Memory usage:", mem_used(), "\n")
+  })
+  
   # Zoom Button
   observeEvent(input$zoom_button, {
     country <- gsub("\"", "", trimws(input$selected_country))

@@ -6,13 +6,15 @@ library(sf)
 library(viridis)
 library(tidyverse)
 library(qs)
+library(pryr)
+
 
 print(">>> global.R is running <<<")
 print(list.files())
 
 countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
 
-regionCodes <- suppressWarnings(readRDS("/Users/student/Downloads/regions 1.rds"))
+regionCodes <- suppressWarnings(readRDS("../shiny/data/regions.rds"))
 
 # Load original data
 gov <- readRDS("data/governance_scores.rds")
@@ -62,6 +64,8 @@ mean_choices <- names(mean_type_suffix)
 df <- readRDS("data/inequity_filtered5k.rds") %>%
   st_transform(4326)
 
+# df is now inequity_filtered5k.rds which is smaller
+
 findPNGpath <- function(name_en) {
   pngDefaultPath <- "www/flags/"
   countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
@@ -104,4 +108,8 @@ average_country_nogeo <- df |>
 
 average_country_nogeo <- select(average_country_nogeo, iso_a3.x, name_en, all_of(global_level_variables))
 
-inequity_data_descriptions <- read.csv("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/inequity_data_descriptions.csv")
+<<<<<<< HEAD
+inequity_data_descriptions <- read.csv("data/inequity_data_descriptions.csv")
+=======
+inequity_data_descriptions <- read.csv("../shiny/data/inequity_data_descriptions.csv")
+>>>>>>> aa5e511f21ba89c81d74e5e1ea58df0ae0459c41
