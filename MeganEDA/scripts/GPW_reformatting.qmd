@@ -5,7 +5,7 @@ format: html
 
 ```{r}
 
-#### DO NOT RUN THIS CELL AGAIN. THIS CREATES CSV FILE FOR GPW DATA
+####STEP ONE. THIS CREATES CSV FILE FOR GPW DATA BASED ON LIST OF URLS
 library(readr)
 library(dplyr)
 library(purrr)
@@ -46,7 +46,8 @@ glimpse(combined_data)
 
 ```{r}
 
-#Save file as RDS
+#STEP 2. SAVE THIS FILE AS RDS FROM CSV
+
 saveRDS(combined_data, file = "C:/Users/mk616/Documents/climate_plus_summer_2025/Data/Primary Datasets/gpw_combined_cleaned.rds")
 
 ```
@@ -55,13 +56,15 @@ saveRDS(combined_data, file = "C:/Users/mk616/Documents/climate_plus_summer_2025
 
 ```{r}
 
+#########STEP 3 (MASSIVE FILE EDITION). ADD REGION DATA TO GPW DATASET
+
 library(sf)
 library(dplyr)
 library(pbapply)
 
 # 1. Load and prepare GPW points
 #gpw <- readRDS("C:/Users/mk616/Documents/climate_plus_summer_2025/Data/Primary Datasets/gpw_combined_cleaned.rds") %>%
- # filter(!is.na(CENTROID_X), !is.na(CENTROID_Y))
+#  filter(!is.na(CENTROID_X), !is.na(CENTROID_Y))
 
 #gpw_sf <- st_as_sf(gpw, coords = c("CENTROID_X", "CENTROID_Y"), crs = 4326, remove = FALSE) %>%
  # st_transform(3857)
@@ -74,7 +77,7 @@ library(pbapply)
 # 3. Define spatial join function for a chunk
 #spatial_filter_chunk <- function(chunk) {
  # st_join(chunk, regions_simplified, join = st_within, left = FALSE)
-}
+#}
 
 # 4. Break into chunks of 100,000 rows
 #chunk_size <- 100000
@@ -91,10 +94,191 @@ library(pbapply)
 # 7. Save output
 #saveRDS(
 #  gpw_filtered,
-  "C:/Users/mk616/Documents/climate_plus_summer_2025/Data/Primary Datasets/gpw_within_coastal_regions.rds"
-)
+  "C:/Users/mk616/Documents/climate_plus_summer_2025/Data/Primary Datasets/gpw_filtered5k.rds"
+#)
 
 ```
+
+
+```{r}
+#STEP 3. SMALL FILE EDITION. ADD REGION DATA TO GPW DATASET
+
+library(sf)
+library(dplyr)
+
+# Load the data
+extraData <- readRDS("~/climate_plus_summer_2025/MeganEDA/scripts/extraData.rds")
+regions <- readRDS("C:/Users/mk616/Downloads/Primary Datasets/regions.rds")
+
+# Convert extraData to sf using centroids
+extra_sf <- st_as_sf(extraData, coords = c("CENTROID_X", "CENTROID_Y"), crs = 4326)
+
+# Ensure regions is sf and fix invalid geometries
+regions <- st_as_sf(regions)
+regions <- st_make_valid(regions)  # <- This is the key fix
+regions <- st_transform(regions, st_crs(extra_sf))
+
+# Spatial join: enrich extraData with region info
+joined_extra <- st_join(extra_sf, regions, left = FALSE)
+
+# Align columns to match gpw_filtered5k
+common_cols <- intersect(names(joined_extra), names(gpw_filtered5k))
+joined_extra_aligned <- joined_extra[, common_cols]
+
+```
+
+
+```{r}
+
+
+# Load required packages
+library(geodata)
+library(sf)
+library(dplyr)
+
+# Define your full ISO-3 list (35 target countries)
+target_iso <- c(
+  "BHS", "BLZ", "FRA", "BHR", "BRB", "COM", "CYP", "GRD", "ISR", "JAM", "KWT", "LBY", "MDV", "MLT",
+  "MHL", "MUS", "FSM", "MCO", "MNE", "NRU", "NOR", "PLW", "PRY", "QAT", "KNA", "LCA", "VCT", "WSM",
+  "STP", "SRB", "SYC", "SGP", "TON", "TTO", "TUV"
+)
+
+# Initialize result list
+regions_all_levels <- list()
+
+# Loop through countries with fallback from level 2 → 1 → 0
+for (iso in target_iso) {
+  message("Processing ", iso)
+  success <- FALSE
+  
+  # Try level 2
+  try({
+    g2 <- gadm(country = iso, level = 2, path = "gadm_cache")
+    g2$iso_a3 <- iso
+    regions_all_levels[[iso]] <- st_as_sf(g2)
+    success <- TRUE
+    message("  ✔ Level 2")
+  }, silent = TRUE)
+  
+  if (!success) {
+    # Try level 1
+    try({
+      g1 <- gadm(country = iso, level = 1, path = "gadm_cache")
+      g1$iso_a3 <- iso
+      regions_all_levels[[iso]] <- st_as_sf(g1)
+      success <- TRUE
+      message("  ✔ Level 1")
+    }, silent = TRUE)
+  }
+  
+  if (!success) {
+    # Try level 0
+    try({
+      g0 <- gadm(country = iso, level = 0, path = "gadm_cache")
+      g0$iso_a3 <- iso
+      regions_all_levels[[iso]] <- st_as_sf(g0)
+      message("  ✔ Level 0")
+    }, silent = TRUE)
+  }
+}
+
+
+
+```
+```{r} 
+#round 2 filtering by regions
+library(sf)
+library(dplyr)
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+regions <- readRDS("C:/Users/mk616/Documents/climate_plus_summer_2025/MeganEDA/scripts/regions_missing_35.rds")
+
+# Step 1: Download and buffer coastline
+coastline <- ne_download(scale = "medium", type = "coastline", category = "physical", returnclass = "sf")
+coastline_proj <- st_transform(coastline, 3857)
+coastal_buffer <- st_buffer(st_union(coastline_proj), dist = 5000)
+
+# Step 2: Reproject regions to match buffer
+regions_proj <- st_transform(regions, 3857)
+
+# Step 3: Check intersection
+regions_proj$intersects_coast <- as.logical(st_intersects(regions_proj, coastal_buffer, sparse = FALSE))
+
+# Step 4: Count dropped regions by country
+dropped_summary <- regions_proj %>%
+  st_drop_geometry() %>%
+  group_by(iso_a3) %>%
+  summarise(
+    total_regions = n(),
+    kept = sum(intersects_coast),
+    dropped = total_regions - kept
+  ) %>%
+  arrange(desc(dropped))
+
+# Step 5: Keep only coastal regions
+regions_coastal <- regions_proj %>%
+  filter(intersects_coast) %>%
+  st_transform(4326)  # Optional: return to WGS84
+
+# Step 6: Save result
+saveRDS(regions_coastal, "regions_coastal_5km.rds")
+
+# Output dropped summary
+print(dropped_summary)
+
+
+```
+
+
+```{r}
+
+library(sf)
+library(dplyr)
+
+# Step 1: Load both datasets
+original_coastal <- readRDS("C:/Users/mk616/Downloads/Primary Datasets/regions.rds")  # Replace with actual path
+new_coastal <- readRDS("C:/Users/mk616/Documents/climate_plus_summer_2025/MeganEDA/scripts/regions_coastal_5km.rds")
+
+# Step 2: Ensure same CRS (already 4326, but double-check)
+original_coastal <- st_transform(original_coastal, 4326)
+new_coastal <- st_transform(new_coastal, 4326)
+
+# Step 3: Combine
+combined_coastal <- bind_rows(original_coastal, new_coastal)
+
+# Step 4: (Optional) Check for duplicates by region ID
+# combined_coastal <- combined_coastal %>% distinct(GID_2, .keep_all = TRUE)
+
+# Step 5: Save the merged dataset
+saveRDS(combined_coastal, "combined_coastal_regions_5km.rds")
+
+# Step 6: Check summary
+summary_table <- combined_coastal %>%
+  st_drop_geometry() %>%
+  count(iso_a3, name = "n_regions") %>%
+  arrange(desc(n_regions))
+
+print(summary_table)
+
+
+```
+
+
+```{r}
+
+#STEP 5. Overwrite original dataset with new GPW
+file.copy(
+  from = "C:/Users/mk616/Documents/climate_plus_summer_2025/Data/Primary Datasets/gpw_filtered5k.rds",
+  to = "C:/Users/mk616/Documents/climate_plus_summer_2025/Data/Primary Datasets/gpw_filtered5k_backup.rds"
+)
+
+# Then overwrite
+saveRDS(combined_all, "C:/Users/mk616/Documents/climate_plus_summer_2025/Data/Primary Datasets/gpw_filtered5k.rds")
+
+
+```
+
 
 ```{r}
 
@@ -125,6 +309,60 @@ ggplot(bgd_long, aes(x = year, y = pop)) +
        x = "Year",
        y = "Population Estimate") +
   theme_minimal()
+
+```
+
+
+
+```{r}
+library(sf)
+library(dplyr)
+
+# 1. Read regions
+#regions <- readRDS("C:/Users/mk616/Downloads/Primary Datasets/regions.rds")
+
+# 2. Read inequity_filtered5k (must be an sf object with points)
+#inequity_filtered5k <- readRDS("C:/Users/mk616/Documents/climate_plus_summer_2025/Data/Primary #Datasets/inequity_filtered5k.rds")
+
+# 3. Read gpw_filtered5k (also an sf object with population point data)
+#gpw_filtered5k <- readRDS("C:/Users/mk616/Documents/climate_plus_summer_2025/Data/Primary #Datasets/gpw_filtered5k.rds")
+
+# 4. Reproject all to common CRS (WGS 84)
+regions <- st_transform(regions, crs = 4326)
+inequity_filtered5k <- st_transform(inequity_filtered5k, crs = 4326)
+gpw_filtered5k <- st_transform(gpw_filtered5k, crs = 4326)
+
+
+```
+
+```{r}
+
+library(sf)
+library(dplyr)
+
+# 1. Read datasets (assume you already did this)
+# regions, inequity_filtered5k, gpw_filtered5k already read and reprojected
+
+# 2. Spatial join inequity data to regions
+joined_ineq <- st_join(regions, inequity_filtered5k, join = st_contains)
+
+# 3. Spatial join population data to regions
+joined_gpw <- st_join(regions, gpw_filtered5k, join = st_contains)
+
+# 4. Summarise: average numeric values by region
+# Replace 'region_id' below with your actual region column (e.g. `GID_2` or `region_code`)
+summary_ineq <- joined_ineq %>%
+  st_drop_geometry() %>%
+  group_by(region_id) %>%
+  summarise(across(where(is.numeric), mean, na.rm = TRUE), .groups = "drop")
+
+summary_gpw <- joined_gpw %>%
+  st_drop_geometry() %>%
+  group_by(region_id) %>%
+  summarise(across(where(is.numeric), mean, na.rm = TRUE), .groups = "drop")
+
+# 5. Merge summaries
+regional_summary <- left_join(summary_ineq, summary_gpw, by = "region_id")
 
 
 ```
