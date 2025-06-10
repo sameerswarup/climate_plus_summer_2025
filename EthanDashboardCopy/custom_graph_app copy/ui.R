@@ -1,5 +1,5 @@
 ui <- page_sidebar(
-    input_dark_mode(id = "mode"), 
+    input_dark_mode(id = "light"), 
     sidebar = sidebar(
       width = 450,
       tags$h1("Make Your Own CUSTOM GRAPH!",
