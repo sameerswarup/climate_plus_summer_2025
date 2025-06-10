@@ -7,7 +7,6 @@ library(bslib)
 library(bsicons)
 library(ggplot2)
 library(plotly)
-library(data.table)
 
 df <- readRDS("data/inequity_filtered5k.rds") %>%
   st_transform(4326)
