@@ -408,7 +408,6 @@ server <- function(input, output, session) {
   
 output$first_indicator_country_description <- renderText({
   indicator <- input$first_indicator
-  indicator <- paste0("")
   descriptions <- inequity_data_descriptions %>%
     filter(variable_name == indicator) %>%
     pull(description)
@@ -440,17 +439,13 @@ output$second_indicator_global_description <- renderText({
   indicator <- input$second_indicator_global
 
   descriptions <- inequity_data_descriptions %>%
-    filter(variable_name%in%indicator) %>%
+    filter(variable_name == indicator) %>%
     pull(description)
   descriptions
   
   
 })
 
-output$debug_indicator <- renderPrint({
-  str(input$first_indicator_global)
-})
-  
   
 }
 
