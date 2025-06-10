@@ -26,10 +26,12 @@ ui <- fluidPage(
         
       
         page_sidebar(
-          title = tags$h3(div("Main Dashboard", class = "font header_color center")),
+          title = tags$h3(div("Main Dashboard", class = "font header_color center; font-weight: bold; ")),
           
           sidebar = sidebar(
             width = 500,
+            
+            tags$h3("Search", style = "color: #003087; margin: 0"),
 
             uiOutput("country_selector"),
             
@@ -37,6 +39,7 @@ ui <- fluidPage(
             
             actionButton("zoom_button", "Zoom"),
             
+            tags$h3("Filter", style = "color: #003087;"),
             
             selectInput("score_type", "Select Indicator to Display",
                                         choices = c(
@@ -50,7 +53,7 @@ ui <- fluidPage(
           # "Here will go the descriptions
           # of the data!",
           # tableOutput("data_descriptions"),
-          tags$h2("Indicator Description", 
+          tags$h4("Indicator Description", 
                   style = "color: #003087; 
                   font-weight: bold;"),
           textOutput("description"),
@@ -58,7 +61,7 @@ ui <- fluidPage(
           
           tags$div(
             style = "text-align: center;",
-            tags$h3(textOutput("clicked_country"))
+            tags$h4(textOutput("clicked_country"))
           ),
       
           # Could include a short description of the country here
@@ -106,9 +109,12 @@ ui <- fluidPage(
 
     
     
+    
+    
+    
     tabPanel(
       title = tags$h5(div("Compare Indicators", class = "font header_color")),
-      tags$h3("Compare indicators", class="font header_color", style="margin-top: 2px"),
+      tags$h3("Compare indicators", class="font header_color", style="margin-top: 2px; font-weight: bold; "),
       tags$hr(style="margin-top: 3px;margin-bottom: 3px; border: 0; border-top: 1px  solid grey "),
       fluidRow(
         column(width = 6,

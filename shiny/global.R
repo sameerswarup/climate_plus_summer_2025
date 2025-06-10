@@ -12,6 +12,12 @@ library(data.table)
 df <- readRDS("data/inequity_filtered5k.rds") %>%
   st_transform(4326)
 
+regionCodes <- suppressWarnings(readRDS("data/regions.rds"))
+
+inequity_data_descriptions <- read.csv("data/inequity_data_descriptions.csv")
+
+countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
+
 
 df_country <- df |>
   st_drop_geometry() |>
@@ -44,14 +50,10 @@ world_joined <- world |>
 
 
 
-descriptions <- suppressWarnings(read.csv("data/inequity_data_descriptions.csv"))
-
-countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
 
 
 findPNGpath <- function(name_en) {
   pngDefaultPath <- "data/flags/flags/"
-  countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
   alpha2 <- countryCodes %>%
     filter(Country == name_en) %>%
     pull("Alpha-2 code")
