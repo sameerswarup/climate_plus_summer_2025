@@ -59,7 +59,7 @@ mean_choices <- names(mean_type_suffix)
 
 # FROM ETHAN'S FILES
 
-df <- readRDS("data/gpw_inequity_average copy.rds") %>%
+df <- readRDS("data/inequity_filtered5k.rds") %>%
   st_transform(4326)
 
 findPNGpath <- function(name_en) {
@@ -78,7 +78,7 @@ findPNGpath <- function(name_en) {
 
 # GLOBAL-LEVEL VARIABLES (UNCHANGING)
 
-global_level_variables <- names(df)[104:116]
+global_level_variables <- names(df)[8:20]
 
 global_level_choices <- c(
   "Nutritional Dependence" = "Nutritional.dependence.sc" ,
@@ -96,12 +96,12 @@ global_level_choices <- c(
 )
 
 average_country_nogeo <- df |>
-  group_by(ISOALPHA) |>
+  group_by(iso_a3.x) |>
   summarize (
-    COUNTRYNM = first(COUNTRYNM),
-    across(99:119, ~mean(.x, na.rm = TRUE))
+    name_en = first(name_en),
+    across(5:24, ~mean(.x, na.rm = TRUE))
   )
 
-average_country_nogeo <- select(average_country_nogeo, all_of(global_level_variables))
+average_country_nogeo <- select(average_country_nogeo, iso_a3.x, name_en, all_of(global_level_variables))
 
 inequity_data_descriptions <- read.csv("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/inequity_data_descriptions.csv")
