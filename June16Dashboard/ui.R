@@ -3,10 +3,11 @@ library(leaflet)
 library(bslib)
 
 ui <- page_sidebar(
-  input_dark_mode(id = "light"), 
   title = "High Stakes Socio-Economic Mapping of Coastal Zones",
+  # input_dark_mode(id = "light"), 
   sidebar = sidebar(
     width = 400,
+    # imageOutput("dataplus_logo"),
     tags$h1("Inequity Indicators Map", style = "color: #003087;
             font-weight: bold"),
     selectInput("indicator_category", "Choose Indicator Category:", 
