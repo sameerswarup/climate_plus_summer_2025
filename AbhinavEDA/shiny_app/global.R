@@ -1,4 +1,3 @@
-# global.R
 library(shiny)
 library(leaflet)
 library(dplyr)
@@ -6,9 +5,12 @@ library(sf)
 library(viridis)
 library(tidyverse)
 library(qs)
+library(rnaturalearth)
 
-print(">>> global.R is running <<<")
-print(list.files())
+country_polygons <- ne_countries(scale = "medium", returnclass = "sf")
+country_centroids_sf <- country_polygons %>%
+  select(admin, geometry) %>%
+  mutate(geometry = st_centroid(geometry))  # Geometric center of polygon
 
 # Load original data
 gov <- readRDS("data/governance_scores.rds")
@@ -17,19 +19,39 @@ eco <- readRDS("data/ecological_scores.rds")
 dep <- readRDS("data/deprivation_scores.rds")
 exp <- readRDS("data/exposure_scores.rds")
 
-# Sample smaller subsets for testing
-gov <- gov %>% slice_sample(n = 40000)
-ineq <- ineq %>% slice_sample(n = 40000)
-eco <- eco %>% slice_sample(n = 40000)
-dep <- dep %>% slice_sample(n = 40000)
-exp <- exp %>% slice_sample(n = 40000)
+# Subset for performance
+gov <- gov %>% slice_sample(n = 200000)
+ineq <- ineq %>% slice_sample(n = 200000)
+eco <- eco %>% slice_sample(n = 200000)
+dep <- dep %>% slice_sample(n = 200000)
+exp <- exp %>% slice_sample(n = 200000)
+
+# Function to create country-aggregated datasets with centroid geometries
+aggregate_country <- function(data) {
+  data %>%
+    filter(!is.na(COUNTRY), !st_is_empty(geometry)) %>%
+    group_by(COUNTRY) %>%
+    summarise(across(ends_with("_arith") | ends_with("_geom"), mean, na.rm = TRUE)) %>%
+    ungroup() %>%
+    mutate(
+      geometry = country_centroids_sf[match(COUNTRY, country_centroids_sf$admin), ]$geometry
+    ) %>%
+    st_as_sf()
+}
+
+# Create both full and global (aggregated) datasets
+gov_global <- aggregate_country(gov)
+ineq_global <- aggregate_country(ineq)
+eco_global <- aggregate_country(eco)
+dep_global <- aggregate_country(dep)
+exp_global <- aggregate_country(exp)
 
 data_list <- list(
-  "Governance" = gov,
-  "Inequality" = ineq,
-  "Ecological" = eco,
-  "Deprivation" = dep,
-  "Exposure" = exp
+  "Governance" = list(full = gov, global = gov_global),
+  "Inequality" = list(full = ineq, global = ineq_global),
+  "Ecological" = list(full = eco, global = eco_global),
+  "Deprivation" = list(full = dep, global = dep_global),
+  "Exposure" = list(full = exp, global = exp_global)
 )
 
 indicator_prefix_map <- c(
@@ -46,99 +68,4 @@ mean_type_suffix <- c(
 )
 
 indicator_choices <- names(data_list)
-
 mean_choices <- names(mean_type_suffix)
-
-# library(shiny)
-# library(leaflet)
-# library(dplyr)
-# library(sf)
-# library(viridis)
-# library(tidyverse)
-# 
-# print(">>> global.R is running <<<")
-# print(list.files("data"))
-
-# # Load full datasets and simplify geometries in memory
-# gov <- st_simplify(readRDS("data/governance_scores.rds"), dTolerance = 0.25, preserveTopology = TRUE)
-# ineq <- st_simplify(readRDS("data/inequality_scores.rds"), dTolerance = 0.25, preserveTopology = TRUE)
-# eco  <- st_simplify(readRDS("data/ecological_scores.rds"), dTolerance = 0.25, preserveTopology = TRUE)
-# dep  <- st_simplify(readRDS("data/deprivation_scores.rds"), dTolerance = 0.25, preserveTopology = TRUE)
-# exp  <- st_simplify(readRDS("data/exposure_scores.rds"), dTolerance = 0.25, preserveTopology = TRUE)
-# 
-# # Combine into list for use in server
-# data_list <- list(
-#   "Governance" = gov,
-#   "Inequality" = ineq,
-#   "Ecological" = eco,
-#   "Deprivation" = dep,
-#   "Exposure" = exp
-# )
-# 
-# # Define input options
-# mean_type_suffix <- c(
-#   "Arithmetic Mean" = "_arith",
-#   "Geometric Mean" = "_geom",
-#   "Harmonic Mean" = "_harm"
-# )
-# 
-# indicator_choices <- names(data_list)
-# mean_choices <- names(mean_type_suffix)
-
-
-# library(shiny)
-# library(leaflet)
-# library(dplyr)
-# library(sf)
-# library(viridis)
-# library(tidyverse)
-# library(qs)
-# 
-# print(">>> global.R is running <<<")
-# print(list.files())
-# 
-# # Load original data
-# gov <- readRDS("data/governance_scores.rds") 
-# ineq <- readRDS("data/inequality_scores.rds") 
-# eco <- readRDS("data/ecological_scores.rds")
-# dep <- readRDS("data/deprivation_scores.rds")
-# exp <- readRDS("data/exposure_scores.rds")
-# 
-# # Function to group by COUNTRY, average indicators, and compute a centroid
-# aggregate_country <- function(data) {
-#   data <- data %>%
-#     filter(!is.na(COUNTRY), !st_is_empty(geometry)) %>%
-#     group_by(COUNTRY) %>%
-#     summarise(across(ends_with("_arith") | ends_with("_geom") | ends_with("_harm"), mean, na.rm = TRUE),
-#               geometry = st_centroid(st_union(geometry))) %>%
-#     ungroup() %>%
-#     st_as_sf()
-#   
-#   return(data)
-# }
-# 
-# # Apply aggregation to each dataset
-# gov <- aggregate_country(gov)
-# ineq <- aggregate_country(ineq)
-# eco <- aggregate_country(eco)
-# dep <- aggregate_country(dep)
-# exp <- aggregate_country(exp)
-# 
-# # Combine into list for use in server
-# data_list <- list(
-#   "Governance" = gov,
-#   "Inequality" = ineq,
-#   "Ecological" = eco,
-#   "Deprivation" = dep,
-#   "Exposure" = exp
-# )
-# 
-# # Define input options
-# mean_type_suffix <- c(
-#   "Arithmetic Mean" = "_arith",
-#   "Geometric Mean" = "_geom"
-# )
-# 
-# indicator_choices <- names(data_list)
-# mean_choices <- names(mean_type_suffix)
-
