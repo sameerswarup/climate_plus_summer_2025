@@ -123,7 +123,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$country_select, {
     country <-input$country_select
-    dataset <- filter(df, COUNTRYNM == country)
+    dataset <- filter(countryCodes, Country == country)
     country_dataset(dataset)
   })
   
@@ -203,7 +203,7 @@ server <- function(input, output, session) {
         # SELECT COUNTRY
         
         selectInput("country_select", "Select a Country to Investigate",
-                    choices = sort(unique(df$COUNTRYNM)),
+                    choices = sort(unique(countryCodes$Country)),
                     selected = "Japan"),
         
         #DISPLAYS WHAT COUNTRY WAS CHOSEN
@@ -374,12 +374,12 @@ server <- function(input, output, session) {
     x_col <- input$first_indicator
     y_col <- input$second_indicator
     
-    cor = cor(data[[x_col]], data[[y_col]])
+    cor = cor(data[[x_col]], data[[y_col]], use = "complete.obs")
     
     cor = round(cor, 4)
     
     
-    spr_cor = cor(data[[x_col]], data[[y_col]], method = "spearman")
+    spr_cor = cor(data[[x_col]], data[[y_col]], method = "spearman", use = "complete.obs")
     spr_cor = round(spr_cor, 4)
     
     paste("Pearson Coefficient (r) = ", cor,
@@ -395,12 +395,12 @@ server <- function(input, output, session) {
     x_col <- input$first_indicator_global
     y_col <- input$second_indicator_global
     
-    cor = cor(data[[x_col]], data[[y_col]])
+    cor = cor(data[[x_col]], data[[y_col]], use = "complete.obs")
     
     cor = round(cor, 4)
     
     
-    spr_cor = cor(data[[x_col]], data[[y_col]], method = "spearman")
+    spr_cor = cor(data[[x_col]], data[[y_col]], method = "spearman", use = "complete.obs")
     spr_cor = round(spr_cor, 4)
     
     paste("Pearson Coefficient (r) = ", cor,
