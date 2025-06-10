@@ -14,3 +14,5 @@ ui <- page_sidebar(
   ),
   leafletOutput("map", height = 600)
 )
+
+

@@ -147,3 +147,15 @@ map <- leaflet(gov) %>%
 saveWidget(map, "map.html", selfcontained = TRUE)
 browseURL("map.html")
 ```
+
+-   <div>
+
+    -   <div>
+
+        ```{r}
+        nrow(gov)
+        ```
+
+        </div>
+
+    </div>

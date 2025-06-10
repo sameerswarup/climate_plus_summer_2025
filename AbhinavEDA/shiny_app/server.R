@@ -1,23 +1,29 @@
-# server.R
 server <- function(input, output, session) {
+  # Reactive to get the selected dataset from the list
   selected_data <- reactive({
     req(input$indicator_category)
     data_list[[input$indicator_category]]
   })
   
+  # Reactive to get the correct variable name for the selected dataset and mean type
   selected_var <- reactive({
-    paste0(tolower(substr(input$indicator_category, 1, 3)),
-           mean_type_suffix[[input$mean_type]])
+    req(input$indicator_category, input$mean_type)
+    prefix <- indicator_prefix_map[[input$indicator_category]]
+    paste0(prefix, mean_type_suffix[[input$mean_type]])
   })
   
+  # Render Leaflet map based on user selection
   output$map <- renderLeaflet({
     data <- selected_data()
     var <- selected_var()
     
+    # Confirm the variable exists in the data
     req(var %in% colnames(data))
     
+    # Define color palette
     pal <- colorNumeric("viridis", domain = data[[var]], na.color = "transparent")
     
+    # Build map
     leaflet(data) %>%
       addTiles() %>%
       addCircleMarkers(
