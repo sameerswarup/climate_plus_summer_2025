@@ -26,12 +26,13 @@ ui <- fluidPage(
         
       
         page_sidebar(
-          title = tags$h3(div("Main Dashboard", class = "font header_color center; font-weight: bold; ")),
+          title = tags$h3(div("Main Dashboard", class = "font header_color center", style="font-weight: bold")),
           
           sidebar = sidebar(
-            width = 500,
+            width = 400,
+            height = 400,
             
-            tags$h3("Search", style = "color: #003087; margin: 0"),
+            tags$h4("Search", style = "color: #003087; margin: 0; padding: 0; text-decoration: underline"),
 
             uiOutput("country_selector"),
             
@@ -39,7 +40,7 @@ ui <- fluidPage(
             
             actionButton("zoom_button", "Zoom"),
             
-            tags$h3("Filter", style = "color: #003087;"),
+            tags$h4("Filter", style = "color: #003087; text-decoration: underline"),
             
             selectInput("score_type", "Select Indicator to Display",
                                         choices = c(
