@@ -73,13 +73,6 @@ indicator_prefix_map <- c(
   "Exposure" = "exp"
 )
 
-data_list <- list(
-  "Governance" = gov,
-  "Inequality" = ineq,
-  "Ecological" = eco,
-  "Deprivation" = dep,
-  "Exposure" = exp
-)
 
 mean_type_suffix <- c(
   "Arithmetic Mean" = "_arith",

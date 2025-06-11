@@ -15,17 +15,20 @@ ui <- page_sidebar(
     selectInput("mean_type", "Choose Mean Type:", 
                 choices = mean_choices, selected = "Arithmetic Mean"),
     
+    selectizeInput("country_search", "Jump to Country:", choices = NULL, selected = NULL),
+    actionButton("zoom_button", "Zoom to Selected Country"),
+    
     hr(), # HORIZONAL DIVIDING LINE
-    
-    tags$h3("Zoom", style = "color: #003087;
-            font-weight: bold"),
-    
-    uiOutput("country_selector"),
-    
-    uiOutput("region_selector"),
-    
-    actionButton("zoom_button", "Zoom"),
-    
+    # 
+    # tags$h3("Zoom", style = "color: #003087;
+    #         font-weight: bold"),
+    # 
+    # uiOutput("country_selector"),
+    # 
+    # uiOutput("region_selector"),
+    # 
+    # actionButton("zoom_button", "Zoom"),
+    # 
     hr(), # HORIZONAL DIVIDING LINE
     
     tags$h3("Make Your Own CUSTOM GRAPH!",
