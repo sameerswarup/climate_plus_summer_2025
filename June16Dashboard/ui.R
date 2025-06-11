@@ -4,7 +4,7 @@ library(bslib)
 
 ui <- page_sidebar(
   title = "High Stakes Socio-Economic Mapping of Coastal Zones",
-  # input_dark_mode(id = "light"), 
+  theme = bs_theme(bootswatch = "flatly"),
   
   sidebar = sidebar(
     width = 400,
@@ -14,71 +14,75 @@ ui <- page_sidebar(
       style = "margin-bottom: 20px;",
       # imageOutput("dataplus_logo"),
       tags$h1("Inequity Indicators Map", 
-              style = "color: #003087; font-weight: bold; margin-bottom: 20px;")
+              style = "color: var(--bs-primary, #003087); font-weight: bold; margin-bottom: 20px;")
     ),
     
-    # Card for map controls
-    card(
-      card_header("Map Controls"),
-      selectInput("indicator_category", "Choose Indicator Category:", 
-                  choices = indicator_choices, selected = "Ecological"),
-      selectInput("mean_type", "Choose Mean Type:", 
-                  choices = mean_choices, selected = "Arithmetic Mean"),
-      
-      selectizeInput("country_search", "Jump to Country:", 
-                     choices = NULL, selected = NULL),
-      actionButton("zoom_button", "Zoom to Selected Country", 
-                   style = "width: 100%; margin-top: 10px;"),
-      
-      # Satellite view toggle
-      tags$div(
-        style = "margin-top: 15px;",
-        checkboxInput("satellite_view", "Satellite View", value = FALSE)
+    # Map controls - only show on Interactive Map tab
+    conditionalPanel(
+      condition = "input.tabset == 'Interactive Map'",
+      card(
+        card_header("Map Controls"),
+        selectInput("indicator_category", "Choose Indicator Category:", 
+                    choices = indicator_choices, selected = "Ecological"),
+        selectInput("mean_type", "Choose Mean Type:", 
+                    choices = mean_choices, selected = "Arithmetic Mean"),
+        
+        selectizeInput("country_search", "Jump to Country:", 
+                       choices = NULL, selected = NULL),
+        actionButton("zoom_button", "Zoom to Selected Country", 
+                     style = "width: 100%; margin-top: 10px;"),
+        
+        # Satellite view toggle
+        tags$div(
+          style = "margin-top: 15px;",
+          checkboxInput("satellite_view", "Satellite View", value = FALSE)
+        )
       )
     ),
     
-    # Spacing between cards
-    tags$div(style = "margin: 20px 0;"),
-    
-    # Card for custom analysis
-    card(
-      card_header(
-        tags$h3("Make Your Own CUSTOM GRAPH!", 
-                style = "color: #003087; font-weight: bold; margin: 0;")
-      ),
-      
-      # Better spacing for explanatory text
-      tags$div(
-        style = "margin-bottom: 15px;",
-        tags$h6("Global: Each data point represents the average score of a country.", 
-                style = "font-style: italic; margin-bottom: 5px;"),
-        tags$h6("Country: Each data point represents the score of a district within a chosen country.", 
-                style = "font-style: italic; margin-bottom: 0;")
-      ),
-      
-      # Analysis level selection
-      selectInput("global_or_country", "Select level of investigation:",
-                  choices = c("Global" = "global", "Country" = "country"),
-                  selected = "Global"),
-      
-      # Dynamic components
-      uiOutput("global_or_country_components")
+    # Custom graph controls - only show on Custom Graphs tab
+    conditionalPanel(
+      condition = "input.tabset == 'Custom Graphs'",
+      card(
+        card_header(
+          tags$h3("Make Your Own CUSTOM GRAPH!", 
+                  style = "color: var(--bs-primary, #003087); font-weight: bold; margin: 0;")
+        ),
+        
+        # Better spacing for explanatory text
+        tags$div(
+          style = "margin-bottom: 15px;",
+          tags$h6("Global: Each data point represents the average score of a country.", 
+                  style = "font-style: italic; margin-bottom: 5px;"),
+          tags$h6("Country: Each data point represents the score of a district within a chosen country.", 
+                  style = "font-style: italic; margin-bottom: 0;")
+        ),
+        
+        # Analysis level selection
+        selectInput("global_or_country", "Select level of investigation:",
+                    choices = c("Global" = "global", "Country" = "country"),
+                    selected = "Global"),
+        
+        # Dynamic components
+        uiOutput("global_or_country_components")
+      )
     )
   ),
   
   # Main content area with tabs
   navset_card_tab(
+    id = "tabset",
     nav_panel("Interactive Map", 
               leafletOutput("map", height = 600)),
     
-    nav_panel("Analysis Results",
+    nav_panel("Custom Graphs",
               # Global analysis results
               conditionalPanel(
                 condition = "input.global_or_country == 'global'",
                 tags$div(
                   style = "padding: 20px;",
                   tags$h3("Global Analysis Results", 
-                          style = "color: #003087; margin-bottom: 20px;"),
+                          style = "color: var(--bs-primary, #003087); margin-bottom: 20px;"),
                   
                   card(
                     card_header("Bivariate Scatter Plot"),
@@ -100,7 +104,7 @@ ui <- page_sidebar(
                 tags$div(
                   style = "padding: 20px;",
                   tags$h3("Country Analysis Results", 
-                          style = "color: #003087; margin-bottom: 20px;"),
+                          style = "color: var(--bs-primary, #003087); margin-bottom: 20px;"),
                   
                   # Country info section
                   card(
@@ -140,7 +144,7 @@ ui <- page_sidebar(
               tags$div(
                 style = "padding: 20px; text-align: center;",
                 tags$h3("Country Comparison Tool", 
-                        style = "color: #003087; margin-bottom: 20px;"),
+                        style = "color: var(--bs-primary, #003087); margin-bottom: 20px;"),
                 tags$p("This feature will be implemented soon!", 
                        style = "font-size: 18px; color: #666; font-style: italic;"),
                 tags$p("Coming features:", style = "margin-top: 30px; font-weight: bold;"),
