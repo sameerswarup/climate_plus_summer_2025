@@ -145,15 +145,13 @@ ui <- page_sidebar(
                 style = "padding: 20px; text-align: center;",
                 tags$h3("Country Comparison Tool", 
                         style = "color: var(--bs-primary, #003087); margin-bottom: 20px;"),
-                tags$p("This feature will be implemented soon!", 
+                tags$p("This feature will be implemented soon! yay!", 
                        style = "font-size: 18px; color: #666; font-style: italic;"),
                 tags$p("Coming features:", style = "margin-top: 30px; font-weight: bold;"),
                 tags$ul(
                   style = "text-align: left; max-width: 400px; margin: 0 auto;",
-                  tags$li("Side-by-side country comparison"),
-                  tags$li("Statistical difference testing"),
-                  tags$li("Comparative visualizations"),
-                  tags$li("Export comparison results")
+                  tags$li("random feature 1"),
+                  tags$li("random feature 2")
                 )
               )
     )
