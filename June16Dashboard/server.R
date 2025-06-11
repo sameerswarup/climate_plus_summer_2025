@@ -3,49 +3,49 @@ server <- function(input, output, session) {
   
   #rv <- reactiveValues(zoom = 4)
   
-  output$country_selector <- renderUI({
-    choices <- countryCodes %>%
-      filter(!is.na(Alpha.3.code), !is.na(Country)) %>%
-      distinct(Alpha.3.code, Country) %>%
-      { setNames(.$Alpha.3.code, .$Country) }
-    
-    selectInput("selected_country", "Select Country", choices = choices)
-  })
-  
-  output$region_selector <- renderUI({
-    req(input$selected_country)  # wait for a country selection
-    country <- gsub("\"", "", trimws(input$selected_country))
-    
-    choices <- regionCodes %>%
-      filter(iso_a3 == country) %>%
-      distinct(GID_2, NAME_2) %>%
-      { setNames(.$GID_2, .$NAME_2) }
-    
-    # Handle empty choices
-    if (length(choices) == 0) {
-      choices <- c("No regions available" = "")
-    }
-    
-    selectInput("selected_region", "Select District", choices = choices)
-  })
-  
-  observe({
-    invalidateLater(60000)  # Every 5 seconds
-    cat("Memory usage:", mem_used(), "\n")
-  })
-  
-  # Zoom Button
-  observeEvent(input$zoom_button, {
-    country <- gsub("\"", "", trimws(input$selected_country))
-    
-    new_zoom <- 6
-    #if(input$map_zoom > 3) new_zoom <- 3
-    
-    country_details <- countryCodes %>% filter(Alpha.3.code == input$selected_country)
-    
-    leafletProxy("map") %>%
-      setView(lng = gsub("\"", "", trimws(country_details$Longitude..average.)), lat = gsub("\"", "", trimws(country_details$Latitude..average.)), zoom = new_zoom)
-  })
+  # output$country_selector <- renderUI({
+  #   choices <- countryCodes %>%
+  #     filter(!is.na(Alpha.3.code), !is.na(Country)) %>%
+  #     distinct(Alpha.3.code, Country) %>%
+  #     { setNames(.$Alpha.3.code, .$Country) }
+  #   
+  #   selectInput("selected_country", "Select Country", choices = choices)
+  # })
+  # 
+  # output$region_selector <- renderUI({
+  #   req(input$selected_country)  # wait for a country selection
+  #   country <- gsub("\"", "", trimws(input$selected_country))
+  #   
+  #   choices <- regionCodes %>%
+  #     filter(iso_a3 == country) %>%
+  #     distinct(GID_2, NAME_2) %>%
+  #     { setNames(.$GID_2, .$NAME_2) }
+  #   
+  #   # Handle empty choices
+  #   if (length(choices) == 0) {
+  #     choices <- c("No regions available" = "")
+  #   }
+  #   
+  #   selectInput("selected_region", "Select District", choices = choices)
+  # })
+  # 
+  # observe({
+  #   invalidateLater(60000)  # Every 5 seconds
+  #   cat("Memory usage:", mem_used(), "\n")
+  # })
+  # 
+  # # Zoom Button
+  # observeEvent(input$zoom_button, {
+  #   country <- gsub("\"", "", trimws(input$selected_country))
+  #   
+  #   new_zoom <- 6
+  #   #if(input$map_zoom > 3) new_zoom <- 3
+  #   
+  #   country_details <- countryCodes %>% filter(Alpha.3.code == input$selected_country)
+  #   
+  #   leafletProxy("map") %>%
+  #     setView(lng = gsub("\"", "", trimws(country_details$Longitude..average.)), lat = gsub("\"", "", trimws(country_details$Latitude..average.)), zoom = new_zoom)
+  # })
   
   # ----------------------------------------------------------------------------
   selected_country <- reactiveVal(NULL)
@@ -159,6 +159,23 @@ server <- function(input, output, session) {
         title = paste0(country, " (", input$mean_type, ")"),
         position = "bottomright"
       )
+  })
+  
+  observeEvent(input$zoom_button, {
+    country <- selected_country()
+    if (is.null(country)) {
+      leafletProxy("map") %>%
+        setView(lng = 0, lat = 20, zoom = 2)
+      return()
+    }
+    
+    zoom_coords <- country_centroids %>%
+      filter(COUNTRY == country) %>%
+      select(X, Y) %>%
+      unlist()
+    
+    leafletProxy("map") %>%
+      setView(lng = zoom_coords["X"], lat = zoom_coords["Y"], zoom = 5)
   })
   
 # -----------------------------------------------------------------------------
