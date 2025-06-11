@@ -15,7 +15,11 @@ print(list.files())
 
 countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
 
+<<<<<<< HEAD
 regionCodes <- suppressWarnings(readRDS("/Users/student/Desktop/regions 1.rds"))
+=======
+regionCodes <- suppressWarnings(readRDS("../shiny/data/regions.rds"))
+>>>>>>> 0686bd52ef9ae43ee3d8aa155ee66ba11b616703
 
 country_polygons <- ne_countries(scale = "medium", returnclass = "sf")
 country_centroids_sf <- country_polygons %>%
