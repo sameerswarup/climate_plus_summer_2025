@@ -65,7 +65,7 @@ data_list <- list(
   "Exposure" = list(full = exp, global = exp_global)
 )
 
-indicator_prefix_map <- c(
+indicator_prefix_map <- list(
   "Governance" = "gov",
   "Inequality" = "ineq",
   "Ecological" = "eco",
@@ -74,7 +74,7 @@ indicator_prefix_map <- c(
 )
 
 
-mean_type_suffix <- c(
+mean_type_suffix <- list(
   "Arithmetic Mean" = "_arith",
   "Geometric Mean" = "_geom"
 )
