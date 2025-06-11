@@ -48,32 +48,41 @@ server <- function(input, output, session) {
   })
   
   # ----------------------------------------------------------------------------
-  # Reactive to get the selected dataset from the list
-  selected_data <- reactive({
-    req(input$indicator_category)
-    data_list[[input$indicator_category]]
-  })
+  selected_country <- reactiveVal(NULL)
   
-  # Reactive to get the correct variable name for the selected dataset and mean type
   selected_var <- reactive({
     req(input$indicator_category, input$mean_type)
     prefix <- indicator_prefix_map[[input$indicator_category]]
     paste0(prefix, mean_type_suffix[[input$mean_type]])
   })
   
-  # Render Leaflet map based on user selection
+  observe({
+    global_data <- data_list[[input$indicator_category]]$global
+    choices <- c("Global (Default)", sort(unique(global_data$COUNTRY)))
+    updateSelectizeInput(session, "country_search", choices = choices, server = TRUE)
+  })
+  
+  observeEvent(input$country_search, {
+    if (input$country_search == "Global (Default)") {
+      selected_country(NULL)
+    } else {
+      selected_country(input$country_search)
+    }
+  })
+  
+  observeEvent(input$map_marker_click, {
+    clicked_country <- input$map_marker_click$id
+    selected_country(clicked_country)
+  })
+  
   output$map <- renderLeaflet({
-    data <- selected_data()
     var <- selected_var()
+    global_data <- data_list[[input$indicator_category]]$global
+    req(var %in% colnames(global_data))
     
-    # Confirm the variable exists in the data
-    req(var %in% colnames(data))
+    pal <- colorNumeric("viridis", domain = global_data[[var]], na.color = "transparent")
     
-    # Define color palette
-    pal <- colorNumeric("viridis", domain = data[[var]], na.color = "transparent")
-    
-    # Build map
-    leaflet(data) %>%
+    leaflet(global_data) %>%
       addTiles() %>%
       addCircleMarkers(
         radius = 6,
@@ -82,17 +91,75 @@ server <- function(input, output, session) {
         stroke = TRUE,
         color = "white",
         weight = 0.5,
-        label = ~paste0(COUNTRY, ": ", round(get(var), 3))
+        label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
+        layerId = ~COUNTRY
       ) %>%
       addLegend(
         pal = pal,
-        values = data[[var]],
+        values = global_data[[var]],
         opacity = 0.8,
         title = paste(input$indicator_category, "(", input$mean_type, ")"),
         position = "bottomright"
       )
   })
   
+  observeEvent(selected_country(), {
+    country <- selected_country()
+    var <- selected_var()
+    full_data <- data_list[[input$indicator_category]]$full
+    global_data <- data_list[[input$indicator_category]]$global
+    
+    if (is.null(country)) {
+      pal <- colorNumeric("viridis", domain = global_data[[var]], na.color = "transparent")
+      leafletProxy("map") %>%
+        clearMarkers() %>%
+        clearControls() %>%
+        addCircleMarkers(
+          data = global_data,
+          radius = 6,
+          fillColor = ~pal(get(var)),
+          fillOpacity = 0.8,
+          stroke = TRUE,
+          color = "white",
+          weight = 0.5,
+          label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
+          layerId = ~COUNTRY
+        ) %>%
+        addLegend(
+          pal = pal,
+          values = global_data[[var]],
+          opacity = 0.8,
+          title = paste(input$indicator_category, "(", input$mean_type, ")"),
+          position = "bottomright"
+        )
+      return()
+    }
+    
+    country_data <- full_data %>% filter(COUNTRY == country)
+    req(nrow(country_data) > 0)
+    
+    pal <- colorNumeric("viridis", domain = country_data[[var]], na.color = "transparent")
+    leafletProxy("map") %>%
+      clearMarkers() %>%
+      clearControls() %>%
+      addCircleMarkers(
+        data = country_data,
+        radius = 6,
+        fillColor = ~pal(get(var)),
+        fillOpacity = 0.9,
+        stroke = TRUE,
+        color = "black",
+        weight = 0.7,
+        label = ~paste0(COUNTRY, ": ", round(get(var), 3))
+      ) %>%
+      addLegend(
+        pal = pal,
+        values = country_data[[var]],
+        opacity = 0.9,
+        title = paste0(country, " (", input$mean_type, ")"),
+        position = "bottomright"
+      )
+  })
   
 # -----------------------------------------------------------------------------
   
