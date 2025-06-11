@@ -18,6 +18,21 @@ server <- function(input, output, session) {
     updateSelectizeInput(session, "country_search", choices = choices, server = TRUE)
   })
   
+  # Standardized country selection - sync between country_search and country_select
+  observeEvent(input$country_search, {
+    if (input$country_search != "Global (Default)" && !is.null(input$country_search)) {
+      # Update country_select to match country_search
+      updateSelectInput(session, "country_select", selected = input$country_search)
+    }
+  })
+  
+  observeEvent(input$country_select, {
+    if (!is.null(input$country_select)) {
+      # Update country_search to match country_select
+      updateSelectizeInput(session, "country_search", selected = input$country_select)
+    }
+  })
+  
   observeEvent(input$country_search, {
     if (input$country_search == "Global (Default)") {
       selected_country(NULL)
@@ -38,8 +53,16 @@ server <- function(input, output, session) {
     
     pal <- colorNumeric("viridis", domain = global_data[[var]], na.color = "transparent")
     
-    leaflet(global_data) %>%
-      addTiles() %>%
+    # Create map with conditional tile layer
+    map <- leaflet(global_data)
+    
+    if (input$satellite_view) {
+      map <- map %>% addProviderTiles(providers$Esri.WorldImagery)
+    } else {
+      map <- map %>% addTiles()
+    }
+    
+    map %>%
       addCircleMarkers(
         radius = 6,
         fillColor = ~pal(get(var)),
@@ -57,6 +80,19 @@ server <- function(input, output, session) {
         title = paste(input$indicator_category, "(", input$mean_type, ")"),
         position = "bottomright"
       )
+  })
+  
+  # Update map tiles when satellite view changes - preserve zoom and center
+  observeEvent(input$satellite_view, {
+    if (input$satellite_view) {
+      leafletProxy("map") %>%
+        clearTiles() %>%
+        addProviderTiles(providers$Esri.WorldImagery)
+    } else {
+      leafletProxy("map") %>%
+        clearTiles() %>%
+        addTiles()
+    }
   })
   
   observeEvent(selected_country(), {
@@ -180,7 +216,7 @@ server <- function(input, output, session) {
     if (input$global_or_country == "global") {
       tagList(
         tags$h4("Global Bivariate Analysis Setup", 
-                style = "color: #003087; margin-bottom: 15px;"),
+                style = "color: var(--bs-primary, #003087); margin-bottom: 15px;"),
         
         # First indicator selection with better spacing
         tags$div(
@@ -204,7 +240,7 @@ server <- function(input, output, session) {
                      style = "font-style: italic; color: #666;")
         ),
         
-        tags$p("Results will appear in the 'Analysis Results' tab.", 
+        tags$p("Results will appear in the 'Custom Graphs' tab.", 
                style = "font-style: italic; text-align: center; margin-top: 20px; color: #666;")
       ) 
       
@@ -212,20 +248,22 @@ server <- function(input, output, session) {
     } else if (input$global_or_country == "country") {
       tagList(
         tags$h4("Country-Level Analysis Setup", 
-                style = "color: #003087; margin-bottom: 15px;"),
+                style = "color: var(--bs-primary, #003087); margin-bottom: 15px;"),
         
-        # Country selection
+        # Country selection - now synchronized with country_search
         tags$div(
           style = "margin-bottom: 20px;",
           selectInput("country_select", "Select a Country to Investigate",
                       choices = sort(unique(countryCodes$Country)),
-                      selected = "Japan")
+                      selected = "Japan"),
+          tags$small("This selection is synchronized with 'Jump to Country' above.", 
+                     style = "font-style: italic; color: #666;")
         ),
         
         # Histogram indicator selection
         tags$div(
           style = "margin-bottom: 15px;",
-          tags$h5("Histogram Analysis:", style = "margin-bottom: 10px; color: #003087;"),
+          tags$h5("Histogram Analysis:", style = "margin-bottom: 10px; color: var(--bs-primary, #003087);"),
           selectInput("country_histogram_indicator", 
                       "Choose an indicator for distribution analysis",
                       choices = c(
@@ -240,7 +278,7 @@ server <- function(input, output, session) {
         # Bivariate analysis setup
         tags$div(
           style = "margin-bottom: 15px;",
-          tags$h5("Bivariate Analysis:", style = "margin-bottom: 10px; color: #003087;"),
+          tags$h5("Bivariate Analysis:", style = "margin-bottom: 10px; color: var(--bs-primary, #003087);"),
           
           # First indicator
           tags$div(
@@ -275,7 +313,7 @@ server <- function(input, output, session) {
           )
         ),
         
-        tags$p("Results will appear in the 'Analysis Results' tab.", 
+        tags$p("Results will appear in the 'Custom Graphs' tab.", 
                style = "font-style: italic; text-align: center; margin-top: 20px; color: #666;")
       )
     }
