@@ -565,6 +565,10 @@ server <- function(input, output, session) {
     )
   }, deleteFile = FALSE)
   
+  
+  
+  
+  
   output$compare_map_1 <- renderLeaflet({
     var <- selected_var()
     global_data <- data_list[[input$indicator_category]]$global
