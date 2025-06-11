@@ -11,7 +11,7 @@ library(plotly)
 df <- readRDS("data/inequity_filtered5k.rds") %>%
   st_transform(4326)
 
-regionCodes <- suppressWarnings(readRDS("data/regions.rds"))
+regionCodes <- suppressWarnings(readRDS("/Users/student/Desktop/regions 1.rds"))
 
 inequity_data_descriptions <- read.csv("data/inequity_data_descriptions.csv")
 
