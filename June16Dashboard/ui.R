@@ -147,22 +147,8 @@ ui <- page_sidebar(
                         style = "color: var(--bs-primary, #003087); margin-bottom: 20px;"),
                 tags$p("This feature will be implemented soon! yay!", 
                        style = "font-size: 18px; color: #666; font-style: italic;"),
-
-                fluidRow(
-                  column(width = 6,
-                         style = "height: 25vh;",  # 100% viewport height, light background
-                         div(style = "width: 100%; height: 10%;",
-                             h5("Search"),
-                             textInput("search", label = h5("Country Inspection"), value = "Enter a country..."),
-                             actionButton("submit_search", "Search")
-                         )
-                  ),
-                  column(width = 6,
-                         h5("Search"),
-                         textInput("search", label = h5("Country Inspection"), value = "Enter a country..."),
-                         actionButton("submit_search", "Search")
-                  )
-                ),
+                
+                
                 fluidRow(
                   column(width = 6,
                          style = "height: 30vh;",  # 100% viewport height, light background
@@ -174,6 +160,8 @@ ui <- page_sidebar(
                          leafletOutput("compare_map_2", width = "100%", height = 250)
                   )
                 ),
+                
+                
                 fluidRow(
                   column(width = 6,
                          h5("Summary Statistics"),
