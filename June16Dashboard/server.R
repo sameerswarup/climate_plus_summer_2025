@@ -18,6 +18,21 @@ server <- function(input, output, session) {
     updateSelectizeInput(session, "country_search", choices = choices, server = TRUE)
   })
   
+  # Standardized country selection - sync between country_search and country_select
+  observeEvent(input$country_search, {
+    if (input$country_search != "Global (Default)" && !is.null(input$country_search)) {
+      # Update country_select to match country_search
+      updateSelectInput(session, "country_select", selected = input$country_search)
+    }
+  })
+  
+  observeEvent(input$country_select, {
+    if (!is.null(input$country_select)) {
+      # Update country_search to match country_select
+      updateSelectizeInput(session, "country_search", selected = input$country_select)
+    }
+  })
+  
   observeEvent(input$country_search, {
     if (input$country_search == "Global (Default)") {
       selected_country(NULL)
@@ -38,8 +53,16 @@ server <- function(input, output, session) {
     
     pal <- colorNumeric("viridis", domain = global_data[[var]], na.color = "transparent")
     
-    leaflet(global_data) %>%
-      addTiles() %>%
+    # Create map with conditional tile layer
+    map <- leaflet(global_data)
+    
+    if (input$satellite_view) {
+      map <- map %>% addProviderTiles(providers$Esri.WorldImagery)
+    } else {
+      map <- map %>% addTiles()
+    }
+    
+    map %>%
       addCircleMarkers(
         radius = 6,
         fillColor = ~pal(get(var)),
@@ -57,6 +80,19 @@ server <- function(input, output, session) {
         title = paste(input$indicator_category, "(", input$mean_type, ")"),
         position = "bottomright"
       )
+  })
+  
+  # Update map tiles when satellite view changes
+  observeEvent(input$satellite_view, {
+    if (input$satellite_view) {
+      leafletProxy("map") %>%
+        clearTiles() %>%
+        addProviderTiles(providers$Esri.WorldImagery)
+    } else {
+      leafletProxy("map") %>%
+        clearTiles() %>%
+        addTiles()
+    }
   })
   
   observeEvent(selected_country(), {
@@ -214,12 +250,14 @@ server <- function(input, output, session) {
         tags$h4("Country-Level Analysis Setup", 
                 style = "color: #003087; margin-bottom: 15px;"),
         
-        # Country selection
+        # Country selection - now synchronized with country_search
         tags$div(
           style = "margin-bottom: 20px;",
           selectInput("country_select", "Select a Country to Investigate",
                       choices = sort(unique(countryCodes$Country)),
-                      selected = "Japan")
+                      selected = "Japan"),
+          tags$small("This selection is synchronized with 'Jump to Country' above.", 
+                     style = "font-style: italic; color: #666;")
         ),
         
         # Histogram indicator selection

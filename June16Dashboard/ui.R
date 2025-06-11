@@ -28,7 +28,13 @@ ui <- page_sidebar(
       selectizeInput("country_search", "Jump to Country:", 
                      choices = NULL, selected = NULL),
       actionButton("zoom_button", "Zoom to Selected Country", 
-                   style = "width: 100%; margin-top: 10px;")
+                   style = "width: 100%; margin-top: 10px;"),
+      
+      # Satellite view toggle
+      tags$div(
+        style = "margin-top: 15px;",
+        checkboxInput("satellite_view", "Satellite View", value = FALSE)
+      )
     ),
     
     # Spacing between cards
@@ -137,11 +143,13 @@ ui <- page_sidebar(
                         style = "color: #003087; margin-bottom: 20px;"),
                 tags$p("This feature will be implemented soon!", 
                        style = "font-size: 18px; color: #666; font-style: italic;"),
-                tags$p("soon features:", style = "margin-top: 30px; font-weight: bold;"),
+                tags$p("Coming features:", style = "margin-top: 30px; font-weight: bold;"),
                 tags$ul(
                   style = "text-align: left; max-width: 400px; margin: 0 auto;",
                   tags$li("Side-by-side country comparison"),
-                  tags$li("more features")
+                  tags$li("Statistical difference testing"),
+                  tags$li("Comparative visualizations"),
+                  tags$li("Export comparison results")
                 )
               )
     )
