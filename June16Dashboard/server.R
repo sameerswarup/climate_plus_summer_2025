@@ -212,7 +212,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$country_select, {
     country <-input$country_select
-    dataset <- filter(countryCodes, Country == country)
+    dataset <- filter(df, COUNTRY == country)
     country_dataset(dataset)
   })
   
@@ -395,6 +395,10 @@ server <- function(input, output, session) {
     x_col <- input$first_indicator
     y_col <- input$second_indicator
     
+    print(input$first_indicator)
+    print(input$second_indicator)
+    
+    print(data)
     # reverse so that i can find the labels for each choice
     
     indicator_choices <- c(
