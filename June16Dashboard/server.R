@@ -240,8 +240,6 @@ server <- function(input, output, session) {
                      style = "font-style: italic; color: #666;")
         ),
         
-        tags$p("Results will appear in the 'Custom Graphs' tab.", 
-               style = "font-style: italic; text-align: center; margin-top: 20px; color: #666;")
       ) 
       
       # COUNTRY-LEVEL COMPARISON  
