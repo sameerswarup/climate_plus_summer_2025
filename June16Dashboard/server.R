@@ -564,4 +564,76 @@ server <- function(input, output, session) {
          height = 120
     )
   }, deleteFile = FALSE)
+  
+  output$compare_map_1 <- renderLeaflet({
+    var <- selected_var()
+    global_data <- data_list[[input$indicator_category]]$global
+    req(var %in% colnames(global_data))
+    
+    pal <- colorNumeric("viridis", domain = global_data[[var]], na.color = "transparent")
+    
+    # Create map with conditional tile layer
+    map <- leaflet(global_data)
+    
+    if (input$satellite_view) {
+      map <- map %>% addProviderTiles(providers$Esri.WorldImagery)
+    } else {
+      map <- map %>% addTiles()
+    }
+    
+    map %>%
+      addCircleMarkers(
+        radius = 6,
+        fillColor = ~pal(get(var)),
+        fillOpacity = 0.8,
+        stroke = TRUE,
+        color = "white",
+        weight = 0.5,
+        label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
+        layerId = ~COUNTRY
+      ) %>%
+      addLegend(
+        pal = pal,
+        values = global_data[[var]],
+        opacity = 0.8,
+        title = paste(input$indicator_category, "(", input$mean_type, ")"),
+        position = "bottomright"
+      )
+  })
+  
+  output$compare_map_2 <- renderLeaflet({
+    var <- selected_var()
+    global_data <- data_list[[input$indicator_category]]$global
+    req(var %in% colnames(global_data))
+    
+    pal <- colorNumeric("viridis", domain = global_data[[var]], na.color = "transparent")
+    
+    # Create map with conditional tile layer
+    map <- leaflet(global_data)
+    
+    if (input$satellite_view) {
+      map <- map %>% addProviderTiles(providers$Esri.WorldImagery)
+    } else {
+      map <- map %>% addTiles()
+    }
+    
+    map %>%
+      addCircleMarkers(
+        radius = 6,
+        fillColor = ~pal(get(var)),
+        fillOpacity = 0.8,
+        stroke = TRUE,
+        color = "white",
+        weight = 0.5,
+        label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
+        layerId = ~COUNTRY
+      ) %>%
+      addLegend(
+        pal = pal,
+        values = global_data[[var]],
+        opacity = 0.8,
+        title = paste(input$indicator_category, "(", input$mean_type, ")"),
+        position = "bottomright"
+      )
+  })
 }
