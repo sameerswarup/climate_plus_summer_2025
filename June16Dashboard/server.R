@@ -82,7 +82,7 @@ server <- function(input, output, session) {
       )
   })
   
-  # Update map tiles when satellite view changes
+  # Update map tiles when satellite view changes - preserve zoom and center
   observeEvent(input$satellite_view, {
     if (input$satellite_view) {
       leafletProxy("map") %>%
@@ -216,7 +216,7 @@ server <- function(input, output, session) {
     if (input$global_or_country == "global") {
       tagList(
         tags$h4("Global Bivariate Analysis Setup", 
-                style = "color: #003087; margin-bottom: 15px;"),
+                style = "color: var(--bs-primary, #003087); margin-bottom: 15px;"),
         
         # First indicator selection with better spacing
         tags$div(
@@ -240,7 +240,7 @@ server <- function(input, output, session) {
                      style = "font-style: italic; color: #666;")
         ),
         
-        tags$p("Results will appear in the 'Analysis Results' tab.", 
+        tags$p("Results will appear in the 'Custom Graphs' tab.", 
                style = "font-style: italic; text-align: center; margin-top: 20px; color: #666;")
       ) 
       
@@ -248,7 +248,7 @@ server <- function(input, output, session) {
     } else if (input$global_or_country == "country") {
       tagList(
         tags$h4("Country-Level Analysis Setup", 
-                style = "color: #003087; margin-bottom: 15px;"),
+                style = "color: var(--bs-primary, #003087); margin-bottom: 15px;"),
         
         # Country selection - now synchronized with country_search
         tags$div(
@@ -263,7 +263,7 @@ server <- function(input, output, session) {
         # Histogram indicator selection
         tags$div(
           style = "margin-bottom: 15px;",
-          tags$h5("Histogram Analysis:", style = "margin-bottom: 10px; color: #003087;"),
+          tags$h5("Histogram Analysis:", style = "margin-bottom: 10px; color: var(--bs-primary, #003087);"),
           selectInput("country_histogram_indicator", 
                       "Choose an indicator for distribution analysis",
                       choices = c(
@@ -278,7 +278,7 @@ server <- function(input, output, session) {
         # Bivariate analysis setup
         tags$div(
           style = "margin-bottom: 15px;",
-          tags$h5("Bivariate Analysis:", style = "margin-bottom: 10px; color: #003087;"),
+          tags$h5("Bivariate Analysis:", style = "margin-bottom: 10px; color: var(--bs-primary, #003087);"),
           
           # First indicator
           tags$div(
@@ -313,7 +313,7 @@ server <- function(input, output, session) {
           )
         ),
         
-        tags$p("Results will appear in the 'Analysis Results' tab.", 
+        tags$p("Results will appear in the 'Custom Graphs' tab.", 
                style = "font-style: italic; text-align: center; margin-top: 20px; color: #666;")
       )
     }
