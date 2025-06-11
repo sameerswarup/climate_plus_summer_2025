@@ -10,3 +10,4 @@ bounding_boxes <- do.call(rbind, lapply(1:nrow(world), function(i) {
     ymax = bb["ymax"]
   )
 }))
+

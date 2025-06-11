@@ -58,7 +58,7 @@ server <- function(input, output, session) {
   
   observe({
     global_data <- data_list[[input$indicator_category]]$global
-    choices <- c("Global (Default)", sort(unique(global_data$COUNTRY)))
+    choices <- list("Global (Default)", sort(unique(global_data$COUNTRY)))
     updateSelectizeInput(session, "country_search", choices = choices, server = TRUE)
   })
   
@@ -172,10 +172,10 @@ server <- function(input, output, session) {
     zoom_coords <- country_centroids %>%
       filter(COUNTRY == country) %>%
       select(X, Y) %>%
-      unlist()
+      as.list()
     
     leafletProxy("map") %>%
-      setView(lng = zoom_coords["X"], lat = zoom_coords["Y"], zoom = 5)
+      setView(lng = zoom_coords$X, lat = zoom_coords$Y, zoom = 5)
   })
   
 # -----------------------------------------------------------------------------
