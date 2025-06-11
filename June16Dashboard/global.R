@@ -15,7 +15,7 @@ print(list.files())
 
 countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
 
-regionCodes <- suppressWarnings(readRDS("C:/Users/mk616/Downloads/Primary Datasets/regions.rds"))
+regionCodes <- suppressWarnings(readRDS("/Users/student/Desktop/regions 1.rds"))
 
 country_polygons <- ne_countries(scale = "medium", returnclass = "sf")
 country_centroids_sf <- country_polygons %>%
@@ -30,11 +30,11 @@ dep <- readRDS("data/deprivation_scores.rds")
 exp <- readRDS("data/exposure_scores.rds")
 
 # Sample smaller subsets for testing
-gov <- gov %>% slice_sample(n = 10000)
-ineq <- ineq %>% slice_sample(n = 10000)
-eco <- eco %>% slice_sample(n = 10000)
-dep <- dep %>% slice_sample(n = 10000)
-exp <- exp %>% slice_sample(n = 10000)
+gov <- gov %>% slice_sample(n = 50000)
+ineq <- ineq %>% slice_sample(n = 50000)
+eco <- eco %>% slice_sample(n = 50000)
+dep <- dep %>% slice_sample(n = 50000)
+exp <- exp %>% slice_sample(n = 50000)
 
 
 # Function to create country-aggregated datasets with centroid geometries
