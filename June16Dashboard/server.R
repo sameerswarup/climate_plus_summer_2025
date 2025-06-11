@@ -3,50 +3,6 @@ server <- function(input, output, session) {
   
   #rv <- reactiveValues(zoom = 4)
   
-  # output$country_selector <- renderUI({
-  #   choices <- countryCodes %>%
-  #     filter(!is.na(Alpha.3.code), !is.na(Country)) %>%
-  #     distinct(Alpha.3.code, Country) %>%
-  #     { setNames(.$Alpha.3.code, .$Country) }
-  #   
-  #   selectInput("selected_country", "Select Country", choices = choices)
-  # })
-  # 
-  # output$region_selector <- renderUI({
-  #   req(input$selected_country)  # wait for a country selection
-  #   country <- gsub("\"", "", trimws(input$selected_country))
-  #   
-  #   choices <- regionCodes %>%
-  #     filter(iso_a3 == country) %>%
-  #     distinct(GID_2, NAME_2) %>%
-  #     { setNames(.$GID_2, .$NAME_2) }
-  #   
-  #   # Handle empty choices
-  #   if (length(choices) == 0) {
-  #     choices <- c("No regions available" = "")
-  #   }
-  #   
-  #   selectInput("selected_region", "Select District", choices = choices)
-  # })
-  # 
-  # observe({
-  #   invalidateLater(60000)  # Every 5 seconds
-  #   cat("Memory usage:", mem_used(), "\n")
-  # })
-  # 
-  # # Zoom Button
-  # observeEvent(input$zoom_button, {
-  #   country <- gsub("\"", "", trimws(input$selected_country))
-  #   
-  #   new_zoom <- 6
-  #   #if(input$map_zoom > 3) new_zoom <- 3
-  #   
-  #   country_details <- countryCodes %>% filter(Alpha.3.code == input$selected_country)
-  #   
-  #   leafletProxy("map") %>%
-  #     setView(lng = gsub("\"", "", trimws(country_details$Longitude..average.)), lat = gsub("\"", "", trimws(country_details$Latitude..average.)), zoom = new_zoom)
-  # })
-  
   # ----------------------------------------------------------------------------
   selected_country <- reactiveVal(NULL)
   
@@ -178,11 +134,9 @@ server <- function(input, output, session) {
       setView(lng = zoom_coords$X, lat = zoom_coords$Y, zoom = 5)
   })
   
-# -----------------------------------------------------------------------------
-  
+  # -----------------------------------------------------------------------------
   
   # reactiveVals
-  
   # Observe for whether a country is chosen using the dropdown menu or
   # chosen directly from the map.
   
@@ -204,7 +158,6 @@ server <- function(input, output, session) {
       selected = chosen_country()
     )
   })
-
   
   # -----------------------------------------------------------------------------
   
@@ -221,170 +174,114 @@ server <- function(input, output, session) {
   # renderUI outputs. These are used to change the UI based on whether "Global"
   # or "Country" is chosen.
   
-  output$global_or_country_components <- renderUI ({
-    
+  output$global_or_country_components <- renderUI({
     
     # GLOBAL COMPARISON
-    
-    
     if (input$global_or_country == "global") {
       tagList(
+        tags$h4("Global Bivariate Analysis Setup", 
+                style = "color: #003087; margin-bottom: 15px;"),
         
-        # DISPLAY BIVARIATE SCATTER PLOTS
-        
-        tags$h4("Bivariate Graphs!",
-                style = "color: #003087; text-align: center;
-              font-style: italic"),
-        
-        
-        
-        # CHOOSE FIRST INDICATOR (GLOBAL)
-        
-        selectInput("first_indicator_global", 
-                    "Choose your first indicator",
-                    choices = global_level_choices,
-                    selected = "Gov_effect.sc"
-                    
+        # First indicator selection with better spacing
+        tags$div(
+          style = "margin-bottom: 15px;",
+          selectInput("first_indicator_global", 
+                      "Choose your first indicator",
+                      choices = global_level_choices,
+                      selected = "Gov_effect.sc"),
+          tags$small(textOutput("first_indicator_global_description"),
+                     style = "font-style: italic; color: #666;")
         ),
         
-        # DESCRIPTION OF FIRST INDICATOR WILL GO HERE
-        
-        tags$small(textOutput("first_indicator_global_description"),
-                style = "font-style: italic"),
-
-
-        
-        # CHOOSE SECOND INDICATOR (GLOBAL)
-        
-        selectInput("second_indicator_global", 
-                    "Choose your second indicator",
-                    choices = global_level_choices,
-                    selected = "le.ineq.log.sc"
-                    
+        # Second indicator selection with better spacing
+        tags$div(
+          style = "margin-bottom: 15px;",
+          selectInput("second_indicator_global", 
+                      "Choose your second indicator",
+                      choices = global_level_choices,
+                      selected = "le.ineq.log.sc"),
+          tags$small(textOutput("second_indicator_global_description"),
+                     style = "font-style: italic; color: #666;")
         ),
         
-        # DESCRIPTION OF SECOND INDICATOR WILL GO HERE
-        
-        tags$small(textOutput("second_indicator_global_description"),
-                style = "font-style: italic"),
-        
-        
-        
-        # DISPLAYS CUSTOM SCATTERPLOT (GLOBAL-LEVEL)
-        
-        plotOutput("global_custom_scatter"),
-        
-        # DISPLAYS PEARSON AND SPEARMAN CORRELATION COEFFICIENTS
-        
-        verbatimTextOutput("global_correlation")
-        
+        tags$p("Results will appear in the 'Analysis Results' tab.", 
+               style = "font-style: italic; text-align: center; margin-top: 20px; color: #666;")
       ) 
       
-      
-      # -----------------------------------------------------------------------------
-      
-      
       # COUNTRY-LEVEL COMPARISON  
-      
     } else if (input$global_or_country == "country") {
       tagList(
+        tags$h4("Country-Level Analysis Setup", 
+                style = "color: #003087; margin-bottom: 15px;"),
         
-        # SELECT COUNTRY
-        
-        selectInput("country_select", "Select a Country to Investigate",
-                    choices = sort(unique(countryCodes$Country)),
-                    selected = "Japan"),
-        
-        #DISPLAYS WHAT COUNTRY WAS CHOSEN
-        
-        textOutput("countryDisplay"),
-        
-        # DISPLAYS COUNTRY FLAG
-        
+        # Country selection
         tags$div(
-          style = "text-align: center;",
-          imageOutput("country_flag", height = "120px")
+          style = "margin-bottom: 20px;",
+          selectInput("country_select", "Select a Country to Investigate",
+                      choices = sort(unique(countryCodes$Country)),
+                      selected = "Japan")
         ),
         
-        # DISPLAY HISTOGRAMS HERE
-        
-        tags$h4("Histograms!",
-                style = "color: #003087; text-align: center;
-              font-style: italic"),
-        
-        selectInput("country_histogram_indicator", 
-                    "Choose an indicator",
-                    choices = c(
-                      "Distance to Coast (km)" = "distance_to_coast_km", 
-                      "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
-                      "Relative Deprivation Index" = "povmap.grdi.v1.sc",
-                      "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"
-                    ),
-                    selected = "povmap.grdi.v1.sc"),
-        
-        plotOutput("country_histogram"),
-        
-        
-        # DISPLAY BIVARIATE SCATTER PLOTS
-        
-        tags$h4("Bivariate Graphs!",
-                style = "color: #003087; text-align: center;
-              font-style: italic"),
-        
-        # CHOOSE FIRST INDICATOR (COUNTRY-LEVEL)
-        
-        selectInput("first_indicator", 
-                    "Choose your first indicator",
-                    choices = c(
-                      "Distance to Coast (km)" = "distance_to_coast_km", 
-                      "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
-                      "Relative Deprivation Index" = "povmap.grdi.v1.sc",
-                      "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"
-                    ),
-                    selected = "povmap.grdi.v1.sc"
-                    
+        # Histogram indicator selection
+        tags$div(
+          style = "margin-bottom: 15px;",
+          tags$h5("Histogram Analysis:", style = "margin-bottom: 10px; color: #003087;"),
+          selectInput("country_histogram_indicator", 
+                      "Choose an indicator for distribution analysis",
+                      choices = c(
+                        "Distance to Coast (km)" = "distance_to_coast_km", 
+                        "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                        "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                        "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"
+                      ),
+                      selected = "povmap.grdi.v1.sc")
         ),
         
-        # DESCRIPTION OF FIRST INDICATOR (COUNTRY-LEVEL)
-        
-        tags$small(textOutput("first_indicator_country_description"),
-                   style = "font-style: italic"),
-        
-        # CHOOSE SECOND INDICATOR (COUNTRY-LEVEL)
-        
-        selectInput("second_indicator", 
-                    "Choose your second indicator",
-                    choices = c(
-                      "Distance to Coast (km)" = "distance_to_coast_km", 
-                      "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
-                      "Relative Deprivation Index" = "povmap.grdi.v1.sc",
-                      "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"
-                    ),
-                    selected = "perc.pop.world.coastal.merit.10m.log.sc"
-                    
+        # Bivariate analysis setup
+        tags$div(
+          style = "margin-bottom: 15px;",
+          tags$h5("Bivariate Analysis:", style = "margin-bottom: 10px; color: #003087;"),
+          
+          # First indicator
+          tags$div(
+            style = "margin-bottom: 10px;",
+            selectInput("first_indicator", 
+                        "Choose your first indicator",
+                        choices = c(
+                          "Distance to Coast (km)" = "distance_to_coast_km", 
+                          "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                          "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                          "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"
+                        ),
+                        selected = "povmap.grdi.v1.sc"),
+            tags$small(textOutput("first_indicator_country_description"),
+                       style = "font-style: italic; color: #666;")
+          ),
+          
+          # Second indicator
+          tags$div(
+            style = "margin-bottom: 10px;",
+            selectInput("second_indicator", 
+                        "Choose your second indicator",
+                        choices = c(
+                          "Distance to Coast (km)" = "distance_to_coast_km", 
+                          "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                          "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                          "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"
+                        ),
+                        selected = "perc.pop.world.coastal.merit.10m.log.sc"),
+            tags$small(textOutput("second_indicator_country_description"),
+                       style = "font-style: italic; color: #666;")
+          )
         ),
         
-        # DESCRIPTION OF SECOND INDICATOR (COUNTRY-LEVEL)
-        
-        tags$small(textOutput("second_indicator_country_description"),
-                   style = "font-style: italic"),
-        
-        # DISPLAYS CUSTOM SCATTERPLOT (COUNTRY-LEVEL)
-        
-        plotOutput("custom_scatter"),
-        
-        # DISPLAYS PEARSON AND SPEARMAN CORRELATION COEFFICIENTS
-        
-        verbatimTextOutput("correlation")
-        
+        tags$p("Results will appear in the 'Analysis Results' tab.", 
+               style = "font-style: italic; text-align: center; margin-top: 20px; color: #666;")
       )
-      
     }
   })
   
-  
   # -----------------------------------------------------------------------------
-  
   
   # CUSTOM BIVARIATE SCATTERPLOT
   
@@ -531,8 +428,6 @@ server <- function(input, output, session) {
     
   })
   
-  
-  
   # -----------------------------------------------------------------------------
   
   # Displays the country flag image
@@ -559,7 +454,6 @@ server <- function(input, output, session) {
     }
   }, deleteFile = FALSE)
   
-  
   # -----------------------------------------------------------------------------
   
   # Data Descriptions
@@ -569,8 +463,6 @@ server <- function(input, output, session) {
   clicked_score_second_global <- reactiveVal(NULL)
   clicked_score_first_country <- reactiveVal(NULL)
   clicked_score_second_country <- reactiveVal(NULL)
-  
-  
   
   observeEvent(input$second_indicator_global, {
     click <- input$second_indicator_global
@@ -607,8 +499,6 @@ server <- function(input, output, session) {
       filter(variable_name == clicked_score_second_country()) %>%
       pull(description)
     return(descriptions)
-    
-    
   })
   
   output$first_indicator_global_description <- renderText({
@@ -618,31 +508,24 @@ server <- function(input, output, session) {
       pull(description)
     
     return(descriptions)
-    
-    
   })
   
   output$second_indicator_global_description <- renderText({
     req(clicked_score_second_global())
-    
-
     descriptions <- inequity_data_descriptions %>%
       filter(variable_name == clicked_score_second_global()) %>%
       pull(description)
     return(descriptions)
-    
-    
   })
-
   
   # Data+ logo
   
   output$dataplus_logo <- renderImage({
-      list(src = "www/data-plus-logo.png",
-           contentType = "image/png",
-           alt = "data_plus",
-           width = 300,
-           height = 120
-      )
+    list(src = "www/data-plus-logo.png",
+         contentType = "image/png",
+         alt = "data_plus",
+         width = 300,
+         height = 120
+    )
   }, deleteFile = FALSE)
 }
