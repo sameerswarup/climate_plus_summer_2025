@@ -6,6 +6,7 @@ server <- function(input, output, session) {
   # ----------------------------------------------------------------------------
   selected_country <- reactiveVal(NULL)
   
+  # For interactive Map
   selected_var <- reactive({
     req(input$indicator_category, input$mean_type)
     prefix <- indicator_prefix_map[[input$indicator_category]]
@@ -16,6 +17,32 @@ server <- function(input, output, session) {
     global_data <- data_list[[input$indicator_category]]$global
     choices <- list("Global (Default)", sort(unique(global_data$COUNTRY)))
     updateSelectizeInput(session, "country_search", choices = choices, server = TRUE)
+  })
+  
+  # For Map 1
+  map_1_selected_var <- reactive({
+    req(input$map_1_indicator_category, input$map_1_mean_type)
+    map_1_prefix <- indicator_prefix_map[[input$map_1_indicator_category]]
+    paste0(map_1_prefix, mean_type_suffix[[input$map_1_mean_type]])
+  })
+
+  observe({
+    map_1_global_data <- data_list[[input$map_1_indicator_category]]$global
+    map_1_choices <- list("Global (Default)", sort(unique(map_1_global_data$COUNTRY)))
+    updateSelectizeInput(session, "map_1_country_search", choices = map_1_choices, server = TRUE)
+  })
+
+  # For Map 2
+  map_2_selected_var <- reactive({
+    req(input$map_2_indicator_category, input$map_2_mean_type)
+    map_2_prefix <- indicator_prefix_map[[input$map_2_indicator_category]]
+    paste0(map_2_prefix, mean_type_suffix[[input$map_2_mean_type]])
+  })
+
+  observe({
+    map_2_global_data <- data_list[[input$map_2_indicator_category]]$global
+    map_2_choices <- list("Global (Default)", sort(unique(map_2_global_data$COUNTRY)))
+    updateSelectizeInput(session, "map_2_country_search", choices = map_2_choices, server = TRUE)
   })
   
   # Standardized country selection - sync between country_search and country_select
@@ -570,22 +597,27 @@ server <- function(input, output, session) {
   
   
   output$compare_map_1 <- renderLeaflet({
-    var <- selected_var()
-    global_data <- data_list[[input$indicator_category]]$global
-    req(var %in% colnames(global_data))
+
+    var <- map_1_selected_var()
+    map_1_global_data <- data_list[[input$map_1_indicator_category]]$global
+    print(data_list[[input$map_1_indicator_category]])
+
+    req(var %in% colnames(map_1_global_data))
     
-    pal <- colorNumeric("viridis", domain = global_data[[var]], na.color = "transparent")
-    
+    pal <- colorNumeric("viridis", domain = map_1_global_data[[var]], na.color = "transparent")
+
     # Create map with conditional tile layer
-    map <- leaflet(global_data)
-    
-    if (input$satellite_view) {
-      map <- map %>% addProviderTiles(providers$Esri.WorldImagery)
+    map_1 <- leaflet(map_1_global_data)
+
+    if (FALSE) { #input$map_1_satellite_view
+      map_1 <- map_1 %>% addProviderTiles(providers$Esri.WorldImagery)
     } else {
-      map <- map %>% addTiles()
+      map_1 <- map_1 %>% addTiles()
     }
     
-    map %>%
+    print("In One")
+    
+    map_1 %>%
       addCircleMarkers(
         radius = 6,
         fillColor = ~pal(get(var)),
@@ -598,30 +630,30 @@ server <- function(input, output, session) {
       ) %>%
       addLegend(
         pal = pal,
-        values = global_data[[var]],
+        values = map_1_global_data[[var]],
         opacity = 0.8,
-        title = paste(input$indicator_category, "(", input$mean_type, ")"),
+        title = paste(input$map_1_indicator_category),
         position = "bottomright"
       )
   })
-  
+
   output$compare_map_2 <- renderLeaflet({
-    var <- selected_var()
-    global_data <- data_list[[input$indicator_category]]$global
-    req(var %in% colnames(global_data))
-    
-    pal <- colorNumeric("viridis", domain = global_data[[var]], na.color = "transparent")
-    
+    var <- map_2_selected_var()
+    map_2_global_data <- data_list[[input$map_2_indicator_category]]$global
+    req(var %in% colnames(map_2_global_data))
+
+    pal <- colorNumeric("viridis", domain = map_2_global_data[[var]], na.color = "transparent")
+
     # Create map with conditional tile layer
-    map <- leaflet(global_data)
-    
-    if (input$satellite_view) {
-      map <- map %>% addProviderTiles(providers$Esri.WorldImagery)
+    map_2 <- leaflet(map_2_global_data)
+
+    if (FALSE) { #input$map_1_satellite_view
+      map_2 <- map_2 %>% addProviderTiles(providers$Esri.WorldImagery)
     } else {
-      map <- map %>% addTiles()
+      map_2 <- map_2 %>% addTiles()
     }
-    
-    map %>%
+
+    map_2 %>%
       addCircleMarkers(
         radius = 6,
         fillColor = ~pal(get(var)),
@@ -634,9 +666,9 @@ server <- function(input, output, session) {
       ) %>%
       addLegend(
         pal = pal,
-        values = global_data[[var]],
+        values = map_2_global_data[[var]],
         opacity = 0.8,
-        title = paste(input$indicator_category, "(", input$mean_type, ")"),
+        title = paste(input$map_2_indicator_category),
         position = "bottomright"
       )
   })
