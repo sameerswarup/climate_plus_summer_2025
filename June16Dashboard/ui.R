@@ -66,9 +66,49 @@ ui <- page_sidebar(
         # Dynamic components
         uiOutput("global_or_country_components")
       )
+    ),
+    # Map controls - only show on Country Comparison Map tab
+    conditionalPanel(
+      condition = "input.tabset == 'Country Comparison'",
+      card(
+        card_header("Map One Controls"),
+        selectInput("map_1_indicator_category", "Choose Indicator Category:", 
+                    choices = indicator_choices, selected = "Ecological"),
+        selectInput("map_1_mean_type", "Choose Mean Type:", 
+                    choices = mean_choices, selected = "Arithmetic Mean"),
+        
+        selectizeInput("map_1_country_search", "Jump to Country:", 
+                       choices = NULL, selected = NULL),
+        # actionButton("map_1_zoom_button", "Zoom to Selected Country", 
+        #              style = "width: 100%; margin-top: 10px;"),
+        # 
+        # # Satellite view toggle
+        # tags$div(
+        #   style = "margin-top: 15px;",
+        #   checkboxInput("map_1_satellite_view", "Satellite View", value = FALSE)
+        # )
+      ),
+      
+      card(
+        card_header("Map Two Controls"),
+        selectInput("map_2_indicator_category", "Choose Indicator Category:", 
+                    choices = indicator_choices, selected = "Ecological"),
+        selectInput("map_2_mean_type", "Choose Mean Type:", 
+                    choices = mean_choices, selected = "Arithmetic Mean"),
+        
+        selectizeInput("map_2_country_search", "Jump to Country:", 
+                       choices = NULL, selected = NULL),
+        # actionButton("map_2_zoom_button", "Zoom to Selected Country", 
+        #              style = "width: 100%; margin-top: 10px;"),
+        # 
+        # # Satellite view toggle
+        # tags$div(
+        #   style = "margin-top: 15px;",
+        #   checkboxInput("map_2_satellite_view", "Satellite View", value = FALSE)
+        # )
+      )
     )
   ),
-  
   # Main content area with tabs
   navset_card_tab(
     id = "tabset",
@@ -150,24 +190,30 @@ ui <- page_sidebar(
                 
                 
                 fluidRow(
-                  column(width = 6,
-                         style = "height: 30vh;",  # 100% viewport height, light background
-                         div(style = "width: 100%; height: 10%;",
-                             leafletOutput("compare_map_1", width = "100%", height = 250)
+                  column(width = 9,
+                         style = "height: 33.3vh; ",  # 100% viewport height, light background
+                         div(style = "width: 100%; height: 10%; border: 1px solid lightgray",
+                             leafletOutput("compare_map_1", width = "100%", height = 300)
                          )
                   ),
-                  column(width = 6,
-                         leafletOutput("compare_map_2", width = "100%", height = 250)
+                  column(width = 3,
+                         card(style="height: 97%",
+                           card_header("Summary Statistics"),
+                         )
                   )
                 ),
                 
                 
                 fluidRow(
-                  column(width = 6,
-                         h5("Summary Statistics"),
+                  column(width = 9,
+                         div(style = "width: 100%; height: 10%; ",
+                             leafletOutput("compare_map_2", width = "100%", height = 300)
+                         )
                   ),
-                  column(width = 6,
-                         h5("Summary Statistics"),
+                  column(width = 3,
+                         card(style="height: 97%",
+                           card_header("Summary Statistics"),
+                         )
                   )
                 )
               )
