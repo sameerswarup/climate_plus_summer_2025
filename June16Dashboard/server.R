@@ -86,7 +86,7 @@ server <- function(input, output, session) {
     if (input$satellite_view) {
       map <- map %>% addProviderTiles(providers$Esri.WorldImagery)
     } else {
-      map <- map %>% addTiles()
+      map <- map %>% addProviderTiles(providers$Esri.WorldStreetMap)
     }
     
     map %>%
@@ -118,7 +118,7 @@ server <- function(input, output, session) {
     } else {
       leafletProxy("map") %>%
         clearTiles() %>%
-        addTiles()
+        addProviderTiles(providers$Esri.WorldStreetMap)
     }
   })
   
@@ -612,7 +612,7 @@ server <- function(input, output, session) {
     if (FALSE) { #input$map_1_satellite_view
       map_1 <- map_1 %>% addProviderTiles(providers$Esri.WorldImagery)
     } else {
-      map_1 <- map_1 %>% addTiles()
+      map_1 <- map_1 %>% addProviderTiles(providers$Esri.WorldStreetMap)
     }
     
     print("In One")
@@ -650,7 +650,7 @@ server <- function(input, output, session) {
     if (FALSE) { #input$map_1_satellite_view
       map_2 <- map_2 %>% addProviderTiles(providers$Esri.WorldImagery)
     } else {
-      map_2 <- map_2 %>% addTiles()
+      map_2 <- map_2 %>% addProviderTiles(providers$Esri.WorldStreetMap)
     }
 
     map_2 %>%
