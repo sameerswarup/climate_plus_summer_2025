@@ -1,0 +1,10 @@
+name: june16dashboard
+title:
+username: coastalzonesmapping
+account: coastalzonesmapping
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 14922053
+bundleId: 10440434
+url: https://coastalzonesmapping.shinyapps.io/june16dashboard/
+version: 1
