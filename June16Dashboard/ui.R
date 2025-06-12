@@ -4,7 +4,7 @@ library(bslib)
 
 ui <- page_navbar(
   title = "High Stakes Socio-Economic Mapping of Coastal Zones",
-  theme = bs_theme(bootswatch = "minty"),
+  theme = bs_theme(bootswatch = "morph"),
   # input_dark_mode(id = "light"), 
   
   sidebar = sidebar(
