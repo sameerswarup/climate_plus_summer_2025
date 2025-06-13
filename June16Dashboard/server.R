@@ -141,7 +141,7 @@ server <- function(input, output, session) {
     global_data <- data_list[[input$indicator_category]]$global
     req(var %in% colnames(global_data))
     
-    pal <- colorNumeric("viridis", domain = global_data[[var]], na.color = "transparent")
+    pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
     
     # Create map with conditional tile layer
     map <- leaflet(global_data)
@@ -185,15 +185,19 @@ server <- function(input, output, session) {
     }
   })
   
-  observeEvent(selected_country(), {
-    country <- selected_country()
+  observeEvent({
+    selected_country()
+    input$use_country_specific_scale
+  }, {
+    req(input$indicator_category, input$mean_type)
     
+    country <- selected_country()
     var <- selected_var()
     full_data <- data_list[[input$indicator_category]]$full
     global_data <- data_list[[input$indicator_category]]$global
     
     if (is.null(country)) {
-      pal <- colorNumeric("viridis", domain = global_data[[var]], na.color = "transparent")
+      pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
       leafletProxy(current_map_for_country) %>%
         clearMarkers() %>%
         clearControls() %>%
@@ -221,7 +225,10 @@ server <- function(input, output, session) {
     country_data <- full_data %>% filter(COUNTRY == country)
     req(nrow(country_data) > 0)
     
-    pal <- colorNumeric("viridis", domain = country_data[[var]], na.color = "transparent")
+    use_local <- isTRUE(input$use_country_specific_scale)
+    domain_data <- if (use_local) country_data[[var]] else global_data[[var]]
+    pal <- colorNumeric("Purples", domain = domain_data, na.color = "transparent")
+    
     leafletProxy(current_map_for_country) %>%
       clearMarkers() %>%
       clearControls() %>%
@@ -237,11 +244,17 @@ server <- function(input, output, session) {
       ) %>%
       addLegend(
         pal = pal,
-        values = country_data[[var]],
+        values = domain_data,
         opacity = 0.9,
-        title = paste0(country, " (", input$mean_type, ")"),
+        title = paste0(country, " (", if (use_local) "Local" else "Global", " Scale, ", input$mean_type, ")"),
         position = "bottomright"
       )
+  })
+  
+  observeEvent(input$use_country_specific_scale, {
+    if (!is.null(selected_country())) {
+      selected_country(selected_country())
+    }
   })
   
   observeEvent(input$zoom_button, {
@@ -652,10 +665,6 @@ server <- function(input, output, session) {
     )
   }, deleteFile = FALSE)
   
-  
-  
-  
-  
   output$compare_map_1 <- renderLeaflet({
 
     var <- map_1_selected_var()
@@ -663,7 +672,7 @@ server <- function(input, output, session) {
 
     req(var %in% colnames(map_1_global_data))
     
-    pal <- colorNumeric("viridis", domain = map_1_global_data[[var]], na.color = "transparent")
+    pal <- colorNumeric("Purples", domain = map_1_global_data[[var]], na.color = "transparent")
 
     # Create map with conditional tile layer
     map_1 <- leaflet(map_1_global_data)
@@ -700,7 +709,7 @@ server <- function(input, output, session) {
     map_2_global_data <- data_list[[input$map_2_indicator_category]]$global
     req(var %in% colnames(map_2_global_data))
 
-    pal <- colorNumeric("viridis", domain = map_2_global_data[[var]], na.color = "transparent")
+    pal <- colorNumeric("Purples", domain = map_2_global_data[[var]], na.color = "transparent")
 
     # Create map with conditional tile layer
     map_2 <- leaflet(map_2_global_data)

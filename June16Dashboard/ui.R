@@ -33,6 +33,12 @@ ui <- page_sidebar(
                        choices = NULL, selected = NULL),
         actionButton("zoom_button", "Zoom to Selected Country", 
                      style = "width: 100%; margin-top: 10px;"),
+        #Checkbox
+        checkboxInput(
+          inputId = "use_country_specific_scale",
+          label = "Switch to country-specific color scale",
+          value = FALSE
+        ),
         
         # Satellite view toggle
         tags$div(
