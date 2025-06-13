@@ -4,7 +4,7 @@ library(bslib)
 
 ui <- page_navbar(
   title = "High Stakes Socio-Economic Mapping of Coastal Zones",
-  theme = bs_theme(bootswatch = "morph"),
+  theme = bs_theme(bootswatch = "flatly"),
   # input_dark_mode(id = "light"), 
   
   sidebar = sidebar(
@@ -14,7 +14,7 @@ ui <- page_navbar(
     tags$div(
       style = "margin-bottom: 20px;",
       # imageOutput("dataplus_logo"),
-      tags$h1("Inequity Indicators Map", 
+      tags$h1("Composite Scores Map", 
               style = "color: var(--bs-primary, #003087); font-weight: bold; margin-bottom: 20px;")
     ),
     
@@ -23,7 +23,7 @@ ui <- page_navbar(
       condition = "input.tabset == 'Interactive Map'",
       card(
         card_header("Map Controls"),
-        selectInput("indicator_category", "Choose Indicator Category:", 
+        selectInput("indicator_category", "Choose Composite Score:", 
                     choices = indicator_choices, selected = "Ecological"),
         selectInput("mean_type", "Choose Mean Type:", 
                     choices = mean_choices, selected = "Arithmetic Mean"),

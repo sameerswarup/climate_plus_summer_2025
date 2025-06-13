@@ -297,7 +297,10 @@ server <- function(input, output, session) {
                         "Relative Deprivation Index" = "povmap.grdi.v1.sc",
                         "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"
                       ),
-                      selected = "povmap.grdi.v1.sc")
+                      selected = "povmap.grdi.v1.sc"),
+          tags$small(textOutput("country_histogram_indicator_description"),
+                     style = "font-style: italic; color: #666;")
+          
         ),
         
         # Bivariate analysis setup
@@ -526,6 +529,8 @@ server <- function(input, output, session) {
   clicked_score_second_global <- reactiveVal(NULL)
   clicked_score_first_country <- reactiveVal(NULL)
   clicked_score_second_country <- reactiveVal(NULL)
+  clicked_score_country_histogram <- reactiveVal(NULL)
+  
   
   observeEvent(input$second_indicator_global, {
     click <- input$second_indicator_global
@@ -577,6 +582,20 @@ server <- function(input, output, session) {
     req(clicked_score_second_global())
     descriptions <- inequity_data_descriptions %>%
       filter(variable_name == clicked_score_second_global()) %>%
+      pull(description)
+    return(descriptions)
+  })
+  
+  
+  observeEvent(input$country_histogram_indicator, {
+    click <- input$country_histogram_indicator
+    clicked_score_country_histogram(click)  # id of indicator
+  })
+  
+  output$country_histogram_indicator_description <- renderText({
+    req(clicked_score_country_histogram())
+    descriptions <- inequity_data_descriptions %>%
+      filter(variable_name == clicked_score_country_histogram()) %>%
       pull(description)
     return(descriptions)
   })
@@ -670,6 +689,13 @@ server <- function(input, output, session) {
         opacity = 0.8,
         title = paste(input$map_2_indicator_category),
         position = "bottomright"
+        
       )
   })
 }
+
+# legend labels
+# add raw inequity factors as dropdowns and add the parts of the composite scores as "descriptions" or just list them
+# font of labels
+# understanding what composite scores actually mean
+# 
