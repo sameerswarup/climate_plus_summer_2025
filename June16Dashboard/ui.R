@@ -2,6 +2,8 @@ library(shiny)
 library(leaflet)
 library(bslib)
 
+
+
 ui <- page_sidebar(
   title = "High Stakes Socio-Economic Mapping of Coastal Zones",
   theme = bs_theme(bootswatch = "flatly"),
@@ -69,6 +71,13 @@ ui <- page_sidebar(
     ),
     # Map controls - only show on Country Comparison Map tab
     conditionalPanel(
+      tags$style(HTML("
+         #map_1_country_search + .selectize-control .selectize-dropdown,
+         #map_2_country_search + .selectize-control .selectize-dropdown {
+          bottom: 100% !important;
+          top: auto !important;
+        }
+      ")),
       condition = "input.tabset == 'Country Comparison'",
       card(
         card_header("Map One Controls"),
@@ -181,37 +190,49 @@ ui <- page_sidebar(
     ),
     
     nav_panel("Country Comparison",
+              tags$head(
+                tags$style(HTML("
+
+                .no-gutters > [class^='col-'] {
+                  padding-left: 2px !important;
+                  padding-right: 2px !important;
+                }
+              "))
+              ),
               tags$div(
-                style = "padding: 20px; text-align: center;",
+                style = "text-align: center;",
                 tags$h3("Country Comparison Tool", 
                         style = "color: var(--bs-primary, #003087); margin-bottom: 20px;"),
-                tags$p("This feature will be implemented soon! yay!", 
-                       style = "font-size: 18px; color: #666; font-style: italic;"),
+                #tags$p("This feature will be implemented soon! yay!", 
+                #       style = "font-size: 18px; color: #666; font-style: italic;"),
                 
                 
                 fluidRow(
-                  column(width = 9,
-                         style = "height: 33.3vh; ",  # 100% viewport height, light background
-                         div(style = "width: 100%; height: 10%; border: 1px solid lightgray",
-                             leafletOutput("compare_map_1", width = "100%", height = 300)
+                  class = "no-gutters",
+                  style="padding-top: 15px;",
+                  column(width=6,
+                         div(
+                             leafletOutput("compare_map_1", width = "100%", height = 700)
                          )
                   ),
-                  column(width = 3,
-                         card(style="height: 97%",
-                           card_header("Summary Statistics"),
+                  column(width = 6,
+                         div(
+                             leafletOutput("compare_map_2", width = "100%", height = 700)
                          )
                   )
                 ),
                 
-                
+
                 fluidRow(
-                  column(width = 9,
-                         div(style = "width: 100%; height: 10%; ",
-                             leafletOutput("compare_map_2", width = "100%", height = 300)
+                  class = "no-gutters",
+                  style="padding-top: 15px",
+                  column(width = 6,
+                         card(style="height: 100%",
+                              card_header("Summary Statistics"),
                          )
                   ),
-                  column(width = 3,
-                         card(style="height: 97%",
+                  column(width = 6,class = "no-gutters",
+                         card(style="height: 100%",
                            card_header("Summary Statistics"),
                          )
                   )
