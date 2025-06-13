@@ -26,8 +26,8 @@ ui <- page_sidebar(
         card_header("Map Controls"),
         selectInput("indicator_category", "Choose Indicator Category:", 
                     choices = indicator_choices, selected = "Ecological"),
-        selectInput("mean_type", "Choose Mean Type:", 
-                    choices = mean_choices, selected = "Arithmetic Mean"),
+        selectInput("mean_type", "Sub Variables:", 
+                    choices = sub_variables, selected = NULL),
         
         selectizeInput("country_search", "Jump to Country:", 
                        choices = NULL, selected = NULL),

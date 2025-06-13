@@ -9,9 +9,9 @@ server <- function(input, output, session) {
   
   # For interactive Map
   selected_var <- reactive({
-    req(input$indicator_category, input$mean_type)
+    req(input$indicator_category)#, input$mean_type)
     prefix <- indicator_prefix_map[[input$indicator_category]]
-    paste0(prefix, mean_type_suffix[[input$mean_type]])
+    paste0(prefix, "_arith") # mean_type_suffix[[input$mean_type]])
   })
   
   observe({
