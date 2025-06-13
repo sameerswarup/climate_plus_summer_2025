@@ -74,10 +74,10 @@ indicator_prefix_map <- list(
 )
 
 
-mean_type_suffix <- list(
-  "Arithmetic Mean" = "_arith",
-  "Geometric Mean" = "_geom"
-)
+# mean_type_suffix <- list(
+#   "Arithmetic Mean" = "_arith",
+#   "Geometric Mean" = "_geom"
+# )
 
 indicator_choices <- names(data_list)
 
