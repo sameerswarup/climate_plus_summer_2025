@@ -26,7 +26,7 @@ server <- function(input, output, session) {
   map_1_selected_var <- reactive({
     req(input$map_1_country_search)
     map_1_prefix <- indicator_prefix_map[[input$map_1_indicator_category]]
-    paste0(map_1_prefix, mean_type_suffix[[input$map_1_mean_type]])
+    paste0(map_1_prefix, "_arith") #mean_type_suffix[[input$map_1_mean_type]])
   })
 
   observeEvent(input$map_1_country_search, {
@@ -63,9 +63,9 @@ server <- function(input, output, session) {
 
   # For Map 2
   map_2_selected_var <- reactive({
-    req(input$map_2_indicator_category, input$map_2_mean_type)
+    req(input$map_2_indicator_category)#, input$map_2_mean_type)
     map_2_prefix <- indicator_prefix_map[[input$map_2_indicator_category]]
-    paste0(map_2_prefix, mean_type_suffix[[input$map_2_mean_type]])
+    paste0(map_2_prefix,"_arith") # mean_type_suffix[[input$map_2_mean_type]])
   })
 
   observeEvent(input$map_2_country_search, {
@@ -167,7 +167,7 @@ server <- function(input, output, session) {
         pal = pal,
         values = global_data[[var]],
         opacity = 0.8,
-        title = paste(input$indicator_category, "(", input$mean_type, ")"),
+        title = paste(input$indicator_category),#, "(", input$mean_type, ")"),
         position = "bottomright"
       )
   })
@@ -189,7 +189,7 @@ server <- function(input, output, session) {
     selected_country()
     input$use_country_specific_scale
   }, {
-    req(input$indicator_category, input$mean_type)
+    req(input$indicator_category) #, input$mean_type)
     
     country <- selected_country()
     var <- selected_var()
@@ -216,7 +216,7 @@ server <- function(input, output, session) {
           pal = pal,
           values = global_data[[var]],
           opacity = 0.8,
-          title = paste(input$indicator_category, "(", input$mean_type, ")"),
+          title = paste(input$indicator_category), #, "(", input$mean_type, ")"),
           position = "bottomright"
         )
       return()
@@ -246,7 +246,7 @@ server <- function(input, output, session) {
         pal = pal,
         values = domain_data,
         opacity = 0.9,
-        title = paste0(country, " (", if (use_local) "Local" else "Global", " Scale, ", input$mean_type, ")"),
+        title = paste0(country, " (", if (use_local) "Local" else "Global", " Scale, Arithmetic Mean",  ")"), #input$mean_type,
         position = "bottomright"
       )
   })
