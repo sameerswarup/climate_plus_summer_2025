@@ -28,6 +28,9 @@ ui <- page_sidebar(
         selectInput("mean_type", "Choose Mean Type:", 
                     choices = mean_choices, selected = "Arithmetic Mean"),
         
+        
+        selectInput("variable_choice", "Choose a Variable:", choices = NULL),
+        
         selectizeInput("country_search", "Jump to Country:", 
                        choices = NULL, selected = NULL),
         actionButton("zoom_button", "Zoom to Selected Country", 

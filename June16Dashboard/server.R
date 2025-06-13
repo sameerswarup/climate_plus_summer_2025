@@ -261,6 +261,7 @@ server <- function(input, output, session) {
       setView(lng = zoom_coords$X, lat = zoom_coords$Y, zoom = 5)
   })
   
+  
   # -----------------------------------------------------------------------------
   
   # reactiveVals
@@ -752,8 +753,12 @@ server <- function(input, output, session) {
   })
 }
 
-# legend labels
-# add raw inequity factors as dropdowns and add the parts of the composite scores as "descriptions" or just list them
+# legend labels (TODAY)
+# add raw inequity factors as dropdowns and add the parts of the composite scores as "descriptions" or just list them (TODAY)
+# toggle between local/global scales on main interactive map (TODAY)
+# change color palette (TODAY)
 # font of labels
 # understanding what composite scores actually mean
-# 
+# standardize scales between countries
+
+# slider to filter --> enter a value and it'll change a thing
