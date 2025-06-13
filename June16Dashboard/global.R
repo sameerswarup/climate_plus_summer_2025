@@ -40,6 +40,7 @@ exp <- readRDS("data/exposure_scores.rds")
 # exp <- exp %>% slice_sample(n = 700000)
 
 
+
 # Function to create country-aggregated datasets with centroid geometries
 aggregate_country <- function(data) {
   data %>%
