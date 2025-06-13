@@ -30,11 +30,11 @@ dep <- readRDS("data/deprivation_scores.rds")
 exp <- readRDS("data/exposure_scores.rds")
 
 # Sample smaller subsets for testing
-gov <- gov %>% slice_sample(n = 10000)
-ineq <- ineq %>% slice_sample(n = 10000)
-eco <- eco %>% slice_sample(n = 10000)
-dep <- dep %>% slice_sample(n = 10000)
-exp <- exp %>% slice_sample(n = 10000)
+# gov <- gov %>% slice_sample(n = 10000)
+# ineq <- ineq %>% slice_sample(n = 10000)
+# eco <- eco %>% slice_sample(n = 10000)
+# dep <- dep %>% slice_sample(n = 10000)
+# exp <- exp %>% slice_sample(n = 10000)
 
 
 # Function to create country-aggregated datasets with centroid geometries
