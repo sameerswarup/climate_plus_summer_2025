@@ -78,11 +78,19 @@ indicator_prefix_map <- list(
   "Exposure" = "exp"
 )
 
-
-mean_type_suffix <- list(
-  "Arithmetic Mean" = "_arith",
-  "Geometric Mean" = "_geom"
+indicator_arith_map <- list(
+  "Governance" = "gov_arith",
+  "Inequality" = "ineq_arith",
+  "Ecological" = "eco_arith",
+  "Deprivation" = "dep_arith",
+  "Exposure" = "exp_arith"
 )
+
+
+# mean_type_suffix <- list(
+#   "Arithmetic Mean" = "_arith",
+#   "Geometric Mean" = "_geom"
+# )
 
 indicator_choices <- names(data_list)
 
@@ -96,6 +104,11 @@ mean_choices <- names(mean_type_suffix)
 
 df <- readRDS("data/inequity_filtered5k.rds") %>%
   st_transform(4326)
+
+df_country <- df %>%mutate(
+      geometry = country_centroids_sf[match(COUNTRY, country_centroids_sf$admin), ]$geometry
+    )
+  
 
 # df is now inequity_filtered5k.rds which is smaller
 
@@ -135,11 +148,16 @@ global_level_choices <- c(
 average_country_nogeo <- df |>
   group_by(iso_a3.x) |>
   summarize (
+    COUNTRY = first(COUNTRY),
     name_en = first(name_en),
     across(5:24, ~mean(.x, na.rm = TRUE))
   )
 
-average_country_nogeo <- select(average_country_nogeo, iso_a3.x, name_en, all_of(global_level_variables))
+average_country_nogeo <- average_country_nogeo %>%
+  mutate(
+    geometry = country_centroids_sf[match(COUNTRY, country_centroids_sf$admin), ]$geometry
+  )
+
 
 
 inequity_data_descriptions <- read.csv("data/inequity_data_descriptions.csv")
@@ -149,3 +167,6 @@ country_centroids <- ne_countries(scale = "medium", returnclass = "sf") %>%
   st_coordinates() %>%
   as.data.frame()
 country_centroids$COUNTRY <- ne_countries(scale = "medium", returnclass = "sf")$admin
+
+composite_score_list <- c("governance_composite", "inequality_composite", "ecological_composite", "deprivation_composite", "exposure_composite")
+composite_arith_list <- c("gov_arith", "ineq_arith", "eco_arith", "dep_arith", "exp_arith")

@@ -7,11 +7,64 @@ server <- function(input, output, session) {
   selected_country <- reactiveVal(NULL)
   current_map_for_country <- "map"
   
+  # CHANGE BASED ON COMPOSITE SCORE
+  
+  observeEvent(input$indicator_category, {
+    choices_list <- list(
+      "Governance" = c("Governance (Composite)" = "governance_composite",
+                       "Government Ineffectiveness" = "Gov_effect.sc",
+                       "Poor Regulatory Quality" = "Reg_quality.sc",
+                       "Weak Rule of Law" = "Rule_law.sc",
+                       "Weak Control of Corruption" = "control_corr.sc",
+                       "Low Voice and Accountability" = "Voice_account.sc",
+                       "Gov Score Rank" = "gov.score.rank"  
+                       
+      ),
+      "Inequality" = c("Inequality (Composite)" = "inequality_composite",
+                       "Gender Inequality" = "gender.ineq.sc",
+                       "Income Inequality" = "income.ineq.sc",
+                       "Inequality Adjusted Life Expectancy" = "le.ineq.log.sc",
+                       "Ineq Score Rank" = "ineq.score.rank",
+                       "Hierachical Score Rank" = "hierachical.score.rank.ineq"
+      ),
+      "Ecological" = c("Ecological (Composite)" = "ecological_composite",
+                       "Vulnerab Score Rank" = "vulnerab.score.rank",
+                       "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                       "Nutritional Dependence" = "Nutritional.dependence.sc" ,
+                       "Economic Dependence" = "Economic.dependence.sc"
+      ),
+      "Deprivation" = c("Deprivation (Composite)" = "deprivation_composite",
+                        "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                        "Income Ineq Change" = "income.ineq.change.sc",
+                        "Le Ineq Change" = "le.ineq.change.sc"
+      ),
+      "Exposure" = c("Exposure (Composite)" = "exposure_composite",
+                     "Coastal Climate Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
+    )
+    
+    
+    updateSelectInput(session, "variable_choice",
+                      choices = choices_list[[input$indicator_category]])
+  })
+  
   # For interactive Map
   selected_var <- reactive({
-    req(input$indicator_category, input$mean_type)
-    prefix <- indicator_prefix_map[[input$indicator_category]]
-    paste0(prefix, mean_type_suffix[[input$mean_type]])
+    req(input$variable_choice)#, input$mean_type)
+    
+    variable <- input$variable_choice
+    # if it's a composite score chosen
+    
+    if (variable %in% composite_score_list) {
+      prefix <- indicator_prefix_map[[input$indicator_category]]
+      paste0(prefix, "_arith")
+    } else {
+      # if it's a regular variable chosen
+      
+      prefix <- paste0(variable)
+    }
+    
+
+    
   })
   
   observe({
@@ -26,7 +79,7 @@ server <- function(input, output, session) {
   map_1_selected_var <- reactive({
     req(input$map_1_country_search)
     map_1_prefix <- indicator_prefix_map[[input$map_1_indicator_category]]
-    paste0(map_1_prefix, mean_type_suffix[[input$map_1_mean_type]])
+    paste0(map_1_prefix, "_arith") #mean_type_suffix[[input$map_1_mean_type]])
   })
 
   observeEvent(input$map_1_country_search, {
@@ -63,9 +116,9 @@ server <- function(input, output, session) {
 
   # For Map 2
   map_2_selected_var <- reactive({
-    req(input$map_2_indicator_category, input$map_2_mean_type)
+    req(input$map_2_indicator_category)#, input$map_2_mean_type)
     map_2_prefix <- indicator_prefix_map[[input$map_2_indicator_category]]
-    paste0(map_2_prefix, mean_type_suffix[[input$map_2_mean_type]])
+    paste0(map_2_prefix,"_arith") # mean_type_suffix[[input$map_2_mean_type]])
   })
 
   observeEvent(input$map_2_country_search, {
@@ -138,11 +191,34 @@ server <- function(input, output, session) {
   
   output$map <- renderLeaflet({
     var <- selected_var()
-    global_data <- data_list[[input$indicator_category]]$global
+    
+    # if composite score
+    
+
+    if (var %in% composite_arith_list) {
+      
+      name_from_value <- names(indicator_arith_map)[unlist(indicator_arith_map) == var]
+
+      global_data <- data_list[[name_from_value]]$global
+      pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
+      
+      
+    } else {
+      # if indicator score
+      global_data <- average_country_nogeo
+      
+      pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
+      
+      
+      
+    }
+    
+
+    
+    
     req(var %in% colnames(global_data))
     
-    pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
-    
+
     # Create map with conditional tile layer
     map <- leaflet(global_data)
     
@@ -167,7 +243,7 @@ server <- function(input, output, session) {
         pal = pal,
         values = global_data[[var]],
         opacity = 0.8,
-        title = paste(input$indicator_category, "(", input$mean_type, ")"),
+        title = paste(input$var),#, "(", input$mean_type, ")"),
         position = "bottomright"
       )
   })
@@ -189,13 +265,45 @@ server <- function(input, output, session) {
     selected_country()
     input$use_country_specific_scale
   }, {
-    req(input$indicator_category, input$mean_type)
+    req(input$indicator_category) #, input$mean_type)
+    var <- selected_var()
+    if (var %in% composite_arith_list) {
+      
+      name_from_value <- names(indicator_arith_map)[unlist(indicator_arith_map) == var]
+      
+      global_data <- data_list[[name_from_value]]$global
+      full_data <- data_list[[name_from_value]]$full
+      pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
+      
+      
+    } else {
+      # if indicator score
+      global_data <- df
+      
+      pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
+      
+    }
+
     
     country <- selected_country()
     var <- selected_var()
-    full_data <- data_list[[input$indicator_category]]$full
-    global_data <- data_list[[input$indicator_category]]$global
+
+    if (var %in% composite_arith_list) {
+      
+      full_data <- data_list[[input$indicator_category]]$full
+      global_data <- data_list[[input$indicator_category]]$global
+      
+      
+    } else {
+      # if indicator score
+      
+      
+      full_data <- df
+      global_data <- average_country_nogeo
+      
+    }
     
+
     if (is.null(country)) {
       pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
       leafletProxy(current_map_for_country) %>%
@@ -216,7 +324,7 @@ server <- function(input, output, session) {
           pal = pal,
           values = global_data[[var]],
           opacity = 0.8,
-          title = paste(input$indicator_category, "(", input$mean_type, ")"),
+          title = paste(input$indicator_category), #, "(", input$mean_type, ")"),
           position = "bottomright"
         )
       return()
@@ -246,7 +354,7 @@ server <- function(input, output, session) {
         pal = pal,
         values = domain_data,
         opacity = 0.9,
-        title = paste0(country, " (", if (use_local) "Local" else "Global", " Scale, ", input$mean_type, ")"),
+        title = paste0(country, " (", if (use_local) "Local" else "Global", " Scale, Arithmetic Mean",  ")"), #input$mean_type,
         position = "bottomright"
       )
   })
@@ -273,6 +381,7 @@ server <- function(input, output, session) {
     leafletProxy("map") %>%
       setView(lng = zoom_coords$X, lat = zoom_coords$Y, zoom = 5)
   })
+  
   
   
   # -----------------------------------------------------------------------------
