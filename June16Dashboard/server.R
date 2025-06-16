@@ -265,11 +265,10 @@ server <- function(input, output, session) {
     pal <- colorNumeric(palette="Purples", domain = domain_data, na.color = "transparent")
     
     legendPosition = "bottomright"
-    if(current_map_for_country == "compare_map_1"){
-      legendPosition = "bottomleft"
-    }
-    
-    
+    # if(current_map_for_country == "compare_map_1"){
+    #   legendPosition = "bottomleft"
+    # }
+
     leafletProxy(current_map_for_country) %>%
       clearMarkers() %>%
       clearShapes() %>%
