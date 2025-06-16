@@ -83,42 +83,32 @@ ui <- page_sidebar(
         }
       ")),
       condition = "input.tabset == 'Country Comparison'",
+      #Checkbox
+      checkboxInput(
+        inputId = "use_comparison_country_scale",
+        label = "Use country color scale",
+        value = FALSE
+      ),
       card(
         card_header("Map One Controls"),
         selectInput("map_1_indicator_category", "Choose Indicator Category:", 
                     choices = indicator_choices, selected = "Ecological"),
-        selectInput("map_1_mean_type", "Choose Mean Type:", 
-                    choices = mean_choices, selected = "Arithmetic Mean"),
+        # selectInput("map_1_mean_type", "Choose Mean Type:", 
+        #             choices = mean_choices, selected = "Arithmetic Mean"),
         
         selectizeInput("map_1_country_search", "Jump to Country:", 
                        choices = NULL, selected = NULL),
-        # actionButton("map_1_zoom_button", "Zoom to Selected Country", 
-        #              style = "width: 100%; margin-top: 10px;"),
-        # 
-        # # Satellite view toggle
-        # tags$div(
-        #   style = "margin-top: 15px;",
-        #   checkboxInput("map_1_satellite_view", "Satellite View", value = FALSE)
-        # )
       ),
       
       card(
         card_header("Map Two Controls"),
         selectInput("map_2_indicator_category", "Choose Indicator Category:", 
                     choices = indicator_choices, selected = "Ecological"),
-        selectInput("map_2_mean_type", "Choose Mean Type:", 
-                    choices = mean_choices, selected = "Arithmetic Mean"),
+        # selectInput("map_2_mean_type", "Choose Mean Type:", 
+        #             choices = mean_choices, selected = "Arithmetic Mean"),
         
         selectizeInput("map_2_country_search", "Jump to Country:", 
                        choices = NULL, selected = NULL),
-        # actionButton("map_2_zoom_button", "Zoom to Selected Country", 
-        #              style = "width: 100%; margin-top: 10px;"),
-        # 
-        # # Satellite view toggle
-        # tags$div(
-        #   style = "margin-top: 15px;",
-        #   checkboxInput("map_2_satellite_view", "Satellite View", value = FALSE)
-        # )
       )
     )
   ),
