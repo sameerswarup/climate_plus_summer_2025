@@ -58,31 +58,39 @@ dep_global <- aggregate_country(dep)
 exp_global <- aggregate_country(exp)
 
 data_list <- list(
-  "Weak Governance" = list(full = gov, global = gov_global),
-  "Inequality Risk" = list(full = ineq, global = ineq_global),
+  "Governance Weakness" = list(full = gov, global = gov_global),
+  "Social Inequality Risk" = list(full = ineq, global = ineq_global),
   "Ecological Risk" = list(full = eco, global = eco_global),
   "Deprivation Risk" = list(full = dep, global = dep_global),
   "Exposure Risk" = list(full = exp, global = exp_global)
 )
 
 indicator_prefix_map <- list(
-  "Weak Governance" = "gov",
-  "Inequality Risk" = "ineq",
+  "Governance Weakness" = "gov",
+  "Social Inequality Risk" = "ineq",
   "Ecological Risk" = "eco",
   "Deprivation Risk" = "dep",
   "Exposure Risk" = "exp"
 )
 
 
-# mean_type_suffix <- list(
-#   "Arithmetic Mean" = "_arith",
-#   "Geometric Mean" = "_geom"
-# )
+mean_type_suffix <- list(
+  "Arithmetic Mean" = "_arith",
+  "Geometric Mean" = "_geom"
+)
 
 indicator_choices <- names(data_list)
 
 mean_choices <- names(mean_type_suffix)
 
+# Indicator descriptions
+indicator_descriptions <- list(
+  "Governance Weakness" = "Measures how well governments function through public service quality, business regulation effectiveness, law enforcement, corruption prevention, political stability, and citizen participation in decision-making.",
+  "Social Inequality Risk" = "Measures economic and social disparities through gender wage gaps, income distribution differences, and unequal health outcomes across different population groups.",
+  "Ecological Risk" = "Measures coastal communities' exposure to damaged marine environments, including threats to sea life, reliance on ocean-based food and jobs, and vulnerability to rising sea levels.",
+  "Deprivation Risk" = "Measures poverty levels through multiple factors including child welfare, infant health, education and living standards, infrastructure development, and economic opportunities.",
+  "Exposure Risk" = "Measures coastal population vulnerability to climate impacts, specifically the proportion of populations in low-elevation coastal zones within 10 meters of sea level facing sea-level rise exposure."
+)
 
 # -----------------------------------------------------------------------------
 
