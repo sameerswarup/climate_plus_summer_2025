@@ -29,23 +29,27 @@ eco <- readRDS("data/ecological_scores.rds")
 dep <- readRDS("data/deprivation_scores.rds")
 exp <- readRDS("data/exposure_scores.rds")
 
-#Sample smaller subsets for testing
-# gov <- gov %>% slice_sample(n = 10000)
-# ineq <- ineq %>% slice_sample(n = 10000)
-# eco <- eco %>% slice_sample(n = 10000)
-# dep <- dep %>% slice_sample(n = 10000)
-# exp <- exp %>% slice_sample(n = 10000)
-
-
 # Function to create country-aggregated datasets with centroid geometries
 aggregate_country <- function(data) {
-  data %>%
+  name_fix <- c(
+    "United States"    = "United States of America",
+    "México"           = "Mexico",
+    "Côte d'Ivoire"    = "Ivory Coast",
+    "Tanzania"         = "United Republic of Tanzania",
+    "Timor-Leste"      = "East Timor"
+  )
+  
+  data <- data %>%
     filter(!is.na(COUNTRY), !st_is_empty(geometry)) %>%
-    group_by(COUNTRY) %>%
+    mutate(
+      COUNTRY_fixed = ifelse(COUNTRY %in% names(name_fix), name_fix[COUNTRY], COUNTRY)
+    ) %>%
+    group_by(COUNTRY_fixed) %>%
     summarise(across(ends_with("_arith") | ends_with("_geom"), mean, na.rm = TRUE)) %>%
     ungroup() %>%
+    rename(COUNTRY = COUNTRY_fixed) %>%  # <-- THIS LINE restores the column name
     mutate(
-      geometry = country_centroids_sf[match(COUNTRY, country_centroids_sf$admin), ]$geometry
+      geometry = country_centroids_sf$geometry[match(COUNTRY, country_centroids_sf$admin)]
     ) %>%
     st_as_sf()
 }
