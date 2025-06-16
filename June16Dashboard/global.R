@@ -30,11 +30,11 @@ dep <- readRDS("data/deprivation_scores.rds")
 exp <- readRDS("data/exposure_scores.rds")
 
 #Sample smaller subsets for testing
-gov <- gov %>% slice_sample(n = 10000)
-ineq <- ineq %>% slice_sample(n = 10000)
-eco <- eco %>% slice_sample(n = 10000)
-dep <- dep %>% slice_sample(n = 10000)
-exp <- exp %>% slice_sample(n = 10000)
+# gov <- gov %>% slice_sample(n = 10000)
+# ineq <- ineq %>% slice_sample(n = 10000)
+# eco <- eco %>% slice_sample(n = 10000)
+# dep <- dep %>% slice_sample(n = 10000)
+# exp <- exp %>% slice_sample(n = 10000)
 
 
 # Function to create country-aggregated datasets with centroid geometries
@@ -58,19 +58,19 @@ dep_global <- aggregate_country(dep)
 exp_global <- aggregate_country(exp)
 
 data_list <- list(
-  "Governance" = list(full = gov, global = gov_global),
-  "Inequality" = list(full = ineq, global = ineq_global),
-  "Ecological" = list(full = eco, global = eco_global),
-  "Deprivation" = list(full = dep, global = dep_global),
-  "Exposure" = list(full = exp, global = exp_global)
+  "Weak Governance" = list(full = gov, global = gov_global),
+  "Inequality Risk" = list(full = ineq, global = ineq_global),
+  "Ecological Risk" = list(full = eco, global = eco_global),
+  "Deprivation Risk" = list(full = dep, global = dep_global),
+  "Exposure Risk" = list(full = exp, global = exp_global)
 )
 
 indicator_prefix_map <- list(
-  "Governance" = "gov",
-  "Inequality" = "ineq",
-  "Ecological" = "eco",
-  "Deprivation" = "dep",
-  "Exposure" = "exp"
+  "Weak Governance" = "gov",
+  "Inequality Risk" = "ineq",
+  "Ecological Risk" = "eco",
+  "Deprivation Risk" = "dep",
+  "Exposure Risk" = "exp"
 )
 
 

@@ -5,7 +5,7 @@ server <- function(input, output, session) {
   
   # ----------------------------------------------------------------------------
   selected_country <- reactiveVal(NULL)
-  current_map_for_country <- "map"
+  current_map_for_country <- reactiveVal("map")
   
   # For interactive Map
   selected_var <- reactive({
@@ -30,7 +30,7 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$map_1_country_search, {
-    current_map_for_country <<- "compare_map_1" 
+    current_map_for_country("compare_map_1")
     
     country <- input$map_1_country_search
     if (is.null(country)) {
@@ -69,7 +69,7 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$map_2_country_search, {
-    current_map_for_country <<- "compare_map_2" 
+    current_map_for_country("compare_map_2")
     
     country <- input$map_2_country_search
     if (is.null(country)) {
@@ -104,25 +104,12 @@ server <- function(input, output, session) {
   
   # Standardized country selection - sync between country_search and country_select
   observeEvent(input$country_search, {
-    current_map_for_country <<- "map"
+    current_map_for_country("map")
     
     if (input$country_search != "Global (Default)" && !is.null(input$country_search)) {
       # Update country_select to match country_search
       updateSelectInput(session, "country_select", selected = input$country_search)
     }
-  })
-  
-  observeEvent(input$country_select, {
-    current_map_for_country <<- "map"
-    
-    if (!is.null(input$country_select)) {
-      # Update country_search to match country_select
-      updateSelectizeInput(session, "country_search", selected = input$country_select)
-    }
-  })
-  
-  observeEvent(input$country_search, {
-    current_map_for_country <<- "map"
     
     if (input$country_search == "Global (Default)") {
       selected_country(NULL)
@@ -130,6 +117,25 @@ server <- function(input, output, session) {
       selected_country(input$country_search)
     }
   })
+  
+  observeEvent(input$country_select, {
+    current_map_for_country("map")
+    
+    if (!is.null(input$country_select)) {
+      # Update country_search to match country_select
+      updateSelectizeInput(session, "country_search", selected = input$country_select)
+    }
+  })
+  
+  # observeEvent(input$country_search, {
+  #   current_map_for_country("map")
+  #   
+  #   if (input$country_search == "Global (Default)") {
+  #     selected_country(NULL)
+  #   } else {
+  #     selected_country(input$country_search)
+  #   }
+  # })
   
   observeEvent(input$map_marker_click, {
     clicked_country <- input$map_marker_click$id
@@ -186,48 +192,83 @@ server <- function(input, output, session) {
   })
   
   observeEvent({
-    selected_country()
+    #selected_country()
+    #current_map_for_country()
+    input$map_1_country_search
+    input$map_2_country_search
+    input$country_search
     input$use_country_specific_scale
-  }, {
+    input$use_comparison_country_scale }, {
     req(input$indicator_category) #, input$mean_type)
     
-    country <- selected_country()
-    var <- selected_var()
-    full_data <- data_list[[input$indicator_category]]$full
-    global_data <- data_list[[input$indicator_category]]$global
+      
+    #country <- if (input$country_search == "Global (Default)") NULL else selected_country()
+    #var <- selected_var()
+    # full_data <- data_list[[input$indicator_category]]$full
+    # global_data <- data_list[[input$indicator_category]]$global
     
-    if (is.null(country)) {
-      pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
-      leafletProxy(current_map_for_country) %>%
-        clearMarkers() %>%
-        clearControls() %>%
-        addCircleMarkers(
-          data = global_data,
-          radius = 6,
-          fillColor = ~pal(get(var)),
-          fillOpacity = 0.8,
-          stroke = TRUE,
-          color = "white",
-          weight = 0.5,
-          label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
-          layerId = ~COUNTRY
-        ) %>%
-        addLegend(
-          pal = pal,
-          values = global_data[[var]],
-          opacity = 0.8,
-          title = paste(input$indicator_category), #, "(", input$mean_type, ")"),
-          position = "bottomright"
-        )
-      return()
+    
+    # For interactive map
+    if  (current_map_for_country() == "map"){
+      full_data <- data_list[[input$indicator_category]]$full
+      global_data <- data_list[[input$indicator_category]]$global
+      
+      country <- if (input$country_search == "Global (Default)") NULL else input$country_search
+      if (is.null(country)){
+        draw_map(current_map_for_country(), global_data[[selected_var()]], FALSE, global_data, selected_var(), country)
+        return()
+      }
+      country_data <- full_data %>% filter(COUNTRY == country)
+      req(nrow(country_data) > 0)
+      use_local <- isTRUE(input$use_country_specific_scale)
+      domain_data <- if (use_local) country_data[[selected_var()]] else global_data[[selected_var()]]
+      draw_map(current_map_for_country(), domain_data, use_local, country_data, selected_var(), country)
+      
     }
+    # For comparison maps 
+    else if  (current_map_for_country() == "compare_map_1" || current_map_for_country() == "compare_map_2"){
+        use_local <- isTRUE(input$use_comparison_country_scale)
+        
+        map_1_full_data <- data_list[[input$map_1_indicator_category]]$full
+        map_1_global_data <- data_list[[input$map_1_indicator_category]]$global
+        
+        map_2_full_data <- data_list[[input$map_2_indicator_category]]$full
+        map_2_global_data <- data_list[[input$map_2_indicator_category]]$global
+        
+        country_1_data <- if (is.null(input$map_1_country_search) || input$map_1_country_search == "Global (Default)" || input$map_1_country_search == "") map_1_global_data else map_1_full_data %>% filter(COUNTRY == input$map_1_country_search)
+        country_2_data <- if (is.null(input$map_2_country_search) || input$map_2_country_search == "Global (Default)" || input$map_2_country_search == "") map_2_global_data else map_2_full_data %>% filter(COUNTRY == input$map_2_country_search)
+        
+        
+        if (input$use_comparison_country_scale && !is.null(country_1_data) && !is.null(country_2_data)){
+          domain_data <-c(country_1_data[[map_1_selected_var()]], country_2_data[[map_2_selected_var()]])
+        }
+        else{
+          #req(nrow(country_data) > 0)
+          if (!is.null(map_1_selected_var()) && !is.null(map_2_selected_var())) {
+            domain_data <- c(map_1_global_data[[map_1_selected_var()]],map_2_global_data[[map_2_selected_var()]])
+          }
+          else if (!is.null(map_1_selected_var())) {
+            domain_data <- map_1_global_data[[map_1_selected_var()]]
+          }
+          else{
+            domain_data <- map_2_global_data[[map_2_selected_var()]]
+          }
+        }
+        
+        draw_map("compare_map_1", domain_data, use_local, if (!is.null(country_1_data)) country_1_data else domain_data, map_1_selected_var(), "")
+        draw_map("compare_map_2", domain_data, use_local, if (!is.null(country_2_data)) country_2_data else domain_data, map_2_selected_var(), "")
+    }
+  })
+  
+  draw_map <- function(current_map_for_country, domain_data, use_local, country_data, var, country){
+    #pal <- colorNumeric(palette=c("powderblue", "steelblue"), domain = domain_data, na.color = "transparent")
+    pal <- colorNumeric(palette="Purples", domain = domain_data, na.color = "transparent")
     
-    country_data <- full_data %>% filter(COUNTRY == country)
-    req(nrow(country_data) > 0)
-    
-    use_local <- isTRUE(input$use_country_specific_scale)
-    domain_data <- if (use_local) country_data[[var]] else global_data[[var]]
-    pal <- colorNumeric("Purples", domain = domain_data, na.color = "transparent")
+    legendPosition = "bottomright"
+    if(current_map_for_country == "compare_map_1"){
+      legendPosition = "bottomleft"
+    }
+
     
     leafletProxy(current_map_for_country) %>%
       clearMarkers() %>%
@@ -240,33 +281,55 @@ server <- function(input, output, session) {
         stroke = TRUE,
         color = "black",
         weight = 0.7,
-        label = ~paste0(COUNTRY, ": ", round(get(var), 3))
+        label = ~paste0(COUNTRY, ": ", round(get(var),3))
       ) %>%
       addLegend(
         pal = pal,
         values = domain_data,
         opacity = 0.9,
         title = paste0(country, " (", if (use_local) "Local" else "Global", " Scale, Arithmetic Mean",  ")"), #input$mean_type,
-        position = "bottomright"
+        position = legendPosition
       )
-  })
+  }
   
-  observeEvent(input$use_country_specific_scale, {
+  safe_round <- function(x, digits = 3) {
+    tryCatch({
+      round(x, digits)
+    }, error = function(e) {
+      0
+    })
+  }
+  
+  observeEvent(
+    {input$use_country_specific_scale},{
+      current_map_for_country("map")
+      selected_country(input$country_search)
+      
     if (!is.null(selected_country())) {
       selected_country(selected_country())
     }
   })
   
+  observeEvent(
+    {input$use_comparison_country_scale},{
+      current_map_for_country("compare_map_1")
+
+      # if (!is.null(selected_country())) {
+      #   selected_country(selected_country())
+      # }
+    })
+  
   observeEvent(input$zoom_button, {
-    country <- selected_country()
-    if (is.null(country)) {
+    which_country <- if (input$country_search == "Global (Default)") NULL else selected_country()
+    
+    if (is.null(which_country)) {
       leafletProxy("map") %>%
         setView(lng = 0, lat = 20, zoom = 2)
       return()
     }
     
     zoom_coords <- country_centroids %>%
-      filter(COUNTRY == country) %>%
+      filter(COUNTRY == which_country) %>%
       select(X, Y) %>%
       as.list()
     
@@ -683,7 +746,6 @@ server <- function(input, output, session) {
       map_1 <- map_1 %>% addProviderTiles(providers$Esri.WorldStreetMap)
     }
     
-
     map_1 %>%
       addCircleMarkers(
         radius = 6,
