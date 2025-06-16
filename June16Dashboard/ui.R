@@ -14,8 +14,7 @@ ui <- page_sidebar(
     tags$div(
       style = "margin-bottom: 20px;",
       # imageOutput("dataplus_logo"),
-      tags$h1("Composite Scores Map", 
-              style = "color: var(--bs-primary, #003087); font-weight: bold; margin-bottom: 20px;")
+      tags$h1("Composite Scores Map", style = "color: var(--bs-primary, #003087); font-weight: bold; margin-bottom: 20px;")
     ),
     
     # Map controls - only show on Interactive Map tab
@@ -28,6 +27,7 @@ ui <- page_sidebar(
         
         
         selectInput("variable_choice", "Choose a Variable:", choices = NULL),
+
         
         selectizeInput("country_search", "Jump to Country:", 
                        choices = NULL, selected = NULL),

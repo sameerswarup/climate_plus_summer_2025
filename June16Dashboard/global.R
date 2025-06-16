@@ -17,9 +17,6 @@ print(list.files())
 countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
 
 
-#regionCodes <- suppressWarnings(readRDS("/Users/student/Desktop/regions 1.rds"))
-
-
 country_polygons <- ne_countries(scale = "medium", returnclass = "sf")
 country_centroids_sf <- country_polygons %>%
   select(admin, geometry) %>%
@@ -31,8 +28,6 @@ ineq <- readRDS("data/inequality_scores.rds")
 eco <- readRDS("data/ecological_scores.rds")
 dep <- readRDS("data/deprivation_scores.rds")
 exp <- readRDS("data/exposure_scores.rds")
-
-# Sample smaller subsets for testing
 
 gov <- gov %>% slice_sample(n = 10000)
 ineq <- ineq %>% slice_sample(n = 10000)
@@ -128,7 +123,6 @@ df_country <- df %>%
       geometry = country_centroids_sf[match(COUNTRY, country_centroids_sf$admin), ]$geometry
     )
   
-
 # df is now inequity_filtered5k.rds which is smaller
 
 findPNGpath <- function(name_en) {
@@ -189,3 +183,4 @@ country_centroids$COUNTRY <- ne_countries(scale = "medium", returnclass = "sf")$
 
 composite_score_list <- c("governance_composite", "inequality_composite", "ecological_composite", "deprivation_composite", "exposure_composite")
 composite_arith_list <- c("gov_arith", "ineq_arith", "eco_arith", "dep_arith", "exp_arith")
+

@@ -198,7 +198,7 @@ server <- function(input, output, session) {
   
   output$map <- renderLeaflet({
     var <- selected_var()
-    
+
     # if composite score
     
 
@@ -225,7 +225,6 @@ server <- function(input, output, session) {
     
     req(var %in% colnames(global_data))
     
-
     # Create map with conditional tile layer
     map <- leaflet(global_data)
     
@@ -251,6 +250,7 @@ server <- function(input, output, session) {
         values = global_data[[var]],
         opacity = 0.8,
         title = paste(input$var),#, "(", input$mean_type, ")"),
+
         position = "bottomright"
       )
   })
@@ -351,6 +351,7 @@ server <- function(input, output, session) {
   })
     
   observeEvent(input$use_comparison_country_scale, {  
+
       req(input$indicator_category) #, input$mean_type)
       
       
@@ -489,8 +490,7 @@ server <- function(input, output, session) {
       setView(lng = zoom_coords$X, lat = zoom_coords$Y, zoom = 5)
   })
   
-  
-  
+
   # -----------------------------------------------------------------------------
   
   # reactiveVals
@@ -591,10 +591,12 @@ server <- function(input, output, session) {
                         "Relative Deprivation Index" = "povmap.grdi.v1.sc",
                         "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"
                       ),
+
                       selected = "povmap.grdi.v1.sc"),
           tags$small(textOutput("country_histogram_indicator_description"),
-                     style = "font-style: italic; color: #666;")
+                     style = "font-style: italic; color: #666;",
           
+                      selected = "povmap.grdi.v1.sc")
         ),
         
         # Bivariate analysis setup
@@ -876,7 +878,7 @@ server <- function(input, output, session) {
     return(descriptions)
   })
   
-  
+
   observeEvent(input$country_histogram_indicator, {
     click <- input$country_histogram_indicator
     clicked_score_country_histogram(click)  # id of indicator
@@ -972,7 +974,7 @@ server <- function(input, output, session) {
         opacity = 0.8,
         title = paste(input$map_2_indicator_category),
         position = "bottomright"
-        
+
       )
   })
 }
@@ -986,3 +988,4 @@ server <- function(input, output, session) {
 # standardize scales between countries
 
 # slider to filter --> enter a value and it'll change a thing
+      
