@@ -45,6 +45,49 @@ ui <- page_sidebar(
           style = "margin-top: 15px;",
           checkboxInput("satellite_view", "Satellite View", value = FALSE)
         )
+      ),
+      
+      # Composite Score descriptions card
+      card(
+        card_header("Composite Score Descriptions"),
+        tags$div(
+          style = "padding: 10px;",
+          
+          tags$div(
+            style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
+            tags$h6("Governance Weakness", style = "font-weight: bold; margin-bottom: 5px; color: #2c3e50;"),
+            tags$p("Measures how well governments function through public service quality, business regulation effectiveness, law enforcement, corruption prevention, political stability, and citizen participation in decision-making.", 
+                   style = "margin: 0; font-size: 12px; line-height: 1.4;")
+          ),
+          
+          tags$div(
+            style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
+            tags$h6("Social Inequality Risk", style = "font-weight: bold; margin-bottom: 5px; color: #2c3e50;"),
+            tags$p("Measures economic and social disparities through gender wage gaps, income distribution differences, and unequal health outcomes across different population groups.", 
+                   style = "margin: 0; font-size: 12px; line-height: 1.4;")
+          ),
+          
+          tags$div(
+            style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
+            tags$h6("Ecological Risk", style = "font-weight: bold; margin-bottom: 5px; color: #2c3e50;"),
+            tags$p("Measures coastal communities' exposure to damaged marine environments, including threats to sea life, reliance on ocean-based food and jobs, and vulnerability to rising sea levels.", 
+                   style = "margin: 0; font-size: 12px; line-height: 1.4;")
+          ),
+          
+          tags$div(
+            style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
+            tags$h6("Deprivation Risk", style = "font-weight: bold; margin-bottom: 5px; color: #2c3e50;"),
+            tags$p("Measures poverty levels through multiple factors including child welfare, infant health, education and living standards, infrastructure development, and economic opportunities.", 
+                   style = "margin: 0; font-size: 12px; line-height: 1.4;")
+          ),
+          
+          tags$div(
+            style = "margin-bottom: 0; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
+            tags$h6("Exposure Risk", style = "font-weight: bold; margin-bottom: 5px; color: #2c3e50;"),
+            tags$p("Measures coastal population vulnerability to climate impacts, specifically the proportion of populations in low-elevation coastal zones within 10 meters of sea level facing sea-level rise exposure.", 
+                   style = "margin: 0; font-size: 12px; line-height: 1.4;")
+          )
+        )
       )
     ),
     
@@ -85,42 +128,32 @@ ui <- page_sidebar(
         }
       ")),
       condition = "input.tabset == 'Country Comparison'",
+      #Checkbox
+      checkboxInput(
+        inputId = "use_comparison_country_scale",
+        label = "Use country color scale",
+        value = FALSE
+      ),
       card(
         card_header("Map One Controls"),
         selectInput("map_1_indicator_category", "Choose Indicator Category:", 
-                    choices = indicator_choices, selected = "Ecological"),
-        selectInput("map_1_mean_type", "Choose Mean Type:", 
-                    choices = mean_choices, selected = "Arithmetic Mean"),
+                    choices = indicator_choices, selected = "Ecological Risk"),
+        # selectInput("map_1_mean_type", "Choose Mean Type:", 
+        #             choices = mean_choices, selected = "Arithmetic Mean"),
         
         selectizeInput("map_1_country_search", "Jump to Country:", 
                        choices = NULL, selected = NULL),
-        # actionButton("map_1_zoom_button", "Zoom to Selected Country", 
-        #              style = "width: 100%; margin-top: 10px;"),
-        # 
-        # # Satellite view toggle
-        # tags$div(
-        #   style = "margin-top: 15px;",
-        #   checkboxInput("map_1_satellite_view", "Satellite View", value = FALSE)
-        # )
       ),
       
       card(
         card_header("Map Two Controls"),
         selectInput("map_2_indicator_category", "Choose Indicator Category:", 
-                    choices = indicator_choices, selected = "Ecological"),
-        selectInput("map_2_mean_type", "Choose Mean Type:", 
-                    choices = mean_choices, selected = "Arithmetic Mean"),
+                    choices = indicator_choices, selected = "Ecological Risk"),
+        # selectInput("map_2_mean_type", "Choose Mean Type:", 
+        #             choices = mean_choices, selected = "Arithmetic Mean"),
         
         selectizeInput("map_2_country_search", "Jump to Country:", 
                        choices = NULL, selected = NULL),
-        # actionButton("map_2_zoom_button", "Zoom to Selected Country", 
-        #              style = "width: 100%; margin-top: 10px;"),
-        # 
-        # # Satellite view toggle
-        # tags$div(
-        #   style = "margin-top: 15px;",
-        #   checkboxInput("map_2_satellite_view", "Satellite View", value = FALSE)
-        # )
       )
     )
   ),
@@ -218,17 +251,17 @@ ui <- page_sidebar(
                   style="padding-top: 15px;",
                   column(width=6,
                          div(
-                             leafletOutput("compare_map_1", width = "100%", height = 700)
+                           leafletOutput("compare_map_1", width = "100%", height = 700)
                          )
                   ),
                   column(width = 6,
                          div(
-                             leafletOutput("compare_map_2", width = "100%", height = 700)
+                           leafletOutput("compare_map_2", width = "100%", height = 700)
                          )
                   )
                 ),
                 
-
+                
                 fluidRow(
                   class = "no-gutters",
                   style="padding-top: 15px",
@@ -239,7 +272,7 @@ ui <- page_sidebar(
                   ),
                   column(width = 6,class = "no-gutters",
                          card(style="height: 100%",
-                           card_header("Summary Statistics"),
+                              card_header("Summary Statistics"),
                          )
                   )
                 )

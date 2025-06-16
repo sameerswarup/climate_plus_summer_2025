@@ -93,27 +93,27 @@ geom_data <- inequity %>%
 
 # Governance scores
 governance_scores <- inequity %>%
-  select(ID, COUNTRY, starts_with("gov_"), geometry)
+  select(ID, COUNTRY, starts_with("gov_"), geometry, GID_2)
 saveRDS(governance_scores, "shiny_app/data/governance_scores.rds")
 
 # Inequality scores
 inequality_scores <- inequity %>%
-  select(ID, COUNTRY, starts_with("ineq_"), geometry)
+  select(ID, COUNTRY, starts_with("ineq_"), geometry, GID_2)
 saveRDS(inequality_scores, "shiny_app/data/inequality_scores.rds")
 
 # Ecological scores
 ecological_scores <- inequity %>%
-  select(ID, COUNTRY, starts_with("eco_"), geometry)
+  select(ID, COUNTRY, starts_with("eco_"), geometry, GID_2)
 saveRDS(ecological_scores, "shiny_app/data/ecological_scores.rds")
 
 # Deprivation scores
 deprivation_scores <- inequity %>%
-  select(ID, COUNTRY, starts_with("dep_"), geometry)
+  select(ID, COUNTRY, starts_with("dep_"), geometry, GID_2)
 saveRDS(deprivation_scores, "shiny_app/data/deprivation_scores.rds")
 
 # Exposure scores
 exposure_scores <- inequity %>%
-  select(ID, COUNTRY, starts_with("exp_"), geometry)
+  select(ID, COUNTRY, starts_with("exp_"), geometry, GID_2)
 saveRDS(exposure_scores, "shiny_app/data/exposure_scores.rds")
 ```
 
@@ -147,15 +147,3 @@ map <- leaflet(gov) %>%
 saveWidget(map, "map.html", selfcontained = TRUE)
 browseURL("map.html")
 ```
-
--   <div>
-
-    -   <div>
-
-        ```{r}
-        nrow(gov)
-        ```
-
-        </div>
-
-    </div>
