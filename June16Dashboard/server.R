@@ -24,11 +24,11 @@ server <- function(input, output, session) {
   
   # For Map 1
   map_1_selected_var <- reactive({
-    req(input$map_1_country_search)
+    req(input$map_1_indicator_category)
     map_1_prefix <- indicator_prefix_map[[input$map_1_indicator_category]]
     paste0(map_1_prefix, "_arith") #mean_type_suffix[[input$map_1_mean_type]])
   })
-
+  
   observeEvent(input$map_1_country_search, {
     current_map_for_country("compare_map_1")
     
@@ -43,7 +43,7 @@ server <- function(input, output, session) {
       filter(COUNTRY == country) %>%
       select(X, Y) %>%
       as.list()
-
+    
     leafletProxy("compare_map_1") %>%
       setView(lng = zoom_coords$X, lat = zoom_coords$Y, zoom = 5)
     
@@ -60,14 +60,14 @@ server <- function(input, output, session) {
     map_1_choices <- list("Global (Default)", sort(unique(map_1_global_data$COUNTRY)))
     updateSelectizeInput(session, "map_1_country_search", choices = map_1_choices, server = TRUE)
   })
-
+  
   # For Map 2
   map_2_selected_var <- reactive({
     req(input$map_2_indicator_category)#, input$map_2_mean_type)
     map_2_prefix <- indicator_prefix_map[[input$map_2_indicator_category]]
     paste0(map_2_prefix,"_arith") # mean_type_suffix[[input$map_2_mean_type]])
   })
-
+  
   observeEvent(input$map_2_country_search, {
     current_map_for_country("compare_map_2")
     
@@ -82,7 +82,7 @@ server <- function(input, output, session) {
       filter(COUNTRY == country) %>%
       select(X, Y) %>%
       as.list()
-
+    
     leafletProxy("compare_map_2") %>%
       setView(lng = zoom_coords$X, lat = zoom_coords$Y, zoom = 5)
     
@@ -199,34 +199,34 @@ server <- function(input, output, session) {
     input$country_search
     input$use_country_specific_scale
     input$use_comparison_country_scale }, {
-    req(input$indicator_category) #, input$mean_type)
-    
+      req(input$indicator_category) #, input$mean_type)
       
-    #country <- if (input$country_search == "Global (Default)") NULL else selected_country()
-    #var <- selected_var()
-    # full_data <- data_list[[input$indicator_category]]$full
-    # global_data <- data_list[[input$indicator_category]]$global
-    
-    
-    # For interactive map
-    if  (current_map_for_country() == "map"){
-      full_data <- data_list[[input$indicator_category]]$full
-      global_data <- data_list[[input$indicator_category]]$global
       
-      country <- if (input$country_search == "Global (Default)") NULL else input$country_search
-      if (is.null(country)){
-        draw_map(current_map_for_country(), global_data[[selected_var()]], FALSE, global_data, selected_var(), country)
-        return()
+      #country <- if (input$country_search == "Global (Default)") NULL else selected_country()
+      #var <- selected_var()
+      # full_data <- data_list[[input$indicator_category]]$full
+      # global_data <- data_list[[input$indicator_category]]$global
+      
+      
+      # For interactive map
+      if  (current_map_for_country() == "map"){
+        full_data <- data_list[[input$indicator_category]]$full
+        global_data <- data_list[[input$indicator_category]]$global
+        
+        country <- if (input$country_search == "Global (Default)") NULL else input$country_search
+        if (is.null(country)){
+          draw_map(current_map_for_country(), global_data[[selected_var()]], FALSE, global_data, selected_var(), "Global (Default)")
+          return()
+        }
+        country_data <- full_data %>% filter(COUNTRY == country)
+        req(nrow(country_data) > 0)
+        use_local <- isTRUE(input$use_country_specific_scale)
+        domain_data <- if (use_local) country_data[[selected_var()]] else global_data[[selected_var()]]
+        draw_map(current_map_for_country(), domain_data, use_local, country_data, selected_var(), country)
+        
       }
-      country_data <- full_data %>% filter(COUNTRY == country)
-      req(nrow(country_data) > 0)
-      use_local <- isTRUE(input$use_country_specific_scale)
-      domain_data <- if (use_local) country_data[[selected_var()]] else global_data[[selected_var()]]
-      draw_map(current_map_for_country(), domain_data, use_local, country_data, selected_var(), country)
-      
-    }
-    # For comparison maps 
-    else if  (current_map_for_country() == "compare_map_1" || current_map_for_country() == "compare_map_2"){
+      # For comparison maps 
+      else if  (current_map_for_country() == "compare_map_1" || current_map_for_country() == "compare_map_2"){
         use_local <- isTRUE(input$use_comparison_country_scale)
         
         map_1_full_data <- data_list[[input$map_1_indicator_category]]$full
@@ -257,21 +257,22 @@ server <- function(input, output, session) {
         
         draw_map("compare_map_1", domain_data, use_local, if (!is.null(country_1_data)) country_1_data else domain_data, map_1_selected_var(), "")
         draw_map("compare_map_2", domain_data, use_local, if (!is.null(country_2_data)) country_2_data else domain_data, map_2_selected_var(), "")
-    }
-  })
+      }
+    })
   
+  # Function for drawing point maps (both global and country-specific view)
   draw_map <- function(current_map_for_country, domain_data, use_local, country_data, var, country){
-    #pal <- colorNumeric(palette=c("powderblue", "steelblue"), domain = domain_data, na.color = "transparent")
     pal <- colorNumeric(palette="Purples", domain = domain_data, na.color = "transparent")
     
     legendPosition = "bottomright"
     if(current_map_for_country == "compare_map_1"){
       legendPosition = "bottomleft"
     }
-
+    
     
     leafletProxy(current_map_for_country) %>%
       clearMarkers() %>%
+      clearShapes() %>%
       clearControls() %>%
       addCircleMarkers(
         data = country_data,
@@ -287,7 +288,7 @@ server <- function(input, output, session) {
         pal = pal,
         values = domain_data,
         opacity = 0.9,
-        title = paste0(country, " (", if (use_local) "Local" else "Global", " Scale, Arithmetic Mean",  ")"), #input$mean_type,
+        title = paste0(country, if(country == "Global (Default)") "" else paste(" (", if (use_local) "Local" else "Global", " Scale, Arithmetic Mean",  ")")),
         position = legendPosition
       )
   }
@@ -305,15 +306,15 @@ server <- function(input, output, session) {
       current_map_for_country("map")
       selected_country(input$country_search)
       
-    if (!is.null(selected_country())) {
-      selected_country(selected_country())
-    }
-  })
+      if (!is.null(selected_country())) {
+        selected_country(selected_country())
+      }
+    })
   
   observeEvent(
     {input$use_comparison_country_scale},{
       current_map_for_country("compare_map_1")
-
+      
       # if (!is.null(selected_country())) {
       #   selected_country(selected_country())
       # }
@@ -729,17 +730,17 @@ server <- function(input, output, session) {
   }, deleteFile = FALSE)
   
   output$compare_map_1 <- renderLeaflet({
-
+    
     var <- map_1_selected_var()
     map_1_global_data <- data_list[[input$map_1_indicator_category]]$global
-
+    
     req(var %in% colnames(map_1_global_data))
     
     pal <- colorNumeric("Purples", domain = map_1_global_data[[var]], na.color = "transparent")
-
+    
     # Create map with conditional tile layer
     map_1 <- leaflet(map_1_global_data)
-
+    
     if (FALSE) { #input$map_1_satellite_view
       map_1 <- map_1 %>% addProviderTiles(providers$Esri.WorldImagery)
     } else {
@@ -765,23 +766,23 @@ server <- function(input, output, session) {
         position = "bottomright"
       )
   })
-
+  
   output$compare_map_2 <- renderLeaflet({
     var <- map_2_selected_var()
     map_2_global_data <- data_list[[input$map_2_indicator_category]]$global
     req(var %in% colnames(map_2_global_data))
-
+    
     pal <- colorNumeric("Purples", domain = map_2_global_data[[var]], na.color = "transparent")
-
+    
     # Create map with conditional tile layer
     map_2 <- leaflet(map_2_global_data)
-
+    
     if (FALSE) { #input$map_1_satellite_view
       map_2 <- map_2 %>% addProviderTiles(providers$Esri.WorldImagery)
     } else {
       map_2 <- map_2 %>% addProviderTiles(providers$Esri.WorldStreetMap)
     }
-
+    
     map_2 %>%
       addCircleMarkers(
         radius = 6,
