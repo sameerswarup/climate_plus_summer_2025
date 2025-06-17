@@ -7,6 +7,9 @@ server <- function(input, output, session) {
   selected_country <- reactiveVal(NULL)
   current_map_for_country <- reactiveVal("map")
   
+  last_zoomed_country <- reactiveVal(NULL)
+
+  
   # CHANGE BASED ON COMPOSITE SCORE
   
   observeEvent(input$indicator_category, {

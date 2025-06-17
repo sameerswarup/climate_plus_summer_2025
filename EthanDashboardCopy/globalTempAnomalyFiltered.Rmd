@@ -1,0 +1,158 @@
+---
+title: "Global Temperature Anomaly Filtered"
+output: html_document
+date: "2025-06-17"
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(sf)
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+
+all_times <- read.csv("/Users/student/Downloads/Global_Monthly_Temperature_Anomaly_(1850_-_present).csv")
+
+all_times <- all_times %>%
+  mutate(
+    # convert to proper datetime format
+    datetime_obj = ymd_hms(Date_),
+    
+    # extract components
+    year = year(datetime_obj),
+    month = month(datetime_obj),
+    day = day(datetime_obj),
+    hour = hour(datetime_obj),
+    minute = minute(datetime_obj),
+    second = second(datetime_obj),
+    timezone = tz(datetime_obj)
+  ) %>%
+  
+  # remove the temporary datetime object if needed
+  select(-datetime_obj)
+
+
+```
+
+Remove unnecessary variables.
+
+```{r}
+
+all_times <- all_times %>%
+  select(-Date_) %>%
+  select(-minute) %>%
+  select(-second)
+
+```
+
+Filter to only between 1990 and 2025
+
+```{r}
+
+years <- 1990:2025
+
+all_times <- all_times %>%
+  filter(year %in% years)
+
+```
+
+
+
+Convert to sf object.
+
+```{r}
+
+points_sf <- all_times %>%
+  st_as_sf(coords = c("X", "Y"), crs = 4326)
+
+```
+
+
+Initialize coastline variables.
+
+```{r}
+
+
+coastline <- ne_download(scale = "small", type = "coastline", category = "physical", returnclass = "sf")
+
+
+
+coastline_proj <- st_transform(coastline, 3857)   
+points_proj <- st_transform(points_sf, 3857)
+
+```
+
+Calculate distances from coastlines.
+
+```{r}
+
+distances <- st_distance(points_proj, coastline_proj)  # matrix [points x coastline lines]
+min_dists <- apply(distances, 1, min) 
+
+```
+
+Put distances as minimum distances.
+
+```{r}
+
+points_sf$dist_km <- as.numeric(min_dists) / 1000
+filtered_points <- points_sf %>% filter(dist_km <= 400)
+
+
+filtered_points <- filtered_points %>%
+  select(-timezone) %>%
+  select(-OBJECTID)
+
+```
+
+Let's graph 2020 April
+
+```{r}
+filtered_2020_4 <- filtered_points %>%
+  filter(year == 2020) %>%
+  filter(month == 4) 
+
+
+ggplot() +
+  geom_sf(data = coastline, color = "blue") +
+  geom_sf(data = filtered_2020_4, aes(color = Anomaly), size = 4) +
+  theme_minimal() +
+  labs(title = "Points within 400 km of Coastline, April 2020")
+```
+
+And let's graph April 2000
+
+```{r}
+filtered_2000_4 <- filtered_points %>%
+  filter(year == 2000) %>%
+  filter(month == 4) 
+
+
+ggplot() +
+  geom_sf(data = coastline, color = "blue") +
+  geom_sf(data = filtered_2000_4, aes(color = Anomaly), size = 4) +
+  theme_minimal() +
+  labs(title = "Points within 400 km of Coastline, April 2000")
+```
+
+Change how the dataset looks
+
+```{r}
+
+filtered_points_wide <- filtered_points %>%
+  mutate(
+    year_month = sprintf("%d_%02d", year, month)  # e.g., "1990_01", "1990_02"
+  ) %>%
+  group_by(geometry, year_month) %>%
+  summarize(mean_anomaly = mean(Anomaly, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(
+    names_from = year_month,
+    values_from = mean_anomaly,
+    names_sort = TRUE
+  )
+
+
+```
+
