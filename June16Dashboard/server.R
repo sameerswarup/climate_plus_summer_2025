@@ -58,8 +58,8 @@ server <- function(input, output, session) {
     # if it's a composite score chosen
     
     if (variable %in% composite_score_list) {
-      prefix <- indicator_prefix_map[[input$indicator_category]]
-      return(paste0(prefix, "_arith"))
+      #prefix <- indicator_prefix_map[[input$indicator_category]]
+      return(indicator_arith_map[[input$indicator_category]]) # paste0(prefix, "_arith"))
       } else {
       # if it's a regular variable chosen
       
@@ -72,7 +72,7 @@ server <- function(input, output, session) {
   })
   
   observe({
-    global_data <- data_list[[input$indicator_category]]$global
+    global_data <- combined_scores_global #data_list[[input$indicator_category]]$global
     choices <- list("Global (Default)", sort(unique(global_data$COUNTRY)))
     updateSelectizeInput(session, "country_search", choices = choices, server = TRUE)
   })
@@ -82,8 +82,8 @@ server <- function(input, output, session) {
   # For Map 1
   map_1_selected_var <- reactive({
     req(input$map_1_indicator_category)
-    map_1_prefix <- indicator_prefix_map[[input$map_1_indicator_category]]
-    paste0(map_1_prefix, "_arith") #mean_type_suffix[[input$map_1_mean_type]])
+    #map_1_prefix <- indicator_prefix_map[[input$map_1_indicator_category]]
+    return(indicator_arith_map[[input$map_1_indicator_category]]) # paste0(map_1_prefix, "_arith") #mean_type_suffix[[input$map_1_mean_type]])
   })
   
   observeEvent(input$map_1_country_search, {
@@ -113,7 +113,7 @@ server <- function(input, output, session) {
   })
   
   observe({
-    map_1_global_data <- data_list[[input$map_1_indicator_category]]$global
+    map_1_global_data <- combined_scores_global #data_list[[input$map_1_indicator_category]]$global
     map_1_choices <- list("Global (Default)", sort(unique(map_1_global_data$COUNTRY)))
     updateSelectizeInput(session, "map_1_country_search", choices = map_1_choices, server = TRUE)
   })
@@ -121,8 +121,8 @@ server <- function(input, output, session) {
   # For Map 2
   map_2_selected_var <- reactive({
     req(input$map_2_indicator_category)#, input$map_2_mean_type)
-    map_2_prefix <- indicator_prefix_map[[input$map_2_indicator_category]]
-    paste0(map_2_prefix,"_arith") # mean_type_suffix[[input$map_2_mean_type]])
+    #map_2_prefix <- indicator_prefix_map[[input$map_2_indicator_category]]
+    return(indicator_arith_map[[input$map_2_indicator_category]]) #paste0(map_2_prefix,"_arith") # mean_type_suffix[[input$map_2_mean_type]])
   })
   
   observeEvent(input$map_2_country_search, {
@@ -151,7 +151,7 @@ server <- function(input, output, session) {
   })
   
   observe({
-    map_2_global_data <- data_list[[input$map_2_indicator_category]]$global
+    map_2_global_data <- combined_scores_global #data_list[[input$map_2_indicator_category]]$global
     map_2_choices <- list("Global (Default)", sort(unique(map_2_global_data$COUNTRY)))
     updateSelectizeInput(session, "map_2_country_search", choices = map_2_choices, server = TRUE)
   })
@@ -209,7 +209,7 @@ server <- function(input, output, session) {
       
       name_from_value <- names(indicator_arith_map)[unlist(indicator_arith_map) == var]
 
-      global_data <- data_list[[name_from_value]]$global
+      global_data <- combined_scores_global #data_list[[name_from_value]]$global
       pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
       
       
@@ -285,8 +285,8 @@ server <- function(input, output, session) {
       
       name_from_value <- names(indicator_arith_map)[unlist(indicator_arith_map) == var]
       
-      global_data <- data_list[[name_from_value]]$global
-      full_data <- data_list[[name_from_value]]$full
+      global_data <- combined_scores_global #data_list[[name_from_value]]$global
+      full_data <- combined_scores #data_list[[name_from_value]]$full
       pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
       
       
@@ -304,8 +304,8 @@ server <- function(input, output, session) {
 
     if (var %in% composite_arith_list) {
       
-      full_data <- data_list[[input$indicator_category]]$full
-      global_data <- data_list[[input$indicator_category]]$global
+      full_data <- combined_scores #data_list[[input$indicator_category]]$full
+      global_data <- combined_scores_global #data_list[[input$indicator_category]]$global
       
       
     } else {
@@ -366,8 +366,8 @@ server <- function(input, output, session) {
       
       # For interactive map
       if  (current_map_for_country() == "map"){
-        full_data <- data_list[[input$indicator_category]]$full
-        global_data <- data_list[[input$indicator_category]]$global
+        full_data <- combined_scores #data_list[[input$indicator_category]]$full
+        global_data <- combined_scores_global #data_list[[input$indicator_category]]$global
         
         country <- if (input$country_search == "Global (Default)") NULL else input$country_search
         if (is.null(country)){
@@ -804,7 +804,7 @@ server <- function(input, output, session) {
       )
       # after click
     } else {
-      filename <- findPNGpath(chosen_country())
+      filename <- findPNGpath(chosen_country(), countryCodes)
       # Return a list containing the filename
       list(src = filename,
            contentType = "image/png",
@@ -909,7 +909,7 @@ server <- function(input, output, session) {
   output$compare_map_1 <- renderLeaflet({
     
     var <- map_1_selected_var()
-    map_1_global_data <- data_list[[input$map_1_indicator_category]]$global
+    map_1_global_data <- combined_scores_global #data_list[[input$map_1_indicator_category]]$global
     
     req(var %in% colnames(map_1_global_data))
     
@@ -946,7 +946,7 @@ server <- function(input, output, session) {
   
   output$compare_map_2 <- renderLeaflet({
     var <- map_2_selected_var()
-    map_2_global_data <- data_list[[input$map_2_indicator_category]]$global
+    map_2_global_data <- combined_scores_global #data_list[[input$map_2_indicator_category]]$global
     req(var %in% colnames(map_2_global_data))
     
     pal <- colorNumeric("Purples", domain = map_2_global_data[[var]], na.color = "transparent")

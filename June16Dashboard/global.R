@@ -23,17 +23,17 @@ country_centroids_sf <- country_polygons %>%
   mutate(geometry = st_centroid(geometry))  # Geometric center of polygon
 
 # Load original data
-gov <- readRDS("data/governance_scores.rds")
-ineq <- readRDS("data/inequality_scores.rds")
-eco <- readRDS("data/ecological_scores.rds")
-dep <- readRDS("data/deprivation_scores.rds")
-exp <- readRDS("data/exposure_scores.rds")
-
-gov <- gov %>% slice_sample(n = 10000)
-ineq <- ineq %>% slice_sample(n = 10000)
-eco <- eco %>% slice_sample(n = 10000)
-dep <- dep %>% slice_sample(n = 10000)
-exp <- exp %>% slice_sample(n = 10000)
+# gov <- readRDS("data/governance_scores.rds")
+# ineq <- readRDS("data/inequality_scores.rds")
+# eco <- readRDS("data/ecological_scores.rds")
+# dep <- readRDS("data/deprivation_scores.rds")
+# exp <- readRDS("data/exposure_scores.rds")
+# 
+# gov <- gov %>% slice_sample(n = 10000)
+# ineq <- ineq %>% slice_sample(n = 10000)
+# eco <- eco %>% slice_sample(n = 10000)
+# dep <- dep %>% slice_sample(n = 10000)
+# exp <- exp %>% slice_sample(n = 10000)
 
 # Function to create country-aggregated datasets with centroid geometries
 aggregate_country <- function(data) {
@@ -60,28 +60,31 @@ aggregate_country <- function(data) {
     st_as_sf()
 }
 
+combined_scores <- readRDS("data/inequity_combined_scores.rds")
+combined_scores_global = aggregate_country(combined_scores)
+
 # Create both full and global (aggregated) datasets
-gov_global <- aggregate_country(gov)
-ineq_global <- aggregate_country(ineq)
-eco_global <- aggregate_country(eco)
-dep_global <- aggregate_country(dep)
-exp_global <- aggregate_country(exp)
+# gov_global <- aggregate_country(gov)
+# ineq_global <- aggregate_country(ineq)
+# eco_global <- aggregate_country(eco)
+# dep_global <- aggregate_country(dep)
+# exp_global <- aggregate_country(exp)
 
-data_list <- list(
-  "Governance Weakness" = list(full = gov, global = gov_global),
-  "Social Inequality Risk" = list(full = ineq, global = ineq_global),
-  "Ecological Risk" = list(full = eco, global = eco_global),
-  "Deprivation Risk" = list(full = dep, global = dep_global),
-  "Exposure Risk" = list(full = exp, global = exp_global)
-)
+# data_list <- list(
+#   "Governance Weakness" = list(full = gov, global = gov_global),
+#   "Social Inequality Risk" = list(full = ineq, global = ineq_global),
+#   "Ecological Risk" = list(full = eco, global = eco_global),
+#   "Deprivation Risk" = list(full = dep, global = dep_global),
+#   "Exposure Risk" = list(full = exp, global = exp_global)
+# )
 
-indicator_prefix_map <- list(
-  "Governance Weakness" = "gov",
-  "Social Inequality Risk" = "ineq",
-  "Ecological Risk" = "eco",
-  "Deprivation Risk" = "dep",
-  "Exposure Risk" = "exp"
-)
+# indicator_prefix_map <- list(
+#   "Governance Weakness" = "gov",
+#   "Social Inequality Risk" = "ineq",
+#   "Ecological Risk" = "eco",
+#   "Deprivation Risk" = "dep",
+#   "Exposure Risk" = "exp"
+# )
 
 indicator_arith_map <- list(
   "Governance Weakness" = "gov_arith",
@@ -92,14 +95,14 @@ indicator_arith_map <- list(
 )
 
 
-mean_type_suffix <- list(
-  "Arithmetic Mean" = "_arith",
-  "Geometric Mean" = "_geom"
-)
+# mean_type_suffix <- list(
+#   "Arithmetic Mean" = "_arith",
+#   "Geometric Mean" = "_geom"
+# )
 
-indicator_choices <- names(data_list)
+indicator_choices <- names(indicator_arith_map)
 
-mean_choices <- names(mean_type_suffix)
+#mean_choices <- names(mean_type_suffix)
 
 # Indicator descriptions
 indicator_descriptions <- list(
@@ -125,9 +128,9 @@ df_country <- df %>%
   
 # df is now inequity_filtered5k.rds which is smaller
 
-findPNGpath <- function(name_en) {
+findPNGpath <- function(name_en, countryCodes) {
   pngDefaultPath <- "www/flags/"
-  countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
+  #countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
   alpha2 <- countryCodes %>%
     filter(Country == name_en) %>%
     pull(Alpha.2.code)
