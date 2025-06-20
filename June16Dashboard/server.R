@@ -9,45 +9,55 @@ server <- function(input, output, session) {
   
   last_zoomed_country <- reactiveVal(NULL)
 
+  indicator_choice_list <- list(
+    "Governance Weakness" = c("Governance (Composite)" = "governance_composite",
+                              "Government Ineffectiveness" = "Gov_effect.sc",
+                              "Poor Regulatory Quality" = "Reg_quality.sc",
+                              "Weak Rule of Law" = "Rule_law.sc",
+                              "Weak Control of Corruption" = "control_corr.sc",
+                              "Low Voice and Accountability" = "Voice_account.sc",
+                              "Gov Score Rank" = "gov.score.rank"  
+                              
+    ),
+    "Social Inequality Risk" = c("Inequality (Composite)" = "inequality_composite",
+                                 "Gender Inequality" = "gender.ineq.sc",
+                                 "Income Inequality" = "income.ineq.sc",
+                                 "Inequality Adjusted Life Expectancy" = "le.ineq.log.sc",
+                                 "Ineq Score Rank" = "ineq.score.rank",
+                                 "Hierachical Score Rank" = "hierachical.score.rank.ineq"
+    ),
+    "Ecological Risk" = c("Ecological (Composite)" = "ecological_composite",
+                          "Vulnerab Score Rank" = "vulnerab.score.rank",
+                          "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                          "Nutritional Dependence" = "Nutritional.dependence.sc" ,
+                          "Economic Dependence" = "Economic.dependence.sc"
+    ),
+    "Deprivation Risk" = c("Deprivation (Composite)" = "deprivation_composite",
+                           "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                           "Income Ineq Change" = "income.ineq.change.sc",
+                           "Le Ineq Change" = "le.ineq.change.sc"
+    ),
+    "Exposure Risk" = c("Exposure (Composite)" = "exposure_composite",
+                        "Coastal Climate Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
+  )
   
   # CHANGE BASED ON COMPOSITE SCORE
-  
+  # interactive map
   observeEvent(input$indicator_category, {
-    choices_list <- list(
-      "Governance Weakness" = c("Governance (Composite)" = "governance_composite",
-                       "Government Ineffectiveness" = "Gov_effect.sc",
-                       "Poor Regulatory Quality" = "Reg_quality.sc",
-                       "Weak Rule of Law" = "Rule_law.sc",
-                       "Weak Control of Corruption" = "control_corr.sc",
-                       "Low Voice and Accountability" = "Voice_account.sc",
-                       "Gov Score Rank" = "gov.score.rank"  
-                       
-      ),
-      "Social Inequality Risk" = c("Inequality (Composite)" = "inequality_composite",
-                       "Gender Inequality" = "gender.ineq.sc",
-                       "Income Inequality" = "income.ineq.sc",
-                       "Inequality Adjusted Life Expectancy" = "le.ineq.log.sc",
-                       "Ineq Score Rank" = "ineq.score.rank",
-                       "Hierachical Score Rank" = "hierachical.score.rank.ineq"
-      ),
-      "Ecological Risk" = c("Ecological (Composite)" = "ecological_composite",
-                       "Vulnerab Score Rank" = "vulnerab.score.rank",
-                       "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
-                       "Nutritional Dependence" = "Nutritional.dependence.sc" ,
-                       "Economic Dependence" = "Economic.dependence.sc"
-      ),
-      "Deprivation Risk" = c("Deprivation (Composite)" = "deprivation_composite",
-                        "Relative Deprivation Index" = "povmap.grdi.v1.sc",
-                        "Income Ineq Change" = "income.ineq.change.sc",
-                        "Le Ineq Change" = "le.ineq.change.sc"
-      ),
-      "Exposure Risk" = c("Exposure (Composite)" = "exposure_composite",
-                     "Coastal Climate Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
-    )
-    
-    
     updateSelectInput(session, "variable_choice",
-                      choices = choices_list[[input$indicator_category]])
+                      choices = indicator_choice_list[[input$indicator_category]])
+  })
+  
+  # map 1
+  observeEvent(input$map_1_indicator_category, {
+    updateSelectInput(session, "map_1_variable_choice",
+                      choices = indicator_choice_list[[input$map_1_indicator_category]])
+  })
+  
+  # map 2
+  observeEvent(input$map_2_indicator_category, {
+    updateSelectInput(session, "map_2_variable_choice",
+                      choices = indicator_choice_list[[input$map_2_indicator_category]])
   })
   
   # For interactive Map
@@ -385,11 +395,11 @@ server <- function(input, output, session) {
       else if  (current_map_for_country() == "compare_map_1" || current_map_for_country() == "compare_map_2"){
         use_local <- isTRUE(input$use_comparison_country_scale)
         
-        map_1_full_data <- data_list[[input$map_1_indicator_category]]$full
-        map_1_global_data <- data_list[[input$map_1_indicator_category]]$global
+        map_1_full_data <- combined_scores #data_list[[input$map_1_indicator_category]]$full
+        map_1_global_data <- combined_scores_global #data_list[[input$map_1_indicator_category]]$global
         
-        map_2_full_data <- data_list[[input$map_2_indicator_category]]$full
-        map_2_global_data <- data_list[[input$map_2_indicator_category]]$global
+        map_2_full_data <- combined_scores #data_list[[input$map_2_indicator_category]]$full
+        map_2_global_data <- combined_scores_global #data_list[[input$map_2_indicator_category]]$global
         
         country_1_data <- if (is.null(input$map_1_country_search) || input$map_1_country_search == "Global (Default)" || input$map_1_country_search == "") map_1_global_data else map_1_full_data %>% filter(COUNTRY == input$map_1_country_search)
         country_2_data <- if (is.null(input$map_2_country_search) || input$map_2_country_search == "Global (Default)" || input$map_2_country_search == "") map_2_global_data else map_2_full_data %>% filter(COUNTRY == input$map_2_country_search)

@@ -14,7 +14,7 @@ ui <- page_sidebar(
     tags$div(
       style = "margin-bottom: 20px;",
       # imageOutput("dataplus_logo"),
-      tags$h1("Composite Scores Map", style = "color: var(--bs-primary, #003087); font-weight: bold; margin-bottom: 20px;")
+      tags$h3("Composite Scores Map", style = "color: var(--bs-primary, #003087); font-weight: bold; margin:0px;")
     ),
     
     # Map controls - only show on Interactive Map tab
@@ -136,10 +136,10 @@ ui <- page_sidebar(
       ),
       card(
         card_header("Map One Controls"),
-        selectInput("map_1_indicator_category", "Choose Indicator Category:", 
+        selectInput("map_1_indicator_category", "Choose Composite Score:", 
                     choices = indicator_choices, selected = "Ecological Risk"),
-        # selectInput("map_1_mean_type", "Choose Mean Type:", 
-        #             choices = mean_choices, selected = "Arithmetic Mean"),
+        
+        selectInput("map_1_variable_choice", "Choose a Variable:", choices = NULL),
         
         selectizeInput("map_1_country_search", "Jump to Country:", 
                        choices = NULL, selected = NULL),
@@ -147,10 +147,10 @@ ui <- page_sidebar(
       
       card(
         card_header("Map Two Controls"),
-        selectInput("map_2_indicator_category", "Choose Indicator Category:", 
+        selectInput("map_2_indicator_category", "Choose Composite Score:", 
                     choices = indicator_choices, selected = "Ecological Risk"),
-        # selectInput("map_2_mean_type", "Choose Mean Type:", 
-        #             choices = mean_choices, selected = "Arithmetic Mean"),
+        
+        selectInput("map_2_variable_choice", "Choose a Variable:", choices = NULL),
         
         selectizeInput("map_2_country_search", "Jump to Country:", 
                        choices = NULL, selected = NULL),
