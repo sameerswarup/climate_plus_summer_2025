@@ -154,12 +154,48 @@ server <- function(input, output, session) {
     
     if (input$country_search != "Global (Default)" && !is.null(input$country_search)) {
       updateSelectInput(session, "country_select", selected = input$country_search)
-    }
-    
-    if (input$country_search == "Global (Default)") {
-      selected_country(NULL)
-    } else {
       selected_country(input$country_search)
+    } else {
+      selected_country(NULL)
+      # When returning to global view, re-render the map with shaded countries
+      var <- selected_var()
+      if (var %in% composite_arith_list) {
+        global_data <- combined_scores_global
+        polygon_data <- combined_scores_global_polygons
+      } else {
+        global_data <- average_country_nogeo
+        polygon_data <- average_country_polygons
+      }
+      
+      pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
+      leafletProxy("map") %>%
+        clearMarkers() %>%
+        clearShapes() %>%
+        clearControls() %>%
+        addPolygons(
+          data = polygon_data,
+          fillColor = ~pal(get(var)),    # Fill color matches the data value
+          fillOpacity = 0.7,             # Semi-transparent fill
+          color = ~pal(get(var)),        # Border color matches the data value
+          weight = 2,                    # Border thickness
+          opacity = 0.9,                 # Border opacity
+          highlightOptions = highlightOptions(
+            color = "#FFFFFF",           # White highlight on hover for contrast
+            weight = 4,
+            bringToFront = TRUE,
+            opacity = 1,
+            fillOpacity = 0.8            # Slightly more opaque on hover
+          ),
+          layerId = ~COUNTRY,
+          label = ~paste0(COUNTRY, ": ", round(get(var), 3))
+        ) %>%
+        addLegend(
+          pal = pal,
+          values = global_data[[var]],
+          opacity = 0.8,
+          title = paste(input$indicator_category),
+          position = "bottomright"
+        )
     }
   })
   
@@ -252,34 +288,23 @@ server <- function(input, output, session) {
     }
     
     map %>%
-      # Add country polygons with colored borders based on composite score
+      # Add country polygons with both fill and border colors based on composite score
       addPolygons(
         data = polygon_data,
-        fillColor = "transparent",
-        fillOpacity = 0,
-        color = ~pal(get(var)),  # Border color matches the data value
-        weight = 2,              # Slightly thicker for better visibility
-        opacity = 0.8,
+        fillColor = ~pal(get(var)),    # Fill color matches the data value
+        fillOpacity = 0.7,             # Semi-transparent fill
+        color = ~pal(get(var)),        # Border color matches the data value
+        weight = 2,                    # Border thickness
+        opacity = 0.9,                 # Border opacity
         highlightOptions = highlightOptions(
-          color = "#FFFFFF",     # White highlight on hover for contrast
+          color = "#FFFFFF",           # White highlight on hover for contrast
           weight = 4,
           bringToFront = TRUE,
-          opacity = 1
+          opacity = 1,
+          fillOpacity = 0.8            # Slightly more opaque on hover
         ),
         layerId = ~COUNTRY,
         label = ~paste0(COUNTRY, ": ", round(get(var), 3))
-      ) %>%
-      # Add circle markers for data visualization
-      addCircleMarkers(
-        data = global_data,
-        radius = 6,
-        fillColor = ~pal(get(var)),
-        fillOpacity = 0.8,
-        stroke = TRUE,
-        color = "white",
-        weight = 0.5,
-        label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
-        layerId = ~paste0("marker_", COUNTRY)
       ) %>%
       addLegend(
         pal = pal,
@@ -445,45 +470,79 @@ server <- function(input, output, session) {
     
     legendPosition = "bottomright"
     
-    leafletProxy(current_map_for_country) %>%
-      clearMarkers() %>%
-      clearShapes() %>%
-      clearControls() %>%
-      # Always add country polygons with colored borders
-      addPolygons(
-        data = polygon_data,
-        fillColor = "transparent",
-        fillOpacity = 0,
-        color = ~border_pal(get(var)),  # Border color matches global data values
-        weight = 2,
-        opacity = 0.8,
-        highlightOptions = highlightOptions(
-          color = "#FFFFFF",
-          weight = 4,
-          bringToFront = TRUE,
-          opacity = 1
-        ),
-        layerId = ~COUNTRY,
-        label = ~paste0(COUNTRY, ": ", round(get(var), 3))
-      ) %>%
-      # Add markers for the selected country or global data
-      addCircleMarkers(
-        data = country_data,
-        radius = 6,
-        fillColor = ~pal(get(var)),
-        fillOpacity = 0.9,
-        stroke = TRUE,
-        color = "black",
-        weight = 0.7,
-        label = ~paste0(COUNTRY, ": ", round(get(var), 3))
-      ) %>%
-      addLegend(
-        pal = pal,
-        values = domain_data,
-        opacity = 0.9,
-        title = paste0(country, if (country == "Global (Default)") "" else paste(" (", if (use_local) "Local" else "Global", " Scale, Arithmetic Mean", ")")),
-        position = legendPosition
-      )
+    # Check if we're showing global view or country-specific view
+    if (country == "Global (Default)" || is.null(country) || country == "") {
+      # GLOBAL VIEW: Show filled countries (choropleth)
+      leafletProxy(current_map_for_country) %>%
+        clearMarkers() %>%
+        clearShapes() %>%
+        clearControls() %>%
+        addPolygons(
+          data = polygon_data,
+          fillColor = ~border_pal(get(var)),    # Fill color matches the data value
+          fillOpacity = 0.7,                    # Semi-transparent fill
+          color = ~border_pal(get(var)),        # Border color matches the data value
+          weight = 2,                           # Border thickness
+          opacity = 0.9,                        # Border opacity
+          highlightOptions = highlightOptions(
+            color = "#FFFFFF",                  # White highlight on hover for contrast
+            weight = 4,
+            bringToFront = TRUE,
+            opacity = 1,
+            fillOpacity = 0.8                   # Slightly more opaque on hover
+          ),
+          layerId = ~COUNTRY,
+          label = ~paste0(COUNTRY, ": ", round(get(var), 3))
+        ) %>%
+        addLegend(
+          pal = border_pal,
+          values = global_data[[var]],
+          opacity = 0.8,
+          title = paste(input$indicator_category),
+          position = legendPosition
+        )
+    } else {
+      # COUNTRY-SPECIFIC VIEW: Show individual points with transparent country borders
+      leafletProxy(current_map_for_country) %>%
+        clearMarkers() %>%
+        clearShapes() %>%
+        clearControls() %>%
+        # Add transparent country polygons with borders only
+        addPolygons(
+          data = polygon_data,
+          fillColor = "transparent",
+          fillOpacity = 0,
+          color = ~border_pal(get(var)),        # Border color matches global data values
+          weight = 1,                           # Thinner borders for background
+          opacity = 0.4,                        # Lower opacity for background
+          highlightOptions = highlightOptions(
+            color = "#FFFFFF",
+            weight = 3,
+            bringToFront = TRUE,
+            opacity = 1
+          ),
+          layerId = ~COUNTRY,
+          label = ~paste0(COUNTRY, ": ", round(get(var), 3))
+        ) %>%
+        # Add markers for the selected country
+        addCircleMarkers(
+          data = country_data,
+          radius = 6,
+          fillColor = ~pal(get(var)),
+          fillOpacity = 0.9,
+          stroke = TRUE,
+          color = "black",
+          weight = 0.7,
+          label = ~paste0(COUNTRY, ": ", round(get(var), 3))
+        ) %>%
+        addLegend(
+          pal = pal,
+          values = domain_data,
+          opacity = 0.9,
+          title = paste0(country, if (use_local) " (Local Scale)" else " (Global Scale)"),
+          position = legendPosition
+        )
+    }
   }
   
   safe_round <- function(x, digits = 3) {
