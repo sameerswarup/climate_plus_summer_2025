@@ -23,11 +23,11 @@ ui <- page_sidebar(
       card(
         card_header("Map Controls"),
         selectInput("indicator_category", "Choose Composite Score:", 
-                    choices = indicator_choices, selected = "Ecological"),
+                    choices = indicator_choices, selected = "Weak Governance"),
         
         
         selectInput("variable_choice", "Choose a Variable:", choices = NULL),
-
+        
         
         selectizeInput("country_search", "Jump to Country:", 
                        choices = NULL, selected = NULL),
@@ -55,36 +55,22 @@ ui <- page_sidebar(
           
           tags$div(
             style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
-            tags$h6("Governance Weakness", style = "font-weight: bold; margin-bottom: 5px; color: #2c3e50;"),
+            tags$h6("Weak Governance", style = "font-weight: bold; margin-bottom: 5px; color: #2c3e50;"),
             tags$p("Measures how well governments function through public service quality, business regulation effectiveness, law enforcement, corruption prevention, political stability, and citizen participation in decision-making.", 
                    style = "margin: 0; font-size: 12px; line-height: 1.4;")
           ),
           
           tags$div(
             style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
-            tags$h6("Social Inequality Risk", style = "font-weight: bold; margin-bottom: 5px; color: #2c3e50;"),
+            tags$h6("Social Inequality", style = "font-weight: bold; margin-bottom: 5px; color: #2c3e50;"),
             tags$p("Measures economic and social disparities through gender wage gaps, income distribution differences, and unequal health outcomes across different population groups.", 
                    style = "margin: 0; font-size: 12px; line-height: 1.4;")
           ),
           
           tags$div(
             style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
-            tags$h6("Ecological Risk", style = "font-weight: bold; margin-bottom: 5px; color: #2c3e50;"),
+            tags$h6("Socio-Ecological Vulnerability", style = "font-weight: bold; margin-bottom: 5px; color: #2c3e50;"),
             tags$p("Measures coastal communities' exposure to damaged marine environments, including threats to sea life, reliance on ocean-based food and jobs, and vulnerability to rising sea levels.", 
-                   style = "margin: 0; font-size: 12px; line-height: 1.4;")
-          ),
-          
-          tags$div(
-            style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
-            tags$h6("Deprivation Risk", style = "font-weight: bold; margin-bottom: 5px; color: #2c3e50;"),
-            tags$p("Measures poverty levels through multiple factors including child welfare, infant health, education and living standards, infrastructure development, and economic opportunities.", 
-                   style = "margin: 0; font-size: 12px; line-height: 1.4;")
-          ),
-          
-          tags$div(
-            style = "margin-bottom: 0; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
-            tags$h6("Exposure Risk", style = "font-weight: bold; margin-bottom: 5px; color: #2c3e50;"),
-            tags$p("Measures coastal population vulnerability to climate impacts, specifically the proportion of populations in low-elevation coastal zones within 10 meters of sea level facing sea-level rise exposure.", 
                    style = "margin: 0; font-size: 12px; line-height: 1.4;")
           )
         )
@@ -137,7 +123,7 @@ ui <- page_sidebar(
       card(
         card_header("Map One Controls"),
         selectInput("map_1_indicator_category", "Choose Composite Score:", 
-                    choices = indicator_choices, selected = "Ecological Risk"),
+                    choices = composite_choices, selected = "Social Inequality"),
         
         selectInput("map_1_variable_choice", "Choose a Variable:", choices = NULL),
         
@@ -148,7 +134,7 @@ ui <- page_sidebar(
       card(
         card_header("Map Two Controls"),
         selectInput("map_2_indicator_category", "Choose Composite Score:", 
-                    choices = indicator_choices, selected = "Ecological Risk"),
+                    choices = composite_choices, selected = "Social Inequality"),
         
         selectInput("map_2_variable_choice", "Choose a Variable:", choices = NULL),
         

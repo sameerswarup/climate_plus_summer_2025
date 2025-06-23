@@ -13,6 +13,13 @@ library(rnaturalearth)
 print(">>> global.R is running <<<")
 print(list.files())
 
+df <- readRDS("data/inequity_filtered5k.rds") %>%
+  st_transform(4326)
+
+df_country <- df %>%
+  mutate(
+    geometry = country_centroids_sf[match(COUNTRY, country_centroids_sf$admin), ]$geometry
+  )
 
 countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
 
@@ -28,7 +35,7 @@ country_centroids_sf <- country_polygons %>%
 # eco <- readRDS("data/ecological_scores.rds")
 # dep <- readRDS("data/deprivation_scores.rds")
 # exp <- readRDS("data/exposure_scores.rds")
-# 
+# # 
 # gov <- gov %>% slice_sample(n = 10000)
 # ineq <- ineq %>% slice_sample(n = 10000)
 # eco <- eco %>% slice_sample(n = 10000)
@@ -60,8 +67,8 @@ aggregate_country <- function(data) {
     st_as_sf()
 }
 
-combined_scores <- readRDS("data/inequity_combined_scores.rds")
-combined_scores_global = aggregate_country(combined_scores)
+# combined_scores <- readRDS("data/inequity_combined_scores.rds")
+# combined_scores_global = aggregate_country(combined_scores)
 
 # Create both full and global (aggregated) datasets
 # gov_global <- aggregate_country(gov)
@@ -86,12 +93,10 @@ combined_scores_global = aggregate_country(combined_scores)
 #   "Exposure Risk" = "exp"
 # )
 
-indicator_arith_map <- list(
-  "Governance Weakness" = "gov_arith",
-  "Social Inequality Risk" = "ineq_arith",
-  "Ecological Risk" = "eco_arith",
-  "Deprivation Risk" = "dep_arith",
-  "Exposure Risk" = "exp_arith"
+indicator_map <- list(
+  "Socio-Ecological Vulnerability" = "vulnerab.score.rank",
+  "Social Inequality" = "ineq.score.rank",
+  "Weak Governance" = "gov.score.rank"
 )
 
 
@@ -100,31 +105,22 @@ indicator_arith_map <- list(
 #   "Geometric Mean" = "_geom"
 # )
 
-indicator_choices <- names(indicator_arith_map)
+composite_choices <- names(indicator_map)
 
 #mean_choices <- names(mean_type_suffix)
 
 # Indicator descriptions
 indicator_descriptions <- list(
-  "Governance Weakness" = "Measures how well governments function through public service quality, business regulation effectiveness, law enforcement, corruption prevention, political stability, and citizen participation in decision-making.",
-  "Social Inequality Risk" = "Measures economic and social disparities through gender wage gaps, income distribution differences, and unequal health outcomes across different population groups.",
-  "Ecological Risk" = "Measures coastal communities' exposure to damaged marine environments, including threats to sea life, reliance on ocean-based food and jobs, and vulnerability to rising sea levels.",
-  "Deprivation Risk" = "Measures poverty levels through multiple factors including child welfare, infant health, education and living standards, infrastructure development, and economic opportunities.",
-  "Exposure Risk" = "Measures coastal population vulnerability to climate impacts, specifically the proportion of populations in low-elevation coastal zones within 10 meters of sea level facing sea-level rise exposure."
+  "Socio-Ecological Vulnerability" = "Measures coastal communities' exposure to damaged marine environments, including threats to sea life, reliance on ocean-based food and jobs, and vulnerability to rising sea levels.",
+  "Social Inequality" = "Measures economic and social disparities through gender wage gaps, income distribution differences, and unequal health outcomes across different population groups.",
+  "Weak Governance" = "Measures how well governments function through public service quality, business regulation effectiveness, law enforcement, corruption prevention, political stability, and citizen participation in decision-making."
+  
 )
 
 # -----------------------------------------------------------------------------
 
 
 # FROM ETHAN'S FILES
-
-df <- readRDS("data/inequity_filtered5k.rds") %>%
-  st_transform(4326)
-
-df_country <- df %>%
-  mutate(
-      geometry = country_centroids_sf[match(COUNTRY, country_centroids_sf$admin), ]$geometry
-    )
   
 # df is now inequity_filtered5k.rds which is smaller
 
@@ -184,6 +180,7 @@ country_centroids <- ne_countries(scale = "medium", returnclass = "sf") %>%
   as.data.frame()
 country_centroids$COUNTRY <- ne_countries(scale = "medium", returnclass = "sf")$admin
 
-composite_score_list <- c("governance_composite", "inequality_composite", "ecological_composite", "deprivation_composite", "exposure_composite")
-composite_arith_list <- c("gov_arith", "ineq_arith", "eco_arith", "dep_arith", "exp_arith")
+composite_score_list <- c("vulnerab.score.rank",
+                          "ineq.score.rank",
+                          "gov.score.rank")
 

@@ -10,35 +10,29 @@ server <- function(input, output, session) {
   last_zoomed_country <- reactiveVal(NULL)
 
   indicator_choice_list <- list(
-    "Governance Weakness" = c("Governance (Composite)" = "governance_composite",
-                              "Government Ineffectiveness" = "Gov_effect.sc",
-                              "Poor Regulatory Quality" = "Reg_quality.sc",
-                              "Weak Rule of Law" = "Rule_law.sc",
-                              "Weak Control of Corruption" = "control_corr.sc",
-                              "Low Voice and Accountability" = "Voice_account.sc",
-                              "Gov Score Rank" = "gov.score.rank"  
-                              
-    ),
-    "Social Inequality Risk" = c("Inequality (Composite)" = "inequality_composite",
-                                 "Gender Inequality" = "gender.ineq.sc",
-                                 "Income Inequality" = "income.ineq.sc",
-                                 "Inequality Adjusted Life Expectancy" = "le.ineq.log.sc",
-                                 "Ineq Score Rank" = "ineq.score.rank",
-                                 "Hierachical Score Rank" = "hierachical.score.rank.ineq"
-    ),
-    "Ecological Risk" = c("Ecological (Composite)" = "ecological_composite",
-                          "Vulnerab Score Rank" = "vulnerab.score.rank",
-                          "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
-                          "Nutritional Dependence" = "Nutritional.dependence.sc" ,
-                          "Economic Dependence" = "Economic.dependence.sc"
-    ),
-    "Deprivation Risk" = c("Deprivation (Composite)" = "deprivation_composite",
-                           "Relative Deprivation Index" = "povmap.grdi.v1.sc",
-                           "Income Ineq Change" = "income.ineq.change.sc",
-                           "Le Ineq Change" = "le.ineq.change.sc"
-    ),
-    "Exposure Risk" = c("Exposure (Composite)" = "exposure_composite",
-                        "Coastal Climate Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
+    
+    "Socio-Ecological Vulnerability" = c("Socio-Ecological Vulnerability (Composite)" = "vulnerab.score.rank",
+                                         "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                                         "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                                         "Coastal Climate Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc",
+                                         "Nutritional Dependence" = "Nutritional.dependence.sc"
+                                         ),
+    
+    "Social Inequality" = c("Social Inequality (Composite)" = "ineq.score.rank",
+                            "Gender Inequality" = "gender.ineq.sc",
+                            "Income Inequality" = "income.ineq.sc",
+                            "Inequality Adjusted Life Expectancy" = "le.ineq.log.sc"
+                            ),
+    
+    "Weak Governance" = c("Weak Governance (Composite)" = "gov.score.rank",
+                          "Government Ineffectiveness" = "Gov_effect.sc",
+                          "Poor Regulatory Quality" = "Reg_quality.sc",
+                          "Weak Rule of Law" = "Rule_law.sc",
+                          "Weak Control of Corruption" = "control_corr.sc",
+                          "Low Voice and Accountability" = "Voice_account.sc",
+                          "Political Instability" = "Political_stab.sc"
+                          )
+    
   )
   
   # CHANGE BASED ON COMPOSITE SCORE
@@ -66,23 +60,14 @@ server <- function(input, output, session) {
     
     variable <- input$variable_choice
     # if it's a composite score chosen
-    
-    if (variable %in% composite_score_list) {
-      #prefix <- indicator_prefix_map[[input$indicator_category]]
-      return(indicator_arith_map[[input$indicator_category]]) # paste0(prefix, "_arith"))
-      } else {
-      # if it's a regular variable chosen
-      
-        return(variable)
-        
-    }
+    return(variable)
     
 
     
   })
   
   observe({
-    global_data <- combined_scores_global #data_list[[input$indicator_category]]$global
+    global_data <- average_country_nogeo #data_list[[input$indicator_category]]$global
     choices <- list("Global (Default)", sort(unique(global_data$COUNTRY)))
     updateSelectizeInput(session, "country_search", choices = choices, server = TRUE)
   })
@@ -91,9 +76,9 @@ server <- function(input, output, session) {
   
   # For Map 1
   map_1_selected_var <- reactive({
-    req(input$map_1_indicator_category)
+    req(input$map_1_variable_choice)
     #map_1_prefix <- indicator_prefix_map[[input$map_1_indicator_category]]
-    return(indicator_arith_map[[input$map_1_indicator_category]]) # paste0(map_1_prefix, "_arith") #mean_type_suffix[[input$map_1_mean_type]])
+    return(input$map_1_variable_choice) # paste0(map_1_prefix, "_arith") #mean_type_suffix[[input$map_1_mean_type]])
   })
   
   observeEvent(input$map_1_country_search, {
@@ -120,19 +105,20 @@ server <- function(input, output, session) {
       selected_country(input$map_1_country_search)
     }
     
+    
   })
   
   observe({
-    map_1_global_data <- combined_scores_global #data_list[[input$map_1_indicator_category]]$global
+    map_1_global_data <- average_country_nogeo #data_list[[input$map_1_indicator_category]]$global
     map_1_choices <- list("Global (Default)", sort(unique(map_1_global_data$COUNTRY)))
     updateSelectizeInput(session, "map_1_country_search", choices = map_1_choices, server = TRUE)
   })
   
   # For Map 2
   map_2_selected_var <- reactive({
-    req(input$map_2_indicator_category)#, input$map_2_mean_type)
+    req(input$map_2_variable_choice)#, input$map_2_mean_type)
     #map_2_prefix <- indicator_prefix_map[[input$map_2_indicator_category]]
-    return(indicator_arith_map[[input$map_2_indicator_category]]) #paste0(map_2_prefix,"_arith") # mean_type_suffix[[input$map_2_mean_type]])
+    return(input$map_2_variable_choice) #paste0(map_2_prefix,"_arith") # mean_type_suffix[[input$map_2_mean_type]])
   })
   
   observeEvent(input$map_2_country_search, {
@@ -161,7 +147,7 @@ server <- function(input, output, session) {
   })
   
   observe({
-    map_2_global_data <- combined_scores_global #data_list[[input$map_2_indicator_category]]$global
+    map_2_global_data <- average_country_nogeo #data_list[[input$map_2_indicator_category]]$global
     map_2_choices <- list("Global (Default)", sort(unique(map_2_global_data$COUNTRY)))
     updateSelectizeInput(session, "map_2_country_search", choices = map_2_choices, server = TRUE)
   })
@@ -214,24 +200,9 @@ server <- function(input, output, session) {
 
     # if composite score
     
-
-    if (var %in% composite_arith_list) {
-      
-      name_from_value <- names(indicator_arith_map)[unlist(indicator_arith_map) == var]
-
-      global_data <- combined_scores_global #data_list[[name_from_value]]$global
-      pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
-      
-      
-    } else {
-      # if indicator score
-      global_data <- average_country_nogeo
-      
-      pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
-      
-      
-      
-    }
+    global_data <- average_country_nogeo
+    
+    pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
     
 
     
@@ -286,46 +257,22 @@ server <- function(input, output, session) {
     #current_map_for_country()
     input$map_1_country_search
     input$map_2_country_search
+    
     input$country_search
     input$use_country_specific_scale
   }, {
     req(input$indicator_category) #, input$mean_type)
     var <- selected_var()
-    if (var %in% composite_arith_list) {
-      
-      name_from_value <- names(indicator_arith_map)[unlist(indicator_arith_map) == var]
-      
-      global_data <- combined_scores_global #data_list[[name_from_value]]$global
-      full_data <- combined_scores #data_list[[name_from_value]]$full
-      pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
-      
-      
-    } else {
-      # if indicator score
-      global_data <- df
-      
-      pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
-      
-    }
+    global_data <- df
+    
+    pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
+    
 
     
     country <- selected_country()
     var <- selected_var()
-
-    if (var %in% composite_arith_list) {
-      
-      full_data <- combined_scores #data_list[[input$indicator_category]]$full
-      global_data <- combined_scores_global #data_list[[input$indicator_category]]$global
-      
-      
-    } else {
-      # if indicator score
-      
-      
-      full_data <- df
-      global_data <- average_country_nogeo
-      
-    }
+    full_data <- df
+    global_data <- average_country_nogeo
     
 
     if (is.null(country)) {
@@ -363,67 +310,41 @@ server <- function(input, output, session) {
     draw_map(current_map_for_country(), domain_data, use_local, country_data, var, country)
   })
     
-  observeEvent(input$use_comparison_country_scale, {  
+  observeEvent({input$use_comparison_country_scale
+               input$map_1_variable_choice
+               input$map_2_variable_choice
+               input$map_1_country_search
+               input$map_2_country_search}, {  
+                 req(input$indicator_category)
+                 
+                 use_local <- isTRUE(input$use_comparison_country_scale)
+                 
+                 map_1_full_data <- df
+                 map_1_global_data <- average_country_nogeo
+                 
+                 map_2_full_data <- df
+                 map_2_global_data <- average_country_nogeo
+                 
+                 country_1_data <- if (is.null(input$map_1_country_search) || input$map_1_country_search == "Global (Default)" || input$map_1_country_search == "") map_1_global_data else map_1_full_data %>% filter(COUNTRY == input$map_1_country_search)
+                 country_2_data <- if (is.null(input$map_2_country_search) || input$map_2_country_search == "Global (Default)" || input$map_2_country_search == "") map_2_global_data else map_2_full_data %>% filter(COUNTRY == input$map_2_country_search)
+                 
+                 domain_data <- NULL
+                 if (use_local && !is.null(country_1_data) && !is.null(country_2_data)) {
+                   domain_data <- c(country_1_data[[map_1_selected_var()]], country_2_data[[map_2_selected_var()]])
+                 } else {
+                   if (!is.null(map_1_selected_var()) && !is.null(map_2_selected_var())) {
+                     domain_data <- c(map_1_global_data[[map_1_selected_var()]], map_2_global_data[[map_2_selected_var()]])
+                   } else if (!is.null(map_1_selected_var())) {
+                     domain_data <- map_1_global_data[[map_1_selected_var()]]
+                   } else {
+                     domain_data <- map_2_global_data[[map_2_selected_var()]]
+                   }
+                 }
+                 
+                 draw_map("compare_map_1", domain_data, use_local, if (!is.null(country_1_data)) country_1_data else domain_data, map_1_selected_var(), "")
+                 draw_map("compare_map_2", domain_data, use_local, if (!is.null(country_2_data)) country_2_data else domain_data, map_2_selected_var(), "")
+                 
 
-      req(input$indicator_category) #, input$mean_type)
-      
-      
-      #country <- if (input$country_search == "Global (Default)") NULL else selected_country()
-      #var <- selected_var()
-      # full_data <- data_list[[input$indicator_category]]$full
-      # global_data <- data_list[[input$indicator_category]]$global
-      
-      
-      # For interactive map
-      if  (current_map_for_country() == "map"){
-        full_data <- combined_scores #data_list[[input$indicator_category]]$full
-        global_data <- combined_scores_global #data_list[[input$indicator_category]]$global
-        
-        country <- if (input$country_search == "Global (Default)") NULL else input$country_search
-        if (is.null(country)){
-          draw_map(current_map_for_country(), global_data[[selected_var()]], FALSE, global_data, selected_var(), "Global (Default)")
-          return()
-        }
-        country_data <- full_data %>% filter(COUNTRY == country)
-        req(nrow(country_data) > 0)
-        use_local <- isTRUE(input$use_country_specific_scale)
-        domain_data <- if (use_local) country_data[[selected_var()]] else global_data[[selected_var()]]
-        draw_map(current_map_for_country(), domain_data, use_local, country_data, selected_var(), country)
-        
-      }
-      # For comparison maps 
-      else if  (current_map_for_country() == "compare_map_1" || current_map_for_country() == "compare_map_2"){
-        use_local <- isTRUE(input$use_comparison_country_scale)
-        
-        map_1_full_data <- combined_scores #data_list[[input$map_1_indicator_category]]$full
-        map_1_global_data <- combined_scores_global #data_list[[input$map_1_indicator_category]]$global
-        
-        map_2_full_data <- combined_scores #data_list[[input$map_2_indicator_category]]$full
-        map_2_global_data <- combined_scores_global #data_list[[input$map_2_indicator_category]]$global
-        
-        country_1_data <- if (is.null(input$map_1_country_search) || input$map_1_country_search == "Global (Default)" || input$map_1_country_search == "") map_1_global_data else map_1_full_data %>% filter(COUNTRY == input$map_1_country_search)
-        country_2_data <- if (is.null(input$map_2_country_search) || input$map_2_country_search == "Global (Default)" || input$map_2_country_search == "") map_2_global_data else map_2_full_data %>% filter(COUNTRY == input$map_2_country_search)
-        
-        
-        if (input$use_comparison_country_scale && !is.null(country_1_data) && !is.null(country_2_data)){
-          domain_data <-c(country_1_data[[map_1_selected_var()]], country_2_data[[map_2_selected_var()]])
-        }
-        else{
-          #req(nrow(country_data) > 0)
-          if (!is.null(map_1_selected_var()) && !is.null(map_2_selected_var())) {
-            domain_data <- c(map_1_global_data[[map_1_selected_var()]],map_2_global_data[[map_2_selected_var()]])
-          }
-          else if (!is.null(map_1_selected_var())) {
-            domain_data <- map_1_global_data[[map_1_selected_var()]]
-          }
-          else{
-            domain_data <- map_2_global_data[[map_2_selected_var()]]
-          }
-        }
-        
-        draw_map("compare_map_1", domain_data, use_local, if (!is.null(country_1_data)) country_1_data else domain_data, map_1_selected_var(), "")
-        draw_map("compare_map_2", domain_data, use_local, if (!is.null(country_2_data)) country_2_data else domain_data, map_2_selected_var(), "")
-      }
     })
   
   # Function for drawing point maps (both global and country-specific view)
@@ -919,7 +840,7 @@ server <- function(input, output, session) {
   output$compare_map_1 <- renderLeaflet({
     
     var <- map_1_selected_var()
-    map_1_global_data <- combined_scores_global #data_list[[input$map_1_indicator_category]]$global
+    map_1_global_data <- average_country_nogeo #data_list[[input$map_1_indicator_category]]$global
     
     req(var %in% colnames(map_1_global_data))
     
@@ -956,7 +877,7 @@ server <- function(input, output, session) {
   
   output$compare_map_2 <- renderLeaflet({
     var <- map_2_selected_var()
-    map_2_global_data <- combined_scores_global #data_list[[input$map_2_indicator_category]]$global
+    map_2_global_data <- average_country_nogeo #data_list[[input$map_2_indicator_category]]$global
     req(var %in% colnames(map_2_global_data))
     
     pal <- colorNumeric("Purples", domain = map_2_global_data[[var]], na.color = "transparent")

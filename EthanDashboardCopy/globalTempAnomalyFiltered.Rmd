@@ -12,6 +12,7 @@ library(sf)
 library(ggplot2)
 library(rnaturalearth)
 library(rnaturalearthdata)
+library(lubridate)
 
 all_times <- read.csv("/Users/student/Downloads/Global_Monthly_Temperature_Anomaly_(1850_-_present).csv")
 
@@ -143,7 +144,7 @@ Change how the dataset looks
 
 filtered_points_wide <- filtered_points %>%
   mutate(
-    year_month = sprintf("%d_%02d", year, month)  # e.g., "1990_01", "1990_02"
+    year_month = sprintf("%d-%02d-1", year, month)  # e.g., "1990_01", "1990_02"
   ) %>%
   group_by(geometry, year_month) %>%
   summarize(mean_anomaly = mean(Anomaly, na.rm = TRUE), .groups = "drop") %>%
@@ -153,6 +154,52 @@ filtered_points_wide <- filtered_points %>%
     names_sort = TRUE
   )
 
+
+```
+
+
+Save dataset as RDS
+
+```{r}
+
+
+saveRDS(filtered_points_wide, file = "/Users/student/Desktop/Data+/climate_plus_summer_2025/EthanDashboardCopy/wide_global_temp_anomaly_1990_2025.rds")
+
+```
+
+
+Let's graph one data point across time and see the trend
+
+```{r}
+
+coords <- st_coordinates(filtered_points)
+
+data <- filtered_points %>%
+  mutate(X = coords[,1], Y = coords[,2]) %>%
+  filter(abs(X - -32.5) < 1e-6, abs(Y - 82.5) < 1e-6)
+
+data <- data %>%
+  mutate(date = ymd(paste(year, month, 1, sep = "-")))
+
+
+ggplot(data, aes(x = date, y = Anomaly)) +
+  geom_line() +              # line plot over time
+  geom_point() +             # points for each month
+  labs(title = "Anomaly over Time",
+       x = "Date",
+       y = "Anomaly") +
+  theme_bw()
+
+
+
+```
+
+Let's save original filtered points file
+
+```{r}
+
+
+saveRDS(filtered_points, file = "/Users/student/Desktop/Data+/climate_plus_summer_2025/EthanDashboardCopy/long_global_temp_anomaly_1990_2025.rds")
 
 ```
 
