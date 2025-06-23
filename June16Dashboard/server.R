@@ -252,17 +252,17 @@ server <- function(input, output, session) {
     }
     
     map %>%
-      # Add country polygons for borders and hover effects
+      # Add country polygons with colored borders based on composite score
       addPolygons(
         data = polygon_data,
         fillColor = "transparent",
         fillOpacity = 0,
-        color = "#666666",
-        weight = 1,
-        opacity = 0.5,
+        color = ~pal(get(var)),  # Border color matches the data value
+        weight = 2,              # Slightly thicker for better visibility
+        opacity = 0.8,
         highlightOptions = highlightOptions(
-          color = "#FF0000",
-          weight = 3,
+          color = "#FFFFFF",     # White highlight on hover for contrast
+          weight = 4,
           bringToFront = TRUE,
           opacity = 1
         ),
@@ -332,17 +332,17 @@ server <- function(input, output, session) {
         clearMarkers() %>%
         clearShapes() %>%
         clearControls() %>%
-        # Add polygons
+        # Add polygons with colored borders
         addPolygons(
           data = polygon_data,
           fillColor = "transparent",
           fillOpacity = 0,
-          color = "#666666",
-          weight = 1,
-          opacity = 0.5,
+          color = ~pal(get(var)),  # Border color matches the data value
+          weight = 2,              # Slightly thicker for better visibility
+          opacity = 0.8,
           highlightOptions = highlightOptions(
-            color = "#FF0000",
-            weight = 3,
+            color = "#FFFFFF",     # White highlight on hover for contrast
+            weight = 4,
             bringToFront = TRUE,
             opacity = 1
           ),
@@ -427,9 +427,21 @@ server <- function(input, output, session) {
     }
   })
   
-  # Function for drawing point maps
+  # Function for drawing point maps with country borders always visible
   draw_map <- function(current_map_for_country, domain_data, use_local, country_data, var, country) {
     pal <- colorNumeric(palette = "Purples", domain = domain_data, na.color = "transparent")
+    
+    # Get the appropriate polygon data
+    if (var %in% composite_arith_list) {
+      polygon_data <- combined_scores_global_polygons
+      global_data <- combined_scores_global
+    } else {
+      polygon_data <- average_country_polygons
+      global_data <- average_country_nogeo
+    }
+    
+    # Create color palette for borders (use global data for consistent coloring)
+    border_pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
     
     legendPosition = "bottomright"
     
@@ -437,6 +449,24 @@ server <- function(input, output, session) {
       clearMarkers() %>%
       clearShapes() %>%
       clearControls() %>%
+      # Always add country polygons with colored borders
+      addPolygons(
+        data = polygon_data,
+        fillColor = "transparent",
+        fillOpacity = 0,
+        color = ~border_pal(get(var)),  # Border color matches global data values
+        weight = 2,
+        opacity = 0.8,
+        highlightOptions = highlightOptions(
+          color = "#FFFFFF",
+          weight = 4,
+          bringToFront = TRUE,
+          opacity = 1
+        ),
+        layerId = ~COUNTRY,
+        label = ~paste0(COUNTRY, ": ", round(get(var), 3))
+      ) %>%
+      # Add markers for the selected country or global data
       addCircleMarkers(
         data = country_data,
         radius = 6,
