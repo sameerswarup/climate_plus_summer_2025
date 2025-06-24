@@ -9,8 +9,19 @@ library(qs)
 library(pryr)
 library(rnaturalearth)
 
+
+
 print(">>> global.R is running <<<")
 print(list.files())
+
+
+# Load country polygons - these will be used for borders and highlighting
+country_polygons <- ne_countries(scale = "medium", returnclass = "sf")
+
+# Create centroids for point data
+country_centroids_sf <- country_polygons %>%
+  select(admin, geometry) %>%
+  mutate(geometry = st_centroid(geometry))
 
 df <- readRDS("data/inequity_filtered5k.rds") %>%
   st_transform(4326)
@@ -22,13 +33,6 @@ df_country <- df %>%
 
 countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
 
-# Load country polygons - these will be used for borders and highlighting
-country_polygons <- ne_countries(scale = "medium", returnclass = "sf")
-
-# Create centroids for point data
-country_centroids_sf <- country_polygons %>%
-  select(admin, geometry) %>%
-  mutate(geometry = st_centroid(geometry))
 
 # Load original data
 # gov <- readRDS("data/governance_scores.rds")
@@ -60,8 +64,19 @@ aggregate_country <- function(data) {
       COUNTRY_fixed = ifelse(COUNTRY %in% names(name_fix), name_fix[COUNTRY], COUNTRY)
     ) %>%
     group_by(COUNTRY_fixed) %>%
-    summarise(across(ends_with("_arith") | ends_with("_geom"), \(x) mean(x, na.rm = TRUE))) %>%
-    ungroup() %>%
+    summarise(
+      # Keep representative non-numeric columns (use first() as an example rule)
+      iso_a3 = first(iso_a3.x),
+      name_en = first(name_en),
+      income_grp = first(income_grp),
+      economy = first(economy),
+      
+      # Now average only the target columns
+      across(mean.count.grav.V2.log.sc:hierachical.score.rank.ineq, ~mean(.x, na.rm = TRUE)),
+      
+      # Optionally keep geometry, or assign later
+      .groups = "drop"
+    ) %>%
     rename(COUNTRY = COUNTRY_fixed)
   
   # Choose geometry type based on parameter
@@ -86,10 +101,10 @@ aggregate_country <- function(data) {
 
 # Create polygon version for combined_scores_global - ensure this exists
 combined_scores_global_polygons <- tryCatch({
-  aggregate_country(combined_scores, use_polygons = TRUE)
+  aggregate_country(df, use_polygons = TRUE)
 }, error = function(e) {
   # Fallback: create manually if aggregate_country fails
-  combined_scores_global %>%
+  df %>%
     mutate(
       geometry = country_polygons$geometry[match(COUNTRY, country_polygons$admin)]
     ) %>%

@@ -1,0 +1,90 @@
+---
+title: "ndGAINdata"
+output: html_document
+date: "2025-06-23"
+---
+
+```{r}
+library(shiny)
+library(leaflet)
+library(dplyr)
+library(sf)
+library(viridis)
+library(tidyverse)
+library(qs)
+library(pryr)
+library(rnaturalearth)
+```
+
+
+```{r setup, include=FALSE}
+
+gain <- read.csv("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/gain/gain.csv")
+
+gain_long <- gain %>%
+  pivot_longer(
+    cols = starts_with("X"),
+    names_to = "Year",
+    values_to = "Value"
+  ) %>%
+  mutate(Year = as.integer(sub("X", "", Year)))
+
+```
+
+Find for Korea, Australia, Cape Verde, Mexico, and Uganda
+
+```{r}
+
+gain_long_filtered <- gain_long %>%
+  filter(ISO3 %in% c("KOR", "AUS", "CPV", "MEX", "UGA", "USA", "VNM"))
+
+```
+
+Graph the findings
+
+```{r}
+
+
+ggplot(gain_long_filtered, aes(x = Year, y = Value, color = ISO3)) +
+  geom_line(size = 1) +
+  labs(
+    title = "GAIN Over Time for Countries (1995-2022)",
+    x = "Year",
+    y = "Value",
+    color = "Country"
+  ) +
+  theme_bw()
+
+
+```
+
+ID_HEAL_01: projected change of deaths from climate change induced diseases
+
+Calculation: The projected change is the percent increase of DALYs from the historical baseline
+(2000) to the 2030 estimation using S550 emission scenario.
+
+An indication of the climate change impacts on several types of diseases. The
+indicator is a model-based estimate of the quality-adjusted loss of life years under several
+different climate scenarios. Disability adjusted life year (DALY) due to malaria, an indication of
+the climate change impacts on vector borne diseases, is excluded because more specific
+models have been used to project such impacts and it is assessed by another ND-GAIN
+indicator, the projected change of length of transmission season of vector-borne diseases (see
+below).
+
+```{r}
+
+id_heal_01_input <- read.csv("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/id_heal_01/input.csv")
+id_heal_01_raw <- read.csv("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/id_heal_01/raw.csv")
+id_heal_01_raw0 <- read.csv("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/id_heal_01/raw0.csv")
+id_heal_01_score <- read.csv("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/id_heal_01/score.csv")
+
+View(id_heal_01_input)
+View(id_heal_01_raw)
+View(id_heal_01_raw0)
+View(id_heal_01_score)
+
+```
+
+
+
+

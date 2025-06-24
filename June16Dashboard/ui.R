@@ -23,7 +23,7 @@ ui <- page_sidebar(
       card(
         card_header("Map Controls"),
         selectInput("indicator_category", "Choose Composite Score:", 
-                    choices = indicator_choices, selected = "Weak Governance"),
+                    choices = composite_choices, selected = "Weak Governance"),
         
         
         selectInput("variable_choice", "Choose a Variable:", choices = NULL),
