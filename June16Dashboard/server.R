@@ -8,20 +8,18 @@ server <- function(input, output, session) {
   hovered_country <- reactiveVal(NULL)
   
   indicator_choice_list <- list(
-<<<<<<< HEAD
-    
     "Socio-Ecological Vulnerability" = c("Socio-Ecological Vulnerability (Composite)" = "vulnerab.score.rank",
                                          "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
                                          "Relative Deprivation Index" = "povmap.grdi.v1.sc",
                                          "Coastal Climate Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc",
                                          "Nutritional Dependence" = "Nutritional.dependence.sc"
-                                         ),
+    ),
     
     "Social Inequality" = c("Social Inequality (Composite)" = "ineq.score.rank",
                             "Gender Inequality" = "gender.ineq.sc",
                             "Income Inequality" = "income.ineq.sc",
                             "Inequality Adjusted Life Expectancy" = "le.ineq.log.sc"
-                            ),
+    ),
     
     "Weak Governance" = c("Weak Governance (Composite)" = "gov.score.rank",
                           "Government Ineffectiveness" = "Gov_effect.sc",
@@ -30,9 +28,7 @@ server <- function(input, output, session) {
                           "Weak Control of Corruption" = "control_corr.sc",
                           "Low Voice and Accountability" = "Voice_account.sc",
                           "Political Instability" = "Political_stab.sc"
-                          )
-    
-
+    )
   )
   
   # Update variable choices based on composite score selection
@@ -54,17 +50,13 @@ server <- function(input, output, session) {
   # For interactive Map
   selected_var <- reactive({
     req(input$variable_choice)
-    
     variable <- input$variable_choice
-    # if it's a composite score chosen
     return(variable)
-    
   })
   
   # Update country search choices
   observe({
-    global_data <- average_country_nogeo #data_list[[input$indicator_category]]$global
-
+    global_data <- average_country_nogeo
     choices <- list("Global (Default)", sort(unique(global_data$COUNTRY)))
     updateSelectizeInput(session, "country_search", choices = choices, server = TRUE)
   })
@@ -72,9 +64,7 @@ server <- function(input, output, session) {
   # For Map 1
   map_1_selected_var <- reactive({
     req(input$map_1_variable_choice)
-    #map_1_prefix <- indicator_prefix_map[[input$map_1_indicator_category]]
-    return(input$map_1_variable_choice) # paste0(map_1_prefix, "_arith") #mean_type_suffix[[input$map_1_mean_type]])
-
+    return(input$map_1_variable_choice)
   })
   
   observeEvent(input$map_1_country_search, {
@@ -100,23 +90,18 @@ server <- function(input, output, session) {
     } else {
       selected_country(input$map_1_country_search)
     }
-
-    
   })
   
   observe({
-    map_1_global_data <- average_country_nogeo #data_list[[input$map_1_indicator_category]]$global
-
+    map_1_global_data <- average_country_nogeo
     map_1_choices <- list("Global (Default)", sort(unique(map_1_global_data$COUNTRY)))
     updateSelectizeInput(session, "map_1_country_search", choices = map_1_choices, server = TRUE)
   })
   
   # For Map 2
   map_2_selected_var <- reactive({
-    req(input$map_2_variable_choice)#, input$map_2_mean_type)
-    #map_2_prefix <- indicator_prefix_map[[input$map_2_indicator_category]]
-    return(input$map_2_variable_choice) #paste0(map_2_prefix,"_arith") # mean_type_suffix[[input$map_2_mean_type]])
-
+    req(input$map_2_variable_choice)
+    return(input$map_2_variable_choice)
   })
   
   observeEvent(input$map_2_country_search, {
@@ -145,8 +130,7 @@ server <- function(input, output, session) {
   })
   
   observe({
-    map_2_global_data <- average_country_nogeo #data_list[[input$map_2_indicator_category]]$global
-
+    map_2_global_data <- average_country_nogeo
     map_2_choices <- list("Global (Default)", sort(unique(map_2_global_data$COUNTRY)))
     updateSelectizeInput(session, "map_2_country_search", choices = map_2_choices, server = TRUE)
   })
@@ -177,17 +161,17 @@ server <- function(input, output, session) {
         clearControls() %>%
         addPolygons(
           data = polygon_data,
-          fillColor = ~pal(get(var)),    # Fill color matches the data value
-          fillOpacity = 0.7,             # Semi-transparent fill
-          color = ~pal(get(var)),        # Border color matches the data value
-          weight = 2,                    # Border thickness
-          opacity = 0.9,                 # Border opacity
+          fillColor = ~pal(get(var)),
+          fillOpacity = 0.7,
+          color = ~pal(get(var)),
+          weight = 2,
+          opacity = 0.9,
           highlightOptions = highlightOptions(
-            color = "#FFFFFF",           # White highlight on hover for contrast
+            color = "#FFFFFF",
             weight = 4,
             bringToFront = TRUE,
             opacity = 1,
-            fillOpacity = 0.8            # Slightly more opaque on hover
+            fillOpacity = 0.8
           ),
           layerId = ~COUNTRY,
           label = ~paste0(COUNTRY, ": ", round(get(var), 3))
@@ -210,7 +194,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # Handle country polygon clicks - NEW FUNCTIONALITY
+  # Handle country polygon clicks
   observeEvent(input$map_shape_click, {
     clicked_country <- input$map_shape_click$id
     if (!is.null(clicked_country)) {
@@ -231,7 +215,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # Handle country polygon hover - NEW FUNCTIONALITY
+  # Handle country polygon hover
   observeEvent(input$map_shape_mouseover, {
     hovered_country(input$map_shape_mouseover$id)
   })
@@ -252,19 +236,8 @@ server <- function(input, output, session) {
     global_data <- average_country_nogeo
     
     pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
-
-    
-    if (!exists("average_country_polygons")) {
-      # Fallback: create it here if it doesn't exist  
-      average_country_polygons <<- average_country_nogeo %>%
-        mutate(
-          geometry = country_polygons$geometry[match(COUNTRY, country_polygons$admin)]
-        ) %>%
-        st_as_sf()
-    }
     
     if (var %in% composite_arith_list) {
-      name_from_value <- names(indicator_arith_map)[unlist(indicator_arith_map) == var]
       global_data <- combined_scores_global
       polygon_data <- combined_scores_global_polygons
       pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
@@ -286,20 +259,19 @@ server <- function(input, output, session) {
     }
     
     map %>%
-      # Add country polygons with both fill and border colors based on composite score
       addPolygons(
         data = polygon_data,
-        fillColor = ~pal(get(var)),    # Fill color matches the data value
-        fillOpacity = 0.7,             # Semi-transparent fill
-        color = ~pal(get(var)),        # Border color matches the data value
-        weight = 2,                    # Border thickness
-        opacity = 0.9,                 # Border opacity
+        fillColor = ~pal(get(var)),
+        fillOpacity = 0.7,
+        color = ~pal(get(var)),
+        weight = 2,
+        opacity = 0.9,
         highlightOptions = highlightOptions(
-          color = "#FFFFFF",           # White highlight on hover for contrast
+          color = "#FFFFFF",
           weight = 4,
           bringToFront = TRUE,
           opacity = 1,
-          fillOpacity = 0.8            # Slightly more opaque on hover
+          fillOpacity = 0.8
         ),
         layerId = ~COUNTRY,
         label = ~paste0(COUNTRY, ": ", round(get(var), 3))
@@ -330,7 +302,6 @@ server <- function(input, output, session) {
   observeEvent({
     input$map_1_country_search
     input$map_2_country_search
-    
     input$country_search
     input$use_country_specific_scale
   }, {
@@ -340,30 +311,35 @@ server <- function(input, output, session) {
     
     pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
     
-
-    
     country <- selected_country()
     var <- selected_var()
     full_data <- df
     global_data <- average_country_nogeo
-
     
     if (is.null(country)) {
+      # Get the appropriate polygon data
+      if (var %in% composite_arith_list) {
+        polygon_data <- combined_scores_global_polygons
+        global_data <- combined_scores_global
+      } else {
+        polygon_data <- average_country_polygons
+        global_data <- average_country_nogeo
+      }
+      
       pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
       leafletProxy(current_map_for_country()) %>%
         clearMarkers() %>%
         clearShapes() %>%
         clearControls() %>%
-        # Add polygons with colored borders
         addPolygons(
           data = polygon_data,
           fillColor = "transparent",
           fillOpacity = 0,
-          color = ~pal(get(var)),  # Border color matches the data value
-          weight = 2,              # Slightly thicker for better visibility
+          color = ~pal(get(var)),
+          weight = 2,
           opacity = 0.8,
           highlightOptions = highlightOptions(
-            color = "#FFFFFF",     # White highlight on hover for contrast
+            color = "#FFFFFF",
             weight = 4,
             bringToFront = TRUE,
             opacity = 1
@@ -371,7 +347,6 @@ server <- function(input, output, session) {
           layerId = ~COUNTRY,
           label = ~paste0(COUNTRY, ": ", round(get(var), 3))
         ) %>%
-        # Add markers
         addCircleMarkers(
           data = global_data,
           radius = 6,
@@ -401,52 +376,49 @@ server <- function(input, output, session) {
     pal <- colorNumeric("Purples", domain = domain_data, na.color = "transparent")
     draw_map(current_map_for_country(), domain_data, use_local, country_data, var, country)
   })
-
+  
   observeEvent({input$use_comparison_country_scale
-               input$map_1_variable_choice
-               input$map_2_variable_choice
-               input$map_1_country_search
-               input$map_2_country_search}, {  
-                 req(input$indicator_category)
-                 
-                 use_local <- isTRUE(input$use_comparison_country_scale)
-                 
-                 map_1_full_data <- df
-                 map_1_global_data <- average_country_nogeo
-                 
-                 map_2_full_data <- df
-                 map_2_global_data <- average_country_nogeo
-                 
-                 country_1_data <- if (is.null(input$map_1_country_search) || input$map_1_country_search == "Global (Default)" || input$map_1_country_search == "") map_1_global_data else map_1_full_data %>% filter(COUNTRY == input$map_1_country_search)
-                 country_2_data <- if (is.null(input$map_2_country_search) || input$map_2_country_search == "Global (Default)" || input$map_2_country_search == "") map_2_global_data else map_2_full_data %>% filter(COUNTRY == input$map_2_country_search)
-                 
-                 domain_data <- NULL
-                 if (use_local && !is.null(country_1_data) && !is.null(country_2_data)) {
-                   domain_data <- c(country_1_data[[map_1_selected_var()]], country_2_data[[map_2_selected_var()]])
-                 } else {
-                   if (!is.null(map_1_selected_var()) && !is.null(map_2_selected_var())) {
-                     domain_data <- c(map_1_global_data[[map_1_selected_var()]], map_2_global_data[[map_2_selected_var()]])
-                   } else if (!is.null(map_1_selected_var())) {
-                     domain_data <- map_1_global_data[[map_1_selected_var()]]
-                   } else {
-                     domain_data <- map_2_global_data[[map_2_selected_var()]]
-                   }
-                 }
-                 
-                 draw_map("compare_map_1", domain_data, use_local, if (!is.null(country_1_data)) country_1_data else domain_data, map_1_selected_var(), "")
-                 draw_map("compare_map_2", domain_data, use_local, if (!is.null(country_2_data)) country_2_data else domain_data, map_2_selected_var(), "")
-                 
-
+    input$map_1_variable_choice
+    input$map_2_variable_choice
+    input$map_1_country_search
+    input$map_2_country_search}, {  
+      req(input$indicator_category)
+      
+      use_local <- isTRUE(input$use_comparison_country_scale)
+      
+      map_1_full_data <- df
+      map_1_global_data <- average_country_nogeo
+      
+      map_2_full_data <- df
+      map_2_global_data <- average_country_nogeo
+      
+      country_1_data <- if (is.null(input$map_1_country_search) || input$map_1_country_search == "Global (Default)" || input$map_1_country_search == "") map_1_global_data else map_1_full_data %>% filter(COUNTRY == input$map_1_country_search)
+      country_2_data <- if (is.null(input$map_2_country_search) || input$map_2_country_search == "Global (Default)" || input$map_2_country_search == "") map_2_global_data else map_2_full_data %>% filter(COUNTRY == input$map_2_country_search)
+      
+      domain_data <- NULL
+      if (use_local && !is.null(country_1_data) && !is.null(country_2_data)) {
+        domain_data <- c(country_1_data[[map_1_selected_var()]], country_2_data[[map_2_selected_var()]])
+      } else {
+        if (!is.null(map_1_selected_var()) && !is.null(map_2_selected_var())) {
+          domain_data <- c(map_1_global_data[[map_1_selected_var()]], map_2_global_data[[map_2_selected_var()]])
+        } else if (!is.null(map_1_selected_var())) {
+          domain_data <- map_1_global_data[[map_1_selected_var()]]
+        } else {
+          domain_data <- map_2_global_data[[map_2_selected_var()]]
+        }
+      }
+      
+      draw_map("compare_map_1", domain_data, use_local, if (!is.null(country_1_data)) country_1_data else domain_data, map_1_selected_var(), "")
+      draw_map("compare_map_2", domain_data, use_local, if (!is.null(country_2_data)) country_2_data else domain_data, map_2_selected_var(), "")
     })
-
   
   # Handle comparison country scale changes
   observeEvent(input$use_comparison_country_scale, {
     req(input$indicator_category)
     
     if (current_map_for_country() == "map") {
-      full_data <- combined_scores
-      global_data <- combined_scores_global
+      full_data <- df
+      global_data <- average_country_nogeo
       
       country <- if (input$country_search == "Global (Default)") NULL else input$country_search
       if (is.null(country)) {
@@ -461,11 +433,11 @@ server <- function(input, output, session) {
     } else if (current_map_for_country() == "compare_map_1" || current_map_for_country() == "compare_map_2") {
       use_local <- isTRUE(input$use_comparison_country_scale)
       
-      map_1_full_data <- combined_scores
-      map_1_global_data <- combined_scores_global
+      map_1_full_data <- df
+      map_1_global_data <- average_country_nogeo
       
-      map_2_full_data <- combined_scores
-      map_2_global_data <- combined_scores_global
+      map_2_full_data <- df
+      map_2_global_data <- average_country_nogeo
       
       country_1_data <- if (is.null(input$map_1_country_search) || input$map_1_country_search == "Global (Default)" || input$map_1_country_search == "") map_1_global_data else map_1_full_data %>% filter(COUNTRY == input$map_1_country_search)
       country_2_data <- if (is.null(input$map_2_country_search) || input$map_2_country_search == "Global (Default)" || input$map_2_country_search == "") map_2_global_data else map_2_full_data %>% filter(COUNTRY == input$map_2_country_search)
@@ -514,17 +486,17 @@ server <- function(input, output, session) {
         clearControls() %>%
         addPolygons(
           data = polygon_data,
-          fillColor = ~border_pal(get(var)),    # Fill color matches the data value
-          fillOpacity = 0.7,                    # Semi-transparent fill
-          color = ~border_pal(get(var)),        # Border color matches the data value
-          weight = 2,                           # Border thickness
-          opacity = 0.9,                        # Border opacity
+          fillColor = ~border_pal(get(var)),
+          fillOpacity = 0.7,
+          color = ~border_pal(get(var)),
+          weight = 2,
+          opacity = 0.9,
           highlightOptions = highlightOptions(
-            color = "#FFFFFF",                  # White highlight on hover for contrast
+            color = "#FFFFFF",
             weight = 4,
             bringToFront = TRUE,
             opacity = 1,
-            fillOpacity = 0.8                   # Slightly more opaque on hover
+            fillOpacity = 0.8
           ),
           layerId = ~COUNTRY,
           label = ~paste0(COUNTRY, ": ", round(get(var), 3))
@@ -547,9 +519,9 @@ server <- function(input, output, session) {
           data = polygon_data,
           fillColor = "transparent",
           fillOpacity = 0,
-          color = ~border_pal(get(var)),        # Border color matches global data values
-          weight = 1,                           # Thinner borders for background
-          opacity = 0.4,                        # Lower opacity for background
+          color = ~border_pal(get(var)),
+          weight = 1,
+          opacity = 0.4,
           highlightOptions = highlightOptions(
             color = "#FFFFFF",
             weight = 3,
@@ -619,9 +591,7 @@ server <- function(input, output, session) {
       setView(lng = zoom_coords$X, lat = zoom_coords$Y, zoom = 5)
   })
   
-  # Rest of your existing server code for custom graphs...
-  # [Keep all the existing reactiveVals, country_dataset, renderUI, etc. - unchanged]
-  
+  # Country selection reactives
   chosen_country <- reactiveVal(NULL)
   observeEvent(input$country_select, {
     click <- input$country_select
@@ -645,7 +615,16 @@ server <- function(input, output, session) {
     country_dataset(dataset)
   })
   
-  # Keep all your existing renderUI and plot outputs unchanged...
+  # Output for country display
+  output$countryDisplay <- renderText({
+    if (is.null(chosen_country())) {
+      "No country selected"
+    } else {
+      chosen_country()
+    }
+  })
+  
+  # Global or country components UI
   output$global_or_country_components <- renderUI({
     
     # GLOBAL COMPARISON
@@ -1018,8 +997,7 @@ server <- function(input, output, session) {
   # Comparison maps
   output$compare_map_1 <- renderLeaflet({
     var <- map_1_selected_var()
-    map_1_global_data <- average_country_nogeo #data_list[[input$map_1_indicator_category]]$global
-
+    map_1_global_data <- average_country_nogeo
     
     req(var %in% colnames(map_1_global_data))
     
@@ -1055,8 +1033,8 @@ server <- function(input, output, session) {
   
   output$compare_map_2 <- renderLeaflet({
     var <- map_2_selected_var()
-    map_2_global_data <- average_country_nogeo #data_list[[input$map_2_indicator_category]]$global
-
+    map_2_global_data <- average_country_nogeo
+    
     req(var %in% colnames(map_2_global_data))
     
     pal <- colorNumeric("Purples", domain = map_2_global_data[[var]], na.color = "transparent")
