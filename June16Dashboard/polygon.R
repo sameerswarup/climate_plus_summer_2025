@@ -1,0 +1,171 @@
+# create_polygon_dataset.R
+# Run this script ONCE to create a properly aligned polygon dataset
+
+library(dplyr)
+library(sf)
+library(rnaturalearth)
+
+# Load your original inequity data
+df <- readRDS("data/inequity_filtered5k.rds") %>%
+  st_transform(4326)
+
+print(paste("Original data has", nrow(df), "rows and", length(unique(df$COUNTRY)), "unique countries"))
+
+# Get external high-quality polygon data
+world_polygons <- ne_countries(scale = "medium", returnclass = "sf") %>%
+  select(admin, iso_a3, continent, subregion, geometry)
+
+# Enhanced country name mapping based on your data
+create_country_mapping <- function(inequity_countries, world_countries) {
+  
+  # Manual mapping for known mismatches
+  manual_mapping <- c(
+    "United States" = "United States of America",
+    "UK" = "United Kingdom", 
+    "México" = "Mexico",
+    "Côte d'Ivoire" = "Ivory Coast",
+    "Tanzania" = "United Republic of Tanzania",
+    "Timor-Leste" = "East Timor",
+    "Congo" = "Republic of the Congo",
+    "Democratic Republic of the Congo" = "Democratic Republic of the Congo",
+    "Russia" = "Russian Federation",
+    "South Korea" = "South Korea",
+    "North Korea" = "North Korea",
+    "Vietnam" = "Vietnam",
+    "Iran" = "Iran",
+    "Syria" = "Syria",
+    "Venezuela" = "Venezuela",
+    "Bolivia" = "Bolivia",
+    "Laos" = "Laos"
+  )
+  
+  # Create mapping dataframe
+  mapping_df <- data.frame(
+    inequity_country = inequity_countries,
+    world_country = inequity_countries,  # Start with direct match
+    stringsAsFactors = FALSE
+  )
+  
+  # Apply manual mappings
+  for (i in 1:nrow(mapping_df)) {
+    country <- mapping_df$inequity_country[i]
+    if (country %in% names(manual_mapping)) {
+      mapping_df$world_country[i] <- manual_mapping[country]
+    }
+  }
+  
+  # Check which countries still need mapping
+  unmatched <- mapping_df %>%
+    filter(!world_country %in% world_countries$admin) %>%
+    pull(inequity_country)
+  
+  if (length(unmatched) > 0) {
+    cat("Countries that still need manual mapping:\n")
+    cat(paste(unmatched, collapse = "\n"))
+    cat("\n\nAvailable similar country names in world data:\n")
+    
+    for (country in unmatched) {
+      similar <- world_countries$admin[grepl(country, world_countries$admin, ignore.case = TRUE)]
+      if (length(similar) > 0) {
+        cat(paste(country, "->", paste(similar, collapse = ", "), "\n"))
+      }
+    }
+  }
+  
+  return(mapping_df)
+}
+
+# Get unique countries from your data
+inequity_countries <- unique(df$COUNTRY)
+inequity_countries <- inequity_countries[!is.na(inequity_countries)]
+
+# Create country mapping
+country_mapping <- create_country_mapping(inequity_countries, world_polygons)
+
+# Create matched polygon dataset
+matched_polygons <- country_mapping %>%
+  left_join(world_polygons, by = c("world_country" = "admin")) %>%
+  filter(!is.na(geometry)) %>%
+  select(
+    COUNTRY = inequity_country,
+    iso_a3, 
+    continent, 
+    subregion, 
+    geometry
+  ) %>%
+  st_as_sf()
+
+print(paste("Successfully matched", nrow(matched_polygons), "out of", length(inequity_countries), "countries"))
+
+# Identify countries that couldn't be matched
+unmatched_countries <- inequity_countries[!inequity_countries %in% matched_polygons$COUNTRY]
+if (length(unmatched_countries) > 0) {
+  cat("\nCountries that couldn't be automatically matched:\n")
+  cat(paste(unmatched_countries, collapse = "\n"))
+  cat("\n")
+}
+
+# Create aggregated country-level data from your inequity dataset
+country_aggregated_data <- df %>%
+  st_drop_geometry() %>%
+  filter(!is.na(COUNTRY)) %>%
+  group_by(COUNTRY) %>%
+  summarise(
+    # Aggregate all numeric columns
+    across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
+    # Keep first non-numeric values
+    across(where(is.character), ~ first(.x[!is.na(.x)])),
+    .groups = 'drop'
+  )
+
+# Combine aggregated data with matched polygons
+country_polygons_with_data <- matched_polygons %>%
+  left_join(country_aggregated_data, by = "COUNTRY") %>%
+  filter(!is.na(vulnerab.score.rank) | !is.na(ineq.score.rank) | !is.na(gov.score.rank))
+
+print(paste("Final dataset has", nrow(country_polygons_with_data), "countries with both geometry and data"))
+
+# Save the polygon dataset
+saveRDS(country_polygons_with_data, "data/country_polygons_with_data.rds")
+
+# Also create a centroids version for point mapping
+country_centroids_with_data <- country_polygons_with_data %>%
+  mutate(geometry = st_centroid(geometry))
+
+saveRDS(country_centroids_with_data, "data/country_centroids_with_data.rds")
+
+# Create a simple lookup table for country info
+country_info <- country_polygons_with_data %>%
+  st_drop_geometry() %>%
+  select(COUNTRY, iso_a3, continent, subregion)
+
+write.csv(country_info, "data/country_info.csv", row.names = FALSE)
+
+# Print summary statistics
+cat("\n=== DATASET CREATION SUMMARY ===\n")
+cat(paste("Original inequity data:", nrow(df), "rows,", length(inequity_countries), "countries\n"))
+cat(paste("Successfully matched countries:", nrow(matched_polygons), "\n"))
+cat(paste("Countries with complete data:", nrow(country_polygons_with_data), "\n"))
+cat(paste("Unmatched countries:", length(unmatched_countries), "\n"))
+
+if (length(unmatched_countries) > 0) {
+  cat("\nUnmatched countries:\n")
+  cat(paste(unmatched_countries, collapse = ", "))
+  cat("\n")
+}
+
+# Quality check: verify data integrity
+cat("\n=== DATA QUALITY CHECK ===\n")
+cat("Composite scores coverage:\n")
+cat(paste("vulnerab.score.rank:", sum(!is.na(country_polygons_with_data$vulnerab.score.rank)), "countries\n"))
+cat(paste("ineq.score.rank:", sum(!is.na(country_polygons_with_data$ineq.score.rank)), "countries\n")) 
+cat(paste("gov.score.rank:", sum(!is.na(country_polygons_with_data$gov.score.rank)), "countries\n"))
+
+# Preview the data
+print("Sample of final dataset:")
+print(head(country_polygons_with_data %>% st_drop_geometry() %>% select(1:8)))
+
+cat("\nFiles created:\n")
+cat("- data/country_polygons_with_data.rds (country polygons with all data)\n")
+cat("- data/country_centroids_with_data.rds (country centroids with all data)\n") 
+cat("- data/country_info.csv (country lookup table)\n")
