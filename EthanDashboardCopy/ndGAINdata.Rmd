@@ -86,5 +86,44 @@ View(id_heal_01_score)
 ```
 
 
+Convert everything to long
+
+```{r}
+
+input_folder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators"
+output_folder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators/long versions"
+
+files <- list.files(input_folder, full.names = TRUE)
+
+for (file in files) {
+  
+  if (! grepl("\\.csv$", file)) {
+    break
+  }
+  
+  data <- read.csv(file)
+  
+  file_name <- basename(file)  # "heal_05_score.csv"
+
+  prefix <- sub("_score\\.csv$", "", file_name)
+  
+  label <- paste0("Value: ", prefix)
+  
+  data_long <- data %>%
+  pivot_longer(
+    cols = starts_with("X"),
+    names_to = "Year",
+    values_to = label
+  ) %>%
+  mutate(Year = as.integer(sub("X", "", Year)))
+  
+  new_file <- file.path(output_folder, paste0("long_", file_name))
+  write.csv(processed_data, new_file, row.names = FALSE)
+  
+}
+
+```
+
+
 
 
