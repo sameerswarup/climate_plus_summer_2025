@@ -105,7 +105,7 @@ for (file in files) {
   
   file_name <- basename(file)  # "heal_05_score.csv"
 
-  prefix <- sub("_score\\.csv$", "", file_name)
+  prefix <- sub("\\.csv$", "", file_name)
   
   label <- paste0("Value: ", prefix)
   
@@ -118,7 +118,7 @@ for (file in files) {
   mutate(Year = as.integer(sub("X", "", Year)))
   
   new_file <- file.path(output_folder, paste0("long_", file_name))
-  write.csv(processed_data, new_file, row.names = FALSE)
+  write.csv(data_long, new_file, row.names = FALSE)
   
 }
 
@@ -126,4 +126,62 @@ for (file in files) {
 
 
 
+Combine all of them
+
+Base long dataset:
+
+```{r}
+
+baseData <- read.csv("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators/long versions/long_ecos_01_score.csv")
+
+
+```
+
+
+
+```{r}
+
+longVersionsFolder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators/long versions"
+
+longFiles <- list.files(longVersionsFolder, full.names = TRUE)
+
+for (file in longFiles) {
+  
+  if (file == "/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators/long versions/long_ecos_01_score.csv") {
+    
+    next
+  }
+  
+  data <- read.csv(file)
+  
+  baseData <- left_join(baseData, data)
+  
+}
+
+```
+Export combined GAIN data
+
+```{r}
+
+new_file <- file.path(longVersionsFolder, "filteredNDGainData.rds")
+saveRDS(baseData, new_file)
+
+```
+
+
+Now let's look at that new data just for Afghanistan
+
+```{r}
+
+fullData <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/filteredNDGainData.rds")
+afg <- filter(fullData, ISO3 == "AFG")
+ggplot(afg, aes(x = Year, y = Value..economic)) +
+  geom_line(size = 1) +
+  labs(
+    title = "Economic Over Time for Afghanistan (1995-2022)",
+    x = "Year",
+    y = "Value"
+    ) +
+  theme_bw()
+```
 
