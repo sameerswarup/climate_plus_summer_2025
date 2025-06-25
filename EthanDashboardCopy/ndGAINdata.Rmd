@@ -185,3 +185,11 @@ ggplot(afg, aes(x = Year, y = Value..economic)) +
   theme_bw()
 ```
 
+Filter out landlocked data
+
+```{r}
+
+
+
+```
+

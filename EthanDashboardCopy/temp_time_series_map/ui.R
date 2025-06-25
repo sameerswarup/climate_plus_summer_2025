@@ -2,8 +2,7 @@
 
 ui <- bslib::page_sidebar(
   theme = bs_theme(bootswatch = "flatly"),
-  tags$h2("Time Series Maps of Global Temperature Anomaly (1990-2025)",
-          style = "font-weight: bold; color: var(--bs-primary, #003087)"),
+  title = "Time Series Maps of Global Temperature Anomaly and ND GAIN",
   
   sidebar = sidebar(
     width = 450,
@@ -67,7 +66,7 @@ ui <- bslib::page_sidebar(
       selectInput(inputId = "variable_nd",
                   label = "Choose a variable/indicator:",
                   choices = gainVars,
-                  selected = "GAIN Score"),
+                  selected = "Value..gain"),
       sliderInput(inputId = "nd_year",
                   label = "Choose a year:",
                   min = 1995,
@@ -75,6 +74,9 @@ ui <- bslib::page_sidebar(
                   value = 1995,
                   sep = "",
                   animate = TRUE),
+      card(
+        card_header("Data Summary")
+      ),
       plotOutput("nd_graph")
       
     )

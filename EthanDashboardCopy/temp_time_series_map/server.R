@@ -187,7 +187,7 @@ server <- function(input, output) {
         color = "white",
         weight = 1,
         smoothFactor = 0.5,
-        label = ~paste0(input$variable_nd, ": ", round(get(input$variable_nd), 4)),
+        label = ~paste0(Name, ": ", round(get(input$variable_nd), 4)),
         layerId = ~iso_a3
       ) |>
       addLegend(
