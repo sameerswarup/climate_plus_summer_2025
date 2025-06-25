@@ -231,6 +231,15 @@ server <- function(input, output, session) {
   
   # Main map rendering with country polygons
   output$map <- renderLeaflet({
+    
+    # if (input$composite_category == inequity_composite) {
+    
+    
+    # } else if (input$composite_category == nd_gain) {
+    
+    
+    # } else if (input$composite_category == climate_risk)
+    
     var <- selected_var()
     
     global_data <- average_country_nogeo

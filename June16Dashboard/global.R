@@ -99,3 +99,6 @@ aggregate_country <- function(data, use_polygons = TRUE) {
     return(country_centroids_with_data)
   }
 }
+
+# Load ND Gain Data
+gain <- readRDS("data/filteredNDGainData copy.rds") 

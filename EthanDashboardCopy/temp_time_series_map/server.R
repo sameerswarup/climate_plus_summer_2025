@@ -1,9 +1,7 @@
 # server.R
 
 server <- function(input, output) {
-  
   chosenMonth <- reactiveVal(NULL)
-  
   observeEvent(input$month_slider, {
     req(input$month_slider)
     month <- input$month_slider
@@ -23,6 +21,7 @@ server <- function(input, output) {
   )
   
   observe({
+    req(input$map_type == "global_temp_anomaly")
     req(input$month_slider)
     data <- year_data()
     pal <- colorNumeric(
@@ -38,18 +37,7 @@ server <- function(input, output) {
         color = ~pal(value),
         fillOpacity = 1,
         layerId = ~geom_id
-      ) 
-  })
-  
-  output$my_map <- renderLeaflet({
-    pal <- colorNumeric(
-      palette = "RdYlBu",  
-      domain = c(min_val, max_val),
-      reverse = TRUE
-    )
-    leaflet() %>% 
-      addTiles() %>%
-      setView(lng = 2.5, lat = 7.5, zoom = 2) %>%
+      ) |>
       addLegend(
         pal = pal,
         values = c(min_val, max_val),
@@ -58,7 +46,6 @@ server <- function(input, output) {
         position = "bottomright"
       )
   })
-  
   
   output$histogram <- renderPlot ({
     req(input$month_slider)
@@ -114,4 +101,136 @@ server <- function(input, output) {
     paste0("Mean: ", mean, "\nMedian: ", median, "\nMode: ", mode)
     
   })
+  
+  # ----------------------------------------------------------------------
+  
+  # For ND Gain Data interactive map
+  
+  nd_year_data <- reactiveVal(NULL) 
+  observeEvent(c(input$nd_year,
+               input$variable_nd), {
+    req(input$nd_year)
+    req(input$variable_nd)
+    
+    data <- gain %>%
+      select(ISO3, Name, Year, input$variable_nd) %>%
+      filter(Year == input$nd_year)
+    
+    nd_year_data(data)
+    
+  }
+  )
+  
+  output$my_map <- renderLeaflet({
+    
+    if (input$map_type == "global_temp_anomaly") {
+      pal <- colorNumeric(
+        palette = "RdYlBu",  
+        domain = c(min_val, max_val),
+        reverse = TRUE
+      )
+      leaflet() %>% 
+        addTiles() %>%
+        setView(lng = 2.5, lat = 7.5, zoom = 2) 
+        
+    } else if (input$map_type == "nd_gain") { # this is if input$map_type == "nd_gain"
+      
+      year <- input$nd_year
+      year_data <- gain %>%
+        filter(Year == year)
+      ndVar <- input$variable_nd
+      
+
+      pal <- colorNumeric(
+        palette = "RdYlBu",  
+        domain = c(min_val_nd, max_val_nd),
+        reverse = TRUE
+      )
+      
+      leaflet() %>% 
+        addTiles() %>%
+        setView(lng = 2.5, lat = 7.5, zoom = 2)
+      
+      
+    }
+    
+    
+    
+  }
+  )
+
+  
+  observe({
+    req(input$map_type == "nd_gain")
+    req(input$nd_year)
+    data <- left_join(world_sf, nd_year_data(), by = c("iso_a3" = "ISO3"))
+    
+    valid_vals <- na.omit(data[[input$variable_nd]])
+    req(length(valid_vals) > 0)  # Make sure there's data
+    
+    min_val_nd <- min(valid_vals)
+    max_val_nd <- max(valid_vals)
+    
+    pal <- colorNumeric(
+      palette = "RdYlBu",  
+      domain = data$value,
+      reverse = TRUE
+    )
+    
+    label <- gainVarsNames[gainVars == input$variable_nd]
+    
+    leafletProxy("my_map", data = data) |>
+      clearMarkers() |>
+      addPolygons(
+        fillColor = ~pal(get(input$variable_nd)),  # use tidy eval
+        fillOpacity = 0.8,
+        color = "white",
+        weight = 1,
+        smoothFactor = 0.5,
+        label = ~paste0(input$variable_nd, ": ", round(get(input$variable_nd), 4)),
+        layerId = ~iso_a3
+      ) |>
+      addLegend(
+        pal = pal,
+        values = c(min_val_nd, max_val_nd),
+        opacity = 0.9,
+        title = ~paste0(label, " Score"),
+        position = "bottomright"
+      )
+  })
+  
+  countryND <- reactiveVal(NULL)
+  
+  observeEvent(input$country_nd, {
+    req(input$country_nd)
+    country <- input$country_nd
+    countryND(country)
+  })
+  
+  varND <- reactiveVal(NULL)
+  
+  observeEvent(input$variable_nd, {
+    req(input$variable_nd)
+    var <- input$variable_nd
+    varND(var)
+  })
+  
+  output$nd_graph <- renderPlot({
+    filtered <- gain %>%
+      filter(Name == countryND())
+    
+    label <- gainVarsNames[gainVars == varND()]
+    
+    ggplot(filtered, aes(x = Year, .data[[varND()]])) +
+      geom_line() +              # line plot over time
+      geom_point() +             # points for each month
+      labs(title = paste0(label, " for ", countryND(), " (1995-2022)"),
+           x = "Date",
+           y = label) +
+      theme_bw()
+    
+  })
+  
+  
+  
 }
