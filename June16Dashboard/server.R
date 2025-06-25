@@ -218,7 +218,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # Handle polygon and marker clicks
+  # Handle polygon and marker clicks - expanded for comparison maps
   observeEvent(input$map_shape_click, {
     clicked_country <- input$map_shape_click$id
     if (!is.null(clicked_country)) {
@@ -226,6 +226,44 @@ server <- function(input, output, session) {
       updateSelectizeInput(session, "country_search", selected = clicked_country)
       updateSelectInput(session, "country_select", selected = clicked_country)
       zoom_to_country("map", clicked_country)
+    }
+  })
+  
+  # Add click handlers for comparison maps
+  observeEvent(input$compare_map_1_shape_click, {
+    clicked_country <- input$compare_map_1_shape_click$id
+    if (!is.null(clicked_country)) {
+      updateSelectizeInput(session, "map_1_country_search", selected = clicked_country)
+      zoom_to_country("compare_map_1", clicked_country)
+    }
+  })
+  
+  observeEvent(input$compare_map_2_shape_click, {
+    clicked_country <- input$compare_map_2_shape_click$id
+    if (!is.null(clicked_country)) {
+      updateSelectizeInput(session, "map_2_country_search", selected = clicked_country)
+      zoom_to_country("compare_map_2", clicked_country)
+    }
+  })
+  
+  # Add marker click handlers for comparison maps
+  observeEvent(input$compare_map_1_marker_click, {
+    clicked_country <- input$compare_map_1_marker_click$id
+    if (!is.null(clicked_country)) {
+      # Remove "marker_" prefix if present
+      country_name <- gsub("^marker_", "", clicked_country)
+      updateSelectizeInput(session, "map_1_country_search", selected = country_name)
+      zoom_to_country("compare_map_1", country_name)
+    }
+  })
+  
+  observeEvent(input$compare_map_2_marker_click, {
+    clicked_country <- input$compare_map_2_marker_click$id
+    if (!is.null(clicked_country)) {
+      # Remove "marker_" prefix if present
+      country_name <- gsub("^marker_", "", clicked_country)
+      updateSelectizeInput(session, "map_2_country_search", selected = country_name)
+      zoom_to_country("compare_map_2", country_name)
     }
   })
   
@@ -353,18 +391,42 @@ server <- function(input, output, session) {
     
     # When a country is selected, check if we should show points
     if (!should_show_points(var)) {
-      # For governance/inequality: just show shaded countries, no individual points
+      # For governance/inequality: highlight selected country, make others transparent with borders
       map_data <- get_map_data(var)
       pal <- colorNumeric("Purples", domain = map_data$global[[var]], na.color = "transparent")
+      
+      # Get the selected country's data for highlighting
+      selected_country_data <- map_data$polygons %>% filter(COUNTRY == country)
+      other_countries_data <- map_data$polygons %>% filter(COUNTRY != country)
+      
       leafletProxy(current_map_for_country()) %>%
-        clearMarkers() %>% clearShapes() %>% clearControls() %>%
-        addPolygons(
-          data = map_data$polygons,
-          fillColor = ~pal(get(var)), fillOpacity = 0.7, color = ~pal(get(var)),
-          weight = 2, opacity = 0.9,
-          highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
-          layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "polygons"
-        ) %>%
+        clearMarkers() %>% clearShapes() %>% clearControls()
+      
+      # Add other countries as transparent with borders only
+      if (nrow(other_countries_data) > 0) {
+        leafletProxy(current_map_for_country()) %>%
+          addPolygons(
+            data = other_countries_data,
+            fillColor = "transparent", fillOpacity = 0, 
+            color = ~pal(get(var)), weight = 2, opacity = 0.5,
+            highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1),
+            layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "other_polygons"
+          )
+      }
+      
+      # Add selected country as highlighted/shaded
+      if (nrow(selected_country_data) > 0) {
+        leafletProxy(current_map_for_country()) %>%
+          addPolygons(
+            data = selected_country_data,
+            fillColor = ~pal(get(var)), fillOpacity = 0.8,
+            color = ~pal(get(var)), weight = 3, opacity = 1,
+            highlightOptions = highlightOptions(color = "#FFFFFF", weight = 5, bringToFront = TRUE, opacity = 1, fillOpacity = 0.9),
+            layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "selected_polygon"
+          )
+      }
+      
+      leafletProxy(current_map_for_country()) %>%
         addLegend(pal = pal, values = map_data$global[[var]], opacity = 0.8,
                   title = paste(input$indicator_category), position = "bottomright")
       return()
@@ -405,9 +467,102 @@ server <- function(input, output, session) {
       c(average_country_nogeo[[map_1_selected_var()]], average_country_nogeo[[map_2_selected_var()]])
     }
     
-    draw_map("compare_map_1", domain_data, use_local, country_1_data, map_1_selected_var(), "")
-    draw_map("compare_map_2", domain_data, use_local, country_2_data, map_2_selected_var(), "")
+    # Update both comparison maps with new logic
+    update_comparison_map("compare_map_1", domain_data, use_local, country_1_data, map_1_selected_var(), input$map_1_country_search)
+    update_comparison_map("compare_map_2", domain_data, use_local, country_2_data, map_2_selected_var(), input$map_2_country_search)
   })
+  
+  # New function to handle comparison map updates with highlighting
+  update_comparison_map <- function(map_id, domain_data, use_local, country_data, var, selected_country_name) {
+    map_data <- get_map_data(var)
+    pal <- colorNumeric("Purples", domain = domain_data, na.color = "transparent")
+    border_pal <- colorNumeric("Purples", domain = map_data$global[[var]], na.color = "transparent")
+    
+    # Clear existing layers
+    leafletProxy(map_id) %>%
+      clearMarkers() %>% clearShapes() %>% clearControls()
+    
+    # If no country selected or "Global (Default)", show all countries
+    if (is.null(selected_country_name) || selected_country_name == "Global (Default)" || selected_country_name == "") {
+      leafletProxy(map_id) %>%
+        addPolygons(
+          data = map_data$polygons,
+          fillColor = ~border_pal(get(var)), fillOpacity = 0.7, color = ~border_pal(get(var)),
+          weight = 2, opacity = 0.9,
+          highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
+          layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "polygons"
+        )
+      
+      # Only add markers for Socio-Ecological Vulnerability variables
+      if (should_show_points(var)) {
+        leafletProxy(map_id) %>%
+          addCircleMarkers(
+            data = map_data$global, radius = 6, fillColor = ~border_pal(get(var)), fillOpacity = 0.9,
+            stroke = TRUE, color = "white", weight = 1,
+            label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
+            layerId = ~paste0("marker_", COUNTRY), group = "markers"
+          )
+      }
+      
+      leafletProxy(map_id) %>%
+        addLegend(pal = border_pal, values = map_data$global[[var]], opacity = 0.8,
+                  title = paste("Map", substr(map_id, nchar(map_id), nchar(map_id))), position = "bottomright")
+      return()
+    }
+    
+    # Country is selected - check if we should show points or highlighting
+    if (!should_show_points(var)) {
+      # For governance/inequality: highlight selected country, make others transparent
+      selected_country_data <- map_data$polygons %>% filter(COUNTRY == selected_country_name)
+      other_countries_data <- map_data$polygons %>% filter(COUNTRY != selected_country_name)
+      
+      # Add other countries as transparent with borders only
+      if (nrow(other_countries_data) > 0) {
+        leafletProxy(map_id) %>%
+          addPolygons(
+            data = other_countries_data,
+            fillColor = "transparent", fillOpacity = 0,
+            color = ~border_pal(get(var)), weight = 2, opacity = 0.5,
+            highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1),
+            layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "other_polygons"
+          )
+      }
+      
+      # Add selected country as highlighted/shaded
+      if (nrow(selected_country_data) > 0) {
+        leafletProxy(map_id) %>%
+          addPolygons(
+            data = selected_country_data,
+            fillColor = ~border_pal(get(var)), fillOpacity = 0.8,
+            color = ~border_pal(get(var)), weight = 3, opacity = 1,
+            highlightOptions = highlightOptions(color = "#FFFFFF", weight = 5, bringToFront = TRUE, opacity = 1, fillOpacity = 0.9),
+            layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "selected_polygon"
+          )
+      }
+      
+      leafletProxy(map_id) %>%
+        addLegend(pal = border_pal, values = map_data$global[[var]], opacity = 0.8,
+                  title = paste("Map", substr(map_id, nchar(map_id), nchar(map_id))), position = "bottomright")
+    } else {
+      # For socio-ecological vulnerability: show individual points with transparent borders
+      leafletProxy(map_id) %>%
+        addPolygons(
+          data = map_data$polygons,
+          fillColor = "transparent", fillOpacity = 0, color = ~border_pal(get(var)),
+          weight = 1, opacity = 0.4,
+          highlightOptions = highlightOptions(color = "#FFFFFF", weight = 3, bringToFront = TRUE, opacity = 1),
+          layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "polygons"
+        ) %>%
+        addCircleMarkers(
+          data = country_data, radius = 6, fillColor = ~pal(get(var)), fillOpacity = 0.9,
+          stroke = TRUE, color = "black", weight = 0.7,
+          label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "markers"
+        ) %>%
+        addLegend(pal = pal, values = domain_data, opacity = 0.9,
+                  title = paste0(selected_country_name, if (use_local) " (Local Scale)" else " (Global Scale)"),
+                  position = "bottomright")
+    }
+  }
   
   # Handle scale changes - simplified
   observeEvent(input$use_comparison_country_scale, {
