@@ -37,14 +37,7 @@ server <- function(input, output) {
         color = ~pal(value),
         fillOpacity = 1,
         layerId = ~geom_id
-      ) |>
-      addLegend(
-        pal = pal,
-        values = c(min_val, max_val),
-        opacity = 0.9,
-        title = "Global Temperature Anomaly",
-        position = "bottomright"
-      )
+      ) 
   })
   
   output$histogram <- renderPlot ({
@@ -131,7 +124,14 @@ server <- function(input, output) {
       )
       leaflet() %>% 
         addTiles() %>%
-        setView(lng = 2.5, lat = 7.5, zoom = 2) 
+        setView(lng = 2.5, lat = 7.5, zoom = 2) |>
+        addLegend(
+          pal = pal,
+          values = c(min_val, max_val),
+          opacity = 0.9,
+          title = "Global Temperature Anomaly",
+          position = "bottomright"
+        )
         
     } else if (input$map_type == "nd_gain") { # this is if input$map_type == "nd_gain"
       
