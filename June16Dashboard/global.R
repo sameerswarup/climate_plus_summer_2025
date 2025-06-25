@@ -9,7 +9,6 @@ library(qs)
 library(pryr)
 library(rnaturalearth)
 
-
 # Load the original point-level data
 df <- readRDS("data/inequity_filtered5k.rds") %>%
   st_transform(4326)
@@ -79,12 +78,13 @@ global_level_choices <- c(
 # Load data descriptions
 inequity_data_descriptions <- read.csv("data/inequity_data_descriptions.csv")
 
-# Create country centroids for zooming
+# Create country centroids for zooming (filter out invalid coordinates)
 country_centroids <- country_centroids_with_data %>%
   st_coordinates() %>%
   as.data.frame() %>%
   bind_cols(COUNTRY = country_centroids_with_data$COUNTRY) %>%
-  select(COUNTRY, X, Y)
+  select(COUNTRY, X, Y) %>%
+  filter(!is.na(X) & !is.na(Y) & is.finite(X) & is.finite(Y))
 
 composite_score_list <- c("vulnerab.score.rank", "ineq.score.rank", "gov.score.rank")
 

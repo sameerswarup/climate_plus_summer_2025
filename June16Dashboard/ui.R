@@ -22,14 +22,9 @@ ui <- page_sidebar(
       condition = "input.tabset == 'Interactive Map'",
       card(
         card_header("Map Controls"),
-        selectInput("indicator_category", "Choose a Theme:", 
+        selectInput("indicator_category", "Choose Composite Score:", 
                     choices = composite_choices, selected = "Weak Governance"),
         
-        selectInput("composite_category", "Choose a Composite:",
-                    choices = c("Climate Risk" = "climate_risk", # climate risk, more miscellaneous
-                                "ND Gain" = "nd_gain", # ND Gain data
-                                "Inequity Composite" = "inequity_composite"), # inequity composite scores from david
-                    selected = "inequity_composite"),
         
         selectInput("variable_choice", "Choose a Variable:", choices = NULL),
         
@@ -79,17 +74,6 @@ ui <- page_sidebar(
                    style = "margin: 0; font-size: 12px; line-height: 1.4;")
           )
         )
-      ),
-      
-      # Summary Statistics
-      
-      card(
-        card_header("Summary Statistics"),
-        style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;",
-        
-        # here it could display the value that was clicked on
-        # it could also display mean, median, mode, etc.
-        
       )
     ),
     
@@ -130,21 +114,39 @@ ui <- page_sidebar(
         }
       ")),
       condition = "input.tabset == 'Country Comparison'",
-      #Checkbox
+      
+      # Global Country Search for Comparison Maps
+      card(
+        card_header("Country Search"),
+        tags$div(
+          style = "margin-bottom: 10px;",
+          selectizeInput("comparison_country_search", 
+                         label = NULL,
+                         choices = NULL, 
+                         selected = NULL,
+                         options = list(
+                           placeholder = "Search for a country to compare...",
+                           maxItems = 1,
+                           create = FALSE
+                         ))
+        ),
+        tags$p("Select a country above to display it on both comparison maps", 
+               style = "font-size: 12px; color: #666; margin: 0;")
+      ),
+      
+      # Checkbox for comparison scale
       checkboxInput(
         inputId = "use_comparison_country_scale",
         label = "Use country color scale",
         value = FALSE
       ),
+      
       card(
         card_header("Map One Controls"),
         selectInput("map_1_indicator_category", "Choose Composite Score:", 
                     choices = composite_choices, selected = "Social Inequality"),
         
-        selectInput("map_1_variable_choice", "Choose a Variable:", choices = NULL),
-        
-        selectizeInput("map_1_country_search", "Jump to Country:", 
-                       choices = NULL, selected = NULL),
+        selectInput("map_1_variable_choice", "Choose a Variable:", choices = NULL)
       ),
       
       card(
@@ -152,10 +154,7 @@ ui <- page_sidebar(
         selectInput("map_2_indicator_category", "Choose Composite Score:", 
                     choices = composite_choices, selected = "Social Inequality"),
         
-        selectInput("map_2_variable_choice", "Choose a Variable:", choices = NULL),
-        
-        selectizeInput("map_2_country_search", "Jump to Country:", 
-                       choices = NULL, selected = NULL),
+        selectInput("map_2_variable_choice", "Choose a Variable:", choices = NULL)
       )
     )
   ),
@@ -233,7 +232,6 @@ ui <- page_sidebar(
     nav_panel("Country Comparison",
               tags$head(
                 tags$style(HTML("
-
                 .no-gutters > [class^='col-'] {
                   padding-left: 2px !important;
                   padding-right: 2px !important;
@@ -244,9 +242,6 @@ ui <- page_sidebar(
                 style = "text-align: center;",
                 tags$h3("Country Comparison Tool", 
                         style = "color: var(--bs-primary, #003087); margin-bottom: 20px;"),
-                #tags$p("This feature will be implemented soon! yay!", 
-                #       style = "font-size: 18px; color: #666; font-style: italic;"),
-                
                 
                 fluidRow(
                   class = "no-gutters",
@@ -262,7 +257,6 @@ ui <- page_sidebar(
                          )
                   )
                 ),
-                
                 
                 fluidRow(
                   class = "no-gutters",
