@@ -77,7 +77,13 @@ server <- function(input, output, session) {
     }
   }
   
-  # Helper function to create leaflet map with layers
+  # Helper function to determine if points should be shown
+  should_show_points <- function(var) {
+    var %in% c("vulnerab.score.rank", "mean.count.grav.V2.log.sc", "povmap.grdi.v1.sc", 
+               "perc.pop.world.coastal.merit.10m.log.sc", "Nutritional.dependence.sc")
+  }
+  
+  # Helper function to create leaflet map with conditional layers
   create_map_with_layers <- function(global_data, polygon_data, var, title, satellite = FALSE) {
     pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
     
@@ -89,7 +95,7 @@ server <- function(input, output, session) {
       map <- map %>% addProviderTiles(providers$Esri.WorldStreetMap)
     }
     
-    map %>%
+    map <- map %>%
       addPolygons(
         data = polygon_data,
         fillColor = ~pal(get(var)),
@@ -103,19 +109,26 @@ server <- function(input, output, session) {
         layerId = ~COUNTRY,
         label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
         group = "polygons"
-      ) %>%
-      addCircleMarkers(
-        data = global_data,
-        radius = 6,
-        fillColor = ~pal(get(var)),
-        fillOpacity = 0.9,
-        stroke = TRUE,
-        color = "white",
-        weight = 1,
-        label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
-        layerId = ~paste0("marker_", COUNTRY),
-        group = "markers"
-      ) %>%
+      )
+    
+    # Only add circle markers for Socio-Ecological Vulnerability variables
+    if (should_show_points(var)) {
+      map <- map %>%
+        addCircleMarkers(
+          data = global_data,
+          radius = 6,
+          fillColor = ~pal(get(var)),
+          fillOpacity = 0.9,
+          stroke = TRUE,
+          color = "white",
+          weight = 1,
+          label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
+          layerId = ~paste0("marker_", COUNTRY),
+          group = "markers"
+        )
+    }
+    
+    map %>%
       addLegend(
         pal = pal,
         values = global_data[[var]],
@@ -179,13 +192,20 @@ server <- function(input, output, session) {
           weight = 2, opacity = 0.9,
           highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
           layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "polygons"
-        ) %>%
-        addCircleMarkers(
-          data = map_data$global, radius = 6, fillColor = ~pal(get(var)), fillOpacity = 0.9,
-          stroke = TRUE, color = "white", weight = 1,
-          label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
-          layerId = ~paste0("marker_", COUNTRY), group = "markers"
-        ) %>%
+        )
+      
+      # Only add markers for Socio-Ecological Vulnerability variables
+      if (should_show_points(var)) {
+        leafletProxy("map") %>%
+          addCircleMarkers(
+            data = map_data$global, radius = 6, fillColor = ~pal(get(var)), fillOpacity = 0.9,
+            stroke = TRUE, color = "white", weight = 1,
+            label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
+            layerId = ~paste0("marker_", COUNTRY), group = "markers"
+          )
+      }
+      
+      leafletProxy("map") %>%
         addLegend(pal = pal, values = map_data$global[[var]], opacity = 0.8,
                   title = paste(input$indicator_category), position = "bottomright")
     }
@@ -312,18 +332,45 @@ server <- function(input, output, session) {
           weight = 2, opacity = 0.9,
           highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
           layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "polygons"
-        ) %>%
-        addCircleMarkers(
-          data = map_data$global, radius = 6, fillColor = ~pal(get(var)), fillOpacity = 0.9,
-          stroke = TRUE, color = "white", weight = 1,
-          label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
-          layerId = ~paste0("marker_", COUNTRY), group = "markers"
+        )
+      
+      # Only add markers for Socio-Ecological Vulnerability variables
+      if (should_show_points(var)) {
+        leafletProxy(current_map_for_country()) %>%
+          addCircleMarkers(
+            data = map_data$global, radius = 6, fillColor = ~pal(get(var)), fillOpacity = 0.9,
+            stroke = TRUE, color = "white", weight = 1,
+            label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
+            layerId = ~paste0("marker_", COUNTRY), group = "markers"
+          )
+      }
+      
+      leafletProxy(current_map_for_country()) %>%
+        addLegend(pal = pal, values = map_data$global[[var]], opacity = 0.8,
+                  title = paste(input$indicator_category), position = "bottomright")
+      return()
+    }
+    
+    # When a country is selected, check if we should show points
+    if (!should_show_points(var)) {
+      # For governance/inequality: just show shaded countries, no individual points
+      map_data <- get_map_data(var)
+      pal <- colorNumeric("Purples", domain = map_data$global[[var]], na.color = "transparent")
+      leafletProxy(current_map_for_country()) %>%
+        clearMarkers() %>% clearShapes() %>% clearControls() %>%
+        addPolygons(
+          data = map_data$polygons,
+          fillColor = ~pal(get(var)), fillOpacity = 0.7, color = ~pal(get(var)),
+          weight = 2, opacity = 0.9,
+          highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
+          layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "polygons"
         ) %>%
         addLegend(pal = pal, values = map_data$global[[var]], opacity = 0.8,
                   title = paste(input$indicator_category), position = "bottomright")
       return()
     }
     
+    # Only for socio-ecological vulnerability: show individual country points
     country_data <- df %>% filter(COUNTRY == country)
     req(nrow(country_data) > 0)
     
