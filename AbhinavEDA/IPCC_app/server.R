@@ -151,6 +151,9 @@ server <- function(input, output, session) {
     # Crop polar edges to avoid projection issues
     r <- crop(r, ext(-180, 180, -85, 85))
     
+    gauss_kernel <- matrix(c(1,2,1,2,4,2,1,2,1), nrow = 3) / 16
+    r <- focal(r, w = gauss_kernel, fun = sum, na.policy = "omit")
+    
     # Check for data
     if (all(is.na(values(r, na.rm = FALSE)))) {
       return()

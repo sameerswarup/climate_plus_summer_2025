@@ -20,7 +20,7 @@ climate_data_options <- list(
   ),
   
   "Coral Bleaching Heat" = list(
-    "Degree Days" = list(
+    "Degree Heating Weeks" = list(
       "1-April-2025" = "../Coral_Bleaching_data/ct5km_dhw_v3.1_20250401.tif",
       "2-April-2025" = "../Coral_Bleaching_data/ct5km_dhw_v3.1_20250402.tif",
       "3-April-2025" = "../Coral_Bleaching_data/ct5km_dhw_v3.1_20250403.tif",
@@ -53,7 +53,6 @@ climate_data_options <- list(
       "30-April-2025" = "../Coral_Bleaching_data/ct5km_dhw_v3.1_20250430.tif"
     )
   ),
-  
   "Sea Level Rise" = list(
     "Change (meters)" = list(
       "Near Term (2021–2040)" = "../IPCC_data/SLR_near_term.tif",
@@ -83,12 +82,18 @@ variable_metadata <- list(
     unit = "meters",
     description = "Sea level change",
     baseline = "1995-2014",
-    color_palette = "plasma"
+    color_palette = "viridis"
   ),
   "Heating Degree Days" = list(
     unit = "degree days",
     description = "Heating degree days",
     baseline = "1995-2014",
-    color_palette = "inferno"
+    color_palette = "viridis"
+  ),
+  "Coral Bleaching Heat" = list(
+    unit = "Degree Heating Weeks",
+    description = "Coral bleaching heat stress index",
+    baseline = "Rolling 12-week window",
+    color_palette = "viridis"
   )
 )
