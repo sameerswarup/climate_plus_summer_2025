@@ -19,15 +19,6 @@ library(rnaturalearth)
 
 ```{r setup, include=FALSE}
 
-gain <- read.csv("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/gain/gain.csv")
-
-gain_long <- gain %>%
-  pivot_longer(
-    cols = starts_with("X"),
-    names_to = "Year",
-    values_to = "Value"
-  ) %>%
-  mutate(Year = as.integer(sub("X", "", Year)))
 
 ```
 
@@ -190,6 +181,29 @@ Filter out landlocked data
 ```{r}
 
 
+fullData <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/filteredNDGainData.rds")
+inequity <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/inequity_filtered5k.rds")
+inequity_filtered <- inequity %>%
+  select(name_en, iso_a3.x) %>%
+  st_drop_geometry()
+
+inequity_filtered <- inequity_filtered %>%
+  distinct(iso_a3.x, .keep_all = TRUE)
+
+```
+
+
+
+```{r}
+
+world_data_coastal <- gain %>%
+  filter(ISO3 %in% inequity_filtered$iso_a3.x)
+
+folder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/EthanDashboardCopy/temp_time_series_map/data"
+
+new_file <- file.path(folder, "gain_coastal_filtered.rds")
+
+saveRDS(world_data_coastal, new_file)
 
 ```
 

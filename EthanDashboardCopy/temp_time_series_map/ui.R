@@ -67,6 +67,11 @@ ui <- bslib::page_sidebar(
                   label = "Choose a variable/indicator:",
                   choices = gainVars,
                   selected = "Value..gain"),
+      
+      tags$small(
+        style = "font-style: italic;",
+        textOutput("indDescOutput")
+      ),
       sliderInput(inputId = "nd_year",
                   label = "Choose a year:",
                   min = 1995,
@@ -74,6 +79,7 @@ ui <- bslib::page_sidebar(
                   value = 1995,
                   sep = "",
                   animate = TRUE),
+      
       card(
         card_header("Data Summary")
       ),

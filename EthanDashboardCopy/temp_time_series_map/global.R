@@ -12,10 +12,15 @@ library(shiny)
 library(bslib)
 library(shinyWidgets)
 library(leaflet)
+library(ggthemes)
+library(extrafont)
 
 # Load the filtered points data from 1990 to 2025
 
 wide <- readRDS("data/wide_global_temp_anomaly_1990_2025 copy.rds")
+
+
+world_sf <- ne_countries(scale = "medium", returnclass = "sf")
 
 # column names
 
@@ -45,7 +50,7 @@ long <- long %>%
   )
 
 # ND Gain Data
-gain <- readRDS("data/filteredNDGainData copy.rds")
+gain <- readRDS("data/gain_coastal_filtered.rds")
   country_names <- unique(gain$Name)
 
 # ND Gain Columns
@@ -64,7 +69,7 @@ gainVars <- list(
   "Ecosystem Vulnerability" = "Value..ecosystems",
   "Food Vulnerability" = "Value..food",
   "Governance Readiness" = "Value..governance",
-  "GAIN Score" = "Value..gain",
+  "GAIN" = "Value..gain",
   "Health Vulnerability" = "Value..health",
   "Infrastructure Vulnerability" = "Value..infrastructure"
 )
@@ -74,3 +79,7 @@ gainVarsNames <- names(gainVars)
 
 
 ndNamedCols <- unlist(gainVars, use.names = FALSE)
+
+# Indicator Descriptions
+
+ndGainDescriptions <- read.csv("data/ndgain_indicator_descriptions.csv")

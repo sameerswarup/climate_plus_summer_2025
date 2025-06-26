@@ -1,7 +1,10 @@
 # server.R
 
 server <- function(input, output) {
+  
   chosenMonth <- reactiveVal(NULL)
+  min_val_nd <- reactiveVal(NULL)
+  max_val_nd <- reactiveVal(NULL)
   observeEvent(input$month_slider, {
     req(input$month_slider)
     month <- input$month_slider
@@ -142,8 +145,8 @@ server <- function(input, output) {
       
 
       pal <- colorNumeric(
-        palette = "RdYlBu",  
-        domain = c(min_val_nd, max_val_nd),
+        palette = "YlGn",  
+        domain = c(min_val_nd(), max_val_nd()),
         reverse = TRUE
       )
       
@@ -168,11 +171,11 @@ server <- function(input, output) {
     valid_vals <- na.omit(data[[input$variable_nd]])
     req(length(valid_vals) > 0)  # Make sure there's data
     
-    min_val_nd <- min(valid_vals)
-    max_val_nd <- max(valid_vals)
+    min_val_nd(min(valid_vals))
+    max_val_nd(max(valid_vals))
     
     pal <- colorNumeric(
-      palette = "RdYlBu",  
+      palette = "YlGn",  
       domain = data$value,
       reverse = TRUE
     )
@@ -192,7 +195,7 @@ server <- function(input, output) {
       ) |>
       addLegend(
         pal = pal,
-        values = c(min_val_nd, max_val_nd),
+        values = c(min_val_nd(), max_val_nd()),
         opacity = 0.9,
         title = ~paste0(label, " Score"),
         position = "bottomright"
@@ -222,15 +225,59 @@ server <- function(input, output) {
     label <- gainVarsNames[gainVars == varND()]
     
     ggplot(filtered, aes(x = Year, .data[[varND()]])) +
-      geom_line() +              # line plot over time
-      geom_point() +             # points for each month
+      geom_line(
+        size = 1.2,
+        alpha = 0.8
+      ) +              # line plot over time
+      geom_point(
+        size = 3
+      ) +             # points for each month
       labs(title = paste0(label, " for ", countryND(), " (1995-2022)"),
+           subtitle = "Data Sourced from the University of Notre Dame Global Adaptation Initiative",
            x = "Date",
            y = label) +
-      theme_bw()
+      theme_fivethirtyeight() +
+      theme( # modifies any visual things
+        
+        axis.title.x = element_text(
+          margin = margin(t = 15),
+          face = "bold"
+        ),
+        axis.title.y = element_text(
+          margin = margin (r = 15),
+          face = "bold"
+        ),
+        plot.title = element_text(
+          size = 15,
+          hjust = 0.5
+        ),
+        plot.subtitle = element_text(
+          size = 10,
+          hjust = 0.5),
+        text = element_text(
+          family = "Sans"
+        )
+      )
     
   })
   
+  # Reactive value for indicator descriptions
   
+  indicator_desc <- reactiveVal(NULL)
+  
+  observeEvent(input$variable_nd, {
+    req(varND())
+    var <- varND()
+    desc <- ndGainDescriptions %>%
+      filter(variable_name == var) %>%
+      pull(description)
+
+    indicator_desc(desc) 
+  })
+  
+  output$indDescOutput <- renderText({
+    desc <- indicator_desc()
+    return(desc)
+  })
   
 }
