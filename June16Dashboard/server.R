@@ -44,7 +44,7 @@ server <- function(input, output, session) {
   
   # Helper functions
   should_show_points <- function(var) {
-    var %in% c("vulnerab.score.rank", "mean.count.grav.V2.log.sc", "povmap.grdi.v1.sc", 
+    var %in% c("mean.count.grav.V2.log.sc", "povmap.grdi.v1.sc", 
                "perc.pop.world.coastal.merit.10m.log.sc", "Nutritional.dependence.sc")
   }
   
@@ -79,7 +79,7 @@ server <- function(input, output, session) {
     }
   }
   
-  # Update variable choices - consolidated
+  # Update variable choices - back to simple approach
   observeEvent(input$indicator_category, {
     updateSelectInput(session, "variable_choice", choices = indicator_choice_list[[input$indicator_category]])
   })

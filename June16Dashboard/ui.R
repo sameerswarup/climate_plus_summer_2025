@@ -140,36 +140,26 @@ ui <- page_sidebar(
         )
       ),
       
-      # Map controls card
+      # Clean, minimal map controls
       card(
         card_header("Map Controls"),
-        selectInput("indicator_category", "Choose Composite Score:", 
-                    choices = composite_choices, selected = "Weak Governance"),
-        
-        selectInput("variable_choice", "Choose a Variable:", choices = NULL),
-        
-        # Enhanced checkbox with better styling
         tags$div(
-          style = "margin-top: 15px; padding: 12px; background: #f8f9fa; border-radius: 6px;",
+          style = "padding: 15px;",
+          
+          selectInput("indicator_category", "Composite Score:", 
+                      choices = composite_choices, selected = "Weak Governance"),
+          
+          selectInput("variable_choice", "Variable:", choices = NULL),
+          
           checkboxInput(
             inputId = "use_country_specific_scale",
-            label = tags$span(
-              style = "font-weight: 500; color: #495057;",
-              "Use country-specific color scale"
-            ),
+            label = "Country-specific scale",
             value = FALSE
-          )
-        ),
-        
-        # Satellite view toggle with better styling
-        tags$div(
-          style = "margin-top: 15px; padding: 12px; background: #f8f9fa; border-radius: 6px;",
+          ),
+          
           checkboxInput(
             "satellite_view", 
-            label = tags$span(
-              style = "font-weight: 500; color: #495057;",
-              "Satellite View"
-            ), 
+            label = "Satellite view", 
             value = FALSE
           )
         )
@@ -247,93 +237,47 @@ ui <- page_sidebar(
       ")),
       condition = "input.tabset == 'Country Comparison'",
       
-      # Enhanced Country Search for Comparison Maps
+      # Simple, clean comparison controls
       card(
-        card_header(
-          tags$div(
-            style = "display: flex; align-items: center; gap: 8px;",
-            tags$i(class = "fas fa-balance-scale", style = "color: #0d6efd;"),
-            "Country Comparison Search"
-          )
-        ),
+        card_header("Country Search"),
         tags$div(
-          style = "padding: 15px 10px;",
-          tags$div(
-            style = "position: relative; margin-bottom: 10px;",
-            tags$div(
-              style = "position: absolute; left: 12px; top: 50%; transform: translateY(-50%); z-index: 10; color: #6c757d;",
-              tags$i(class = "fas fa-search", style = "font-size: 14px;")
-            ),
-            selectizeInput("comparison_country_search", 
-                           label = NULL,
-                           choices = NULL, 
-                           selected = NULL,
-                           options = list(
-                             placeholder = "Search for a country to compare...",
-                             maxItems = 1,
-                             create = FALSE
-                           )),
-            tags$style(HTML("
-              #comparison_country_search + .selectize-control .selectize-input {
-                padding-left: 35px !important;
-                border: 2px solid #e9ecef;
-                border-radius: 8px;
-                font-size: 14px;
-              }
-              #comparison_country_search + .selectize-control .selectize-input:focus-within {
-                border-color: #0d6efd;
-                box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-              }
-            "))
-          ),
-          tags$p("Select a country above to display it on both comparison maps", 
-                 style = "font-size: 12px; color: #6c757d; margin: 0; text-align: center;")
+          style = "padding: 15px;",
+          selectizeInput("comparison_country_search", 
+                         label = NULL,
+                         choices = NULL, 
+                         selected = NULL,
+                         options = list(
+                           placeholder = "Search for a country...",
+                           maxItems = 1,
+                           create = FALSE
+                         ))
         )
       ),
       
-      # Enhanced checkbox for comparison scale
-      tags$div(
-        style = "margin-bottom: 15px; padding: 12px; background: #f8f9fa; border-radius: 6px;",
-        checkboxInput(
-          inputId = "use_comparison_country_scale",
-          label = tags$span(
-            style = "font-weight: 500; color: #495057;",
-            "Use country color scale"
-          ),
-          value = FALSE
+      checkboxInput(
+        inputId = "use_comparison_country_scale",
+        label = "Country-specific scale",
+        value = FALSE
+      ),
+      
+      card(
+        card_header("Map 1"),
+        tags$div(
+          style = "padding: 15px;",
+          selectInput("map_1_indicator_category", "Composite Score:", 
+                      choices = composite_choices, selected = "Social Inequality"),
+          selectInput("map_1_variable_choice", "Variable:", choices = NULL)
         )
       ),
       
       card(
-        card_header(
-          tags$div(
-            style = "display: flex; align-items: center; gap: 8px;",
-            tags$span("Map One Controls", style = "font-weight: 600;"),
-            tags$span("1", style = "background: #0d6efd; color: white; border-radius: 50%; 
-                     width: 20px; height: 20px; display: flex; align-items: center; 
-                     justify-content: center; font-size: 12px; font-weight: bold;")
-          )
-        ),
-        selectInput("map_1_indicator_category", "Choose Composite Score:", 
-                    choices = composite_choices, selected = "Social Inequality"),
-        
-        selectInput("map_1_variable_choice", "Choose a Variable:", choices = NULL)
-      ),
-      
-      card(
-        card_header(
-          tags$div(
-            style = "display: flex; align-items: center; gap: 8px;",
-            tags$span("Map Two Controls", style = "font-weight: 600;"),
-            tags$span("2", style = "background: #198754; color: white; border-radius: 50%; 
-                     width: 20px; height: 20px; display: flex; align-items: center; 
-                     justify-content: center; font-size: 12px; font-weight: bold;")
-          )
-        ),
-        selectInput("map_2_indicator_category", "Choose Composite Score:", 
-                    choices = composite_choices, selected = "Social Inequality"),
-        
-        selectInput("map_2_variable_choice", "Choose a Variable:", choices = NULL)
+        card_header("Map 2"),
+        tags$div(
+          style = "padding: 15px;",
+          selectInput("map_2_indicator_category", "Composite Score:", 
+                      choices = composite_choices, selected = "Social Inequality"),
+          selectInput("map_2_variable_choice", "Variable:", choices = NULL)
+        )
       )
     )
   ),
