@@ -9,6 +9,7 @@ library(qs)
 library(pryr)
 library(rnaturalearth)
 library(shinyjs)
+library(ggthemes)
 
 # Load the original point-level data
 df <- readRDS("data/inequity_filtered5k.rds") %>%

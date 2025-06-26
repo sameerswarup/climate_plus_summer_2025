@@ -594,10 +594,42 @@ server <- function(input, output, session) {
   create_scatter_plot <- function(data, x_col, y_col, choices, title) {
     if (is.null(data) || !(x_col %in% names(data)) || !(y_col %in% names(data))) return()
     if (all(is.na(data[[x_col]])) || all(is.na(data[[y_col]]))) return()
-    
-    plot(data[[x_col]], data[[y_col]], main = title,
-         xlab = names(choices)[choices == x_col],
-         ylab = names(choices)[choices == y_col])
+   
+    ggplot(data, aes(x = .data[[x_col]], y = .data[[y_col]])) +
+      geom_point(
+        size = 2
+      ) + 
+      labs(
+        title = paste0(title, ": ", names(choices)[choices == x_col], " vs. ", names(choices)[choices == y_col]),
+        subtitle = "Comparison of Scores Across Countries",
+        x = names(choices)[choices == x_col],
+        y = names(choices)[choices == y_col]
+      ) +
+      theme_hc()+
+      theme(
+        plot.title = element_text(
+          size = 20,
+          face = "bold",
+          hjust = 0.5
+        ),
+        plot.subtitle = element_text(
+          size = 16,
+          hjust = 0.5
+        ),
+        axis.title.x = element_text(
+          size = 14,
+          margin = margin(t = 15),
+          face = "bold"
+        ),
+        axis.title.y = element_text(
+          size = 14,
+          margin = margin (r = 15),
+          face = "bold"
+        ),
+        text = element_text(
+          family = "Sans"
+        )
+      ) 
   }
   
   output$custom_scatter <- renderPlot({
