@@ -5,6 +5,7 @@ library(bslib)
 
 # Expanded climate variable options
 climate_data_options <- list(
+  
   "Ocean pH" = list(
     "Change (pH)" = list(
       "Near Term (2021–2040)" = "../IPCC_data/pH_change_near_term.tif",
@@ -15,8 +16,11 @@ climate_data_options <- list(
       "Near Term (2021–2040)" = "../IPCC_data/pH_value_near_term.tif",
       "Medium Term (2041–2060)" = "../IPCC_data/pH_value_medium_term.tif",
       "Long Term (2081–2100)" = "../IPCC_data/pH_value_long_term.tif"
-    ),
-    "Coral Bleaching Heat" = list(
+    )
+  ),
+  
+  "Coral Bleaching Heat" = list(
+    "Degree Days" = list(
       "1-April-2025" = "../Coral_Bleaching_data/ct5km_dhw_v3.1_20250401.tif",
       "2-April-2025" = "../Coral_Bleaching_data/ct5km_dhw_v3.1_20250402.tif",
       "3-April-2025" = "../Coral_Bleaching_data/ct5km_dhw_v3.1_20250403.tif",
@@ -49,6 +53,7 @@ climate_data_options <- list(
       "30-April-2025" = "../Coral_Bleaching_data/ct5km_dhw_v3.1_20250430.tif"
     )
   ),
+  
   "Sea Level Rise" = list(
     "Change (meters)" = list(
       "Near Term (2021–2040)" = "../IPCC_data/SLR_near_term.tif",
@@ -56,6 +61,7 @@ climate_data_options <- list(
       "Long Term (2081–2100)" = "../IPCC_data/SLR_long_term.tif"
     )
   ),
+  
   "Heating Degree Days" = list(
     "Degree Days" = list(
       "Near Term (2021–2040)" = "../IPCC_data/HDD_near_term.tif",
