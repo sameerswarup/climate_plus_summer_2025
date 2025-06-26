@@ -8,6 +8,7 @@ library(tidyverse)
 library(qs)
 library(pryr)
 library(rnaturalearth)
+library(shinyjs)
 
 # Load the original point-level data
 df <- readRDS("data/inequity_filtered5k.rds") %>%
@@ -101,4 +102,4 @@ aggregate_country <- function(data, use_polygons = TRUE) {
 }
 
 # Load ND Gain Data
-gain <- readRDS("data/filteredNDGainData copy.rds") 
+gain <- readRDS("data/filteredNDGainData copy.rds")
