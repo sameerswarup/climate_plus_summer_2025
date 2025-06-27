@@ -79,33 +79,33 @@ climate_data_options <- list(
 variable_metadata <- list(
   "Ocean pH" = list(
     unit = "pH units",
-    description = "Ocean acidity levels",
+    description = "Ocean Acidity Levels",
     baseline = "1850-1900",
     color_palette = "viridis"
   ),
   "Sea Level Rise" = list(
     unit = "meters",
-    description = "Sea level change",
+    description = "Sea Level Change",
     baseline = "1995-2014",
     color_palette = "viridis"
   ),
   "Heating Degree Days" = list(
     "Change" = list(
-      unit = "degree days",
+      unit = "Degree Days",
       description = "Heating Degree Days Change from Baseline",
-      baseline = "1995–2014",
+      baseline = "1850-1900",
       color_palette = "viridis"
     ),
     "Value" = list(
       unit = "degree days",
-      description = "Heating Degree Days Absolute Value",
+      description = "Heating Degree Days Value",
       baseline = "1995–2014",
       color_palette = "viridis"
     )
   ),
   "Coral Bleaching Heat" = list(
     unit = "Degree Heating Weeks",
-    description = "Coral bleaching heat stress index",
+    description = "Coral Bleaching Heat Stress Index",
     baseline = "Rolling 12-week window",
     color_palette = "viridis"
   )
