@@ -102,5 +102,10 @@ aggregate_country <- function(data, use_polygons = TRUE) {
   }
 }
 
+country_choices <- c("Distance to Coast (km)" = "distance_to_coast_km", 
+                     "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                     "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                     "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
+
 # Load ND Gain Data
 gain <- readRDS("data/filteredNDGainData copy.rds")

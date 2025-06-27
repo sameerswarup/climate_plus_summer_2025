@@ -299,7 +299,9 @@ ui <- page_sidebar(
                   
                   card(
                     card_header("Bivariate Scatter Plot"),
-                    plotOutput("global_custom_scatter")
+                    plotOutput("global_custom_scatter"),
+                    downloadButton("download_bivariate_global",
+                                   label = "Download Bivariate Scatter Plot")
                   ),
                   
                   tags$div(style = "margin: 20px 0;"),
@@ -335,7 +337,9 @@ ui <- page_sidebar(
                   # Histogram section
                   card(
                     card_header("Distribution Analysis"),
-                    plotOutput("country_histogram")
+                    plotOutput("country_histogram"),
+                    downloadButton("download_histogram",
+                                   label = "Download Histogram")
                   ),
                   
                   tags$div(style = "margin: 20px 0;"),
@@ -344,6 +348,8 @@ ui <- page_sidebar(
                   card(
                     card_header("Bivariate Analysis"),
                     plotOutput("custom_scatter"),
+                    downloadButton("download_bivariate_country",
+                                   label = "Download Bivariate Scatter Plot"),
                     tags$div(
                       style = "margin-top: 15px; padding-top: 15px; border-top: 1px solid #dee2e6;",
                       verbatimTextOutput("correlation")

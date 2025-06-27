@@ -590,6 +590,29 @@ server <- function(input, output, session) {
     )
   }
   
+  bivariate_reactive <- reactive({
+    if (input$global_or_country == "global") {
+      req(input$first_indicator_global, input$second_indicator_global)
+      data <- average_country_nogeo
+      list(
+        data = data,
+        x = input$first_indicator_global,
+        y = input$second_indicator_global
+      )
+    } else {
+      req(input$first_indicator, input$second_indicator)
+      data <- country_dataset()
+      list(
+        data = data,
+        x = input$first_indicator,
+        y = input$second_indicator
+      )
+    }
+
+    
+    
+  })
+  
   # Plot outputs - simplified
   create_scatter_plot <- function(data, x_col, y_col, choices, title) {
     if (is.null(data) || !(x_col %in% names(data)) || !(y_col %in% names(data))) return()
@@ -633,16 +656,74 @@ server <- function(input, output, session) {
   }
   
   output$custom_scatter <- renderPlot({
-    country_choices <- c("Distance to Coast (km)" = "distance_to_coast_km", 
-                         "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
-                         "Relative Deprivation Index" = "povmap.grdi.v1.sc",
-                         "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
-    create_scatter_plot(country_dataset(), input$first_indicator, input$second_indicator, country_choices, chosen_country())
+    bivar <- bivariate_reactive()
+    create_scatter_plot(bivar$data, bivar$x, bivar$y, country_choices, chosen_country())
   })
   
   output$global_custom_scatter <- renderPlot({
-    create_scatter_plot(average_country_nogeo, input$first_indicator_global, input$second_indicator_global, global_level_choices, "Global")
+    bivar <- bivariate_reactive()
+    create_scatter_plot(bivar$data, bivar$x, bivar$y, global_level_choices, "Global")
   })
+  
+  # Download button for bivariate graphs
+  
+  output$download_bivariate_global <- downloadHandler(
+    filename = function() {
+      paste0("bivariate_plot_global_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".png")
+    },
+    content = function(file) {
+      req(input$first_indicator_global, input$second_indicator_global)
+      data <- average_country_nogeo
+      choices <- global_level_choices
+      
+      plot_obj <- create_scatter_plot(
+        data = data,
+        x_col = input$first_indicator_global,
+        y_col = input$second_indicator_global,
+        choices = choices,
+        title = "Global Bivariate Relationship"
+      )
+      
+      req(!is.null(plot_obj))
+      
+      ggsave(
+        filename = file,
+        plot = plot_obj,
+        device = "png",
+        width = 14,
+        height = 6
+      )
+    }
+  )
+  
+  output$download_bivariate_country <- downloadHandler(
+    filename = function() {
+      paste0("bivariate_plot_country_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".png")
+    },
+    content = function(file) {
+      req(input$first_indicator, input$second_indicator)
+      data <- country_dataset()
+      choices <- country_choices
+      
+      plot_obj <- create_scatter_plot(
+        data = data,
+        x_col = input$first_indicator,
+        y_col = input$second_indicator,
+        choices = choices,
+        title = "Country Bivariate Relationship"
+      )
+      
+      req(!is.null(plot_obj))
+      
+      ggsave(
+        filename = file,
+        plot = plot_obj,
+        device = "png",
+        width = 14,
+        height = 6
+      )
+    }
+  )
   
   # Correlation calculation - unified
   calculate_correlation <- function(data, x_col, y_col) {
@@ -672,8 +753,7 @@ server <- function(input, output, session) {
     calculate_correlation(average_country_nogeo, input$first_indicator_global, input$second_indicator_global)
   })
   
-  # Histogram output
-  output$country_histogram <- renderPlot({
+  histogram_reactive <- reactive({
     data <- country_dataset()
     if (is.null(data) || nrow(data) == 0) return() 
     
@@ -689,8 +769,59 @@ server <- function(input, output, session) {
                          "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
     
     label <- names(country_choices)[country_choices == chi]
-    hist(col, main = paste0("Histogram of ", label, " for ", chosen_country()), xlab = label)
+    
+    ggplot(data, aes(x = .data[[chi]])) +
+      geom_histogram(bins = 30, fill = "black", color = "white") + #69b3a2
+      labs(
+        title = paste0("Histogram of ", label, " for ", chosen_country()),
+        subtitle = "Comparison of Scores Within Country",
+        x = label,
+        y = "Count"
+      ) +
+      theme_hc()+
+      theme(
+        plot.title = element_text(
+          size = 20,
+          face ="bold",
+          hjust=0.5
+        ),
+        plot.subtitle = element_text(
+          size = 16,
+          hjust = 0.5
+        ),
+        axis.title.x = element_text(
+          size = 14,
+          margin = margin(t = 15),
+          face = "bold"
+        ),
+        axis.title.y = element_text(
+          size = 14,
+          margin = margin(r= 15),
+          face = "bold"
+        )
+      )
   })
+  
+  # Histogram output
+  output$country_histogram <- renderPlot({
+    req(histogram_reactive())
+    histogram_reactive()
+  })
+  
+  output$download_histogram <- downloadHandler(
+    filename = function() {
+      paste0("histogram_", chosen_country(), "_", Sys.Date(), ".png")
+    },
+    content = function(file) {
+      ggsave(
+        filename = file,
+        plot = histogram_reactive(),
+        device = "png",
+        width = 10,
+        height = 6
+      )
+    }
+  )
   
   # Country flag output
   output$country_flag <- renderImage({
