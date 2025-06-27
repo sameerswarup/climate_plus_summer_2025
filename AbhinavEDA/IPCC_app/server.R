@@ -30,7 +30,12 @@ server <- function(input, output, session) {
   # Variable information display
   output$variable_info <- renderUI({
     req(input$climate_variable)
-    metadata <- variable_metadata[[input$climate_variable]]
+    
+    if (!is.null(variable_metadata[[input$climate_variable]][[input$data_type]])) {
+      metadata <- variable_metadata[[input$climate_variable]][[input$data_type]]
+    } else {
+      metadata <- variable_metadata[[input$climate_variable]]
+    }
     
     tags$div(
       style = "background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;",
@@ -52,7 +57,12 @@ server <- function(input, output, session) {
     if (length(raster_values) == 0) return(NULL)
     
     value_range <- range(raster_values, na.rm = TRUE)
-    metadata <- variable_metadata[[input$climate_variable]]
+    
+    if (!is.null(variable_metadata[[input$climate_variable]][[input$data_type]])) {
+      metadata <- variable_metadata[[input$climate_variable]][[input$data_type]]
+    } else {
+      metadata <- variable_metadata[[input$climate_variable]]
+    }
     
     # Determine step size based on variable type
     if(input$climate_variable == "Ocean pH") {
@@ -81,7 +91,12 @@ server <- function(input, output, session) {
     
     r <- current_raster()
     values_data <- values(r, na.rm = TRUE)
-    metadata <- variable_metadata[[input$climate_variable]]
+    
+    if (!is.null(variable_metadata[[input$climate_variable]][[input$data_type]])) {
+      metadata <- variable_metadata[[input$climate_variable]][[input$data_type]]
+    } else {
+      metadata <- variable_metadata[[input$climate_variable]]
+    }
     
     if (length(values_data) == 0) {
       return("No data to display")
@@ -119,50 +134,70 @@ server <- function(input, output, session) {
   observe({
     req(input$climate_variable, input$data_type, input$time_period)
     
-    # Debug print statements
+    cat("🌎 Loading selection:\n")
     cat("Climate Variable:", input$climate_variable, "\n")
     cat("Data Type:", input$data_type, "\n") 
     cat("Time Period:", input$time_period, "\n")
     
-    # Get file path with error checking
+    tiff_path <- NULL
     tryCatch({
       tiff_path <- climate_data_options[[input$climate_variable]][[input$data_type]][[input$time_period]]
       cat("File path:", tiff_path, "\n")
       
-      if (is.null(tiff_path) || is.na(tiff_path)) {
-        return()
-      }
-      
-      if (!file.exists(tiff_path)) {
+      if (is.null(tiff_path) || is.na(tiff_path) || !file.exists(tiff_path)) {
+        showNotification(
+          paste("⚠️ File not found:", tiff_path),
+          type = "error", duration = 5
+        )
         return()
       }
     }, error = function(e) {
+      showNotification("⚠️ Error resolving file path.", type = "error")
       return()
     })
     
-    # Load and process raster
-    r <- rast(tiff_path)
-    
-    # Check and fix CRS if needed
-    if (is.na(crs(r))) {
-      crs(r) <- "EPSG:4326"
-    }
-    
-    # Crop polar edges to avoid projection issues
-    r <- crop(r, ext(-180, 180, -85, 85))
-    
-    gauss_kernel <- matrix(c(1,2,1,2,4,2,1,2,1), nrow = 3) / 16
-    r <- focal(r, w = gauss_kernel, fun = sum, na.policy = "omit")
-    
-    # Check for data
-    if (all(is.na(values(r, na.rm = FALSE)))) {
-      return()
-    }
-    
-    # Store original raster and metadata
-    original_raster(r)
-    current_raster(r)
-    current_metadata(variable_metadata[[input$climate_variable]])
+    tryCatch({
+      showNotification(
+        paste("Loading raster file:", basename(tiff_path)),
+        type = "message", duration = 4
+      )
+      
+      r <- rast(tiff_path)
+      
+      if (is.na(crs(r))) {
+        crs(r) <- "EPSG:4326"
+      }
+      
+      r <- crop(r, ext(-180, 180, -85, 85))
+      
+      gauss_kernel <- matrix(c(1,2,1,2,4,2,1,2,1), nrow = 3) / 16
+      r <- focal(r, w = gauss_kernel, fun = sum, na.policy = "omit")
+      
+      if (all(is.na(values(r, na.rm = FALSE)))) {
+        showNotification("⚠️ Raster contains only NA values!", type = "warning")
+        return()
+      }
+      
+      # Store after fully processed
+      original_raster(r)
+      current_raster(r)
+      
+      if (!is.null(variable_metadata[[input$climate_variable]][[input$data_type]])) {
+        current_metadata(variable_metadata[[input$climate_variable]][[input$data_type]])
+      } else {
+        current_metadata(variable_metadata[[input$climate_variable]])
+      }
+      
+      cat("✅ COMPLETED LOAD of raster file:", tiff_path, "\n")
+      showNotification(
+        paste("✅ Finished loading:", basename(tiff_path)),
+        type = "message", duration = 6
+      )
+      
+    }, error = function(e) {
+      showNotification("❌ Error loading raster file.", type = "error")
+      cat("❌ Error loading raster:", conditionMessage(e), "\n")
+    })
   })
   
   # Apply filters when filter controls change
@@ -171,20 +206,16 @@ server <- function(input, output, session) {
     
     r <- original_raster()
     
-    # Apply filtering based on mode
     if (input$filter_mode != "none" && !is.null(input$value_range)) {
       r_filtered <- r
       
       if (input$filter_mode == "range") {
-        # Show only values within range
         r_filtered[r_filtered < input$value_range[1] | r_filtered > input$value_range[2]] <- NA
         
       } else if (input$filter_mode == "above") {
-        # Show only values above threshold
         r_filtered[r_filtered <= input$value_range[2]] <- NA
         
       } else if (input$filter_mode == "below") {
-        # Show only values below threshold  
         r_filtered[r_filtered >= input$value_range[1]] <- NA
       }
       
@@ -201,24 +232,20 @@ server <- function(input, output, session) {
     r <- current_raster()
     metadata <- current_metadata()
     
-    # Get value range for color palette (excluding NAs)
     raster_values <- values(r, na.rm = TRUE)
     if (length(raster_values) == 0) {
       return()
     }
     
-    # Use original data range for consistent color scale
     original_values <- values(original_raster(), na.rm = TRUE)
     color_range <- range(original_values, na.rm = TRUE)
     
-    # Create color palette based on variable type
     pal <- colorNumeric(
       palette = metadata$color_palette, 
       domain = color_range,
       na.color = "transparent"
     )
     
-    # Create legend title
     legend_title <- paste0(
       input$climate_variable, "<br>",
       input$data_type, "<br>",
@@ -226,7 +253,6 @@ server <- function(input, output, session) {
       "(", metadata$unit, ")"
     )
     
-    # Update map
     leafletProxy("climate_map") %>%
       clearImages() %>%
       clearControls() %>%
@@ -257,7 +283,6 @@ server <- function(input, output, session) {
     updateRadioButtons(session, "filter_mode", selected = "none")
     req(original_raster())
     
-    # Reset slider to full range
     r <- original_raster()
     raster_values <- values(r, na.rm = TRUE)
     value_range <- range(raster_values, na.rm = TRUE)

@@ -62,10 +62,15 @@ climate_data_options <- list(
   ),
   
   "Heating Degree Days" = list(
-    "Degree Days" = list(
-      "Near Term (2021–2040)" = "../IPCC_data/HDD_near_term.tif",
-      "Medium Term (2041–2060)" = "../IPCC_data/HDD_medium_term.tif",
-      "Long Term (2081–2100)" = "../IPCC_data/HDD_long_term.tif"
+    "Change" = list(
+      "Near Term (2021–2040)" = "../IPCC_data/DH_Near_Term_Change.tif",
+      "Medium Term (2041–2060)" = "../IPCC_data/DH_Medium_Term_Change.tif",
+      "Long Term (2081–2100)" = "../IPCC_data/DH_Long_Term_Change.tif"
+    ),
+    "Value" = list(
+      "Near Term (2021–2040)" = "../IPCC_data/DH_Near_Term_Value.tif",
+      "Medium Term (2041–2060)" = "../IPCC_data/DH_Medium_Term_Value.tif",
+      "Long Term (2081–2100)" = "../IPCC_data/DH_Long_Term_Value.tif"
     )
   )
 )
@@ -75,7 +80,7 @@ variable_metadata <- list(
   "Ocean pH" = list(
     unit = "pH units",
     description = "Ocean acidity levels",
-    baseline = "N/A",
+    baseline = "1850-1900",
     color_palette = "viridis"
   ),
   "Sea Level Rise" = list(
@@ -85,10 +90,18 @@ variable_metadata <- list(
     color_palette = "viridis"
   ),
   "Heating Degree Days" = list(
-    unit = "degree days",
-    description = "Heating degree days",
-    baseline = "1995-2014",
-    color_palette = "viridis"
+    "Change" = list(
+      unit = "degree days",
+      description = "Heating Degree Days Change from Baseline",
+      baseline = "1995–2014",
+      color_palette = "viridis"
+    ),
+    "Value" = list(
+      unit = "degree days",
+      description = "Heating Degree Days Absolute Value",
+      baseline = "1995–2014",
+      color_palette = "viridis"
+    )
   ),
   "Coral Bleaching Heat" = list(
     unit = "Degree Heating Weeks",
