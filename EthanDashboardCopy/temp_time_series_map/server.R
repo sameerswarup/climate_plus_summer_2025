@@ -8,12 +8,17 @@ server <- function(input, output) {
   year_data <- reactiveVal(NULL) 
   clicked_point <- reactiveVal(NULL)
   nd_year_data <- reactiveVal(NULL) 
+  nd_year_score <- reactiveVal(NULL)
   indicator_desc <- reactiveVal(NULL)
   indicator_desc <- reactiveVal(NULL)
   countryND <- reactiveVal(NULL)
   varND <- reactiveVal(NULL)
   year <- reactiveVal(NULL)
-
+  observeEvent(input$country_nd, {
+    req(input$country_nd)
+    country <- input$country_nd
+    countryND(country)
+  })
   observeEvent(input$month_slider, {
     req(input$month_slider)
     month <- input$month_slider
@@ -112,27 +117,35 @@ server <- function(input, output) {
                input$variable_nd), {
     req(input$nd_year)
     req(input$variable_nd)
-    
+    req(countryND())
+    country<-countryND()
     data <- gain %>%
       select(ISO3, Name, Year, input$variable_nd) %>%
       filter(Year == input$nd_year)
     
+    score <- data %>%
+      filter(Name == country) %>%
+      pull(input$variable_nd)
+    
+    nd_year_score(score)
     nd_year_data(data)
     year(input$nd_year)
   }
   )
   
-  output$variableNameOutput <- renderText({
+  output$variableNameAndYearOutput <- renderText({
     req(varND())
+    req(year())
     var <- varND()
+    year <- year()
+    country <- countryND()
+    
     label <- gainVarsNames[gainVars == var]
+    label <- paste(label, "for", country, "in", year)
     return(label)
   })
   
-  output$yearOutput <- renderText({
-    req(year())
-    return(year())
-  })
+  
   
   output$my_map <- renderLeaflet({
     
@@ -219,11 +232,7 @@ server <- function(input, output) {
       )
   })
   
-  observeEvent(input$country_nd, {
-    req(input$country_nd)
-    country <- input$country_nd
-    countryND(country)
-  })
+  
   
   observeEvent(input$variable_nd, {
     req(input$variable_nd)
@@ -292,4 +301,8 @@ server <- function(input, output) {
     return(desc)
   })
   
+  
+  output$nd_year_score <- renderText({
+    return(nd_year_score())
+  })
 }
