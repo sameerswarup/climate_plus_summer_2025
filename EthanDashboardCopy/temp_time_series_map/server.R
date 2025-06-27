@@ -5,13 +5,21 @@ server <- function(input, output) {
   chosenMonth <- reactiveVal(NULL)
   min_val_nd <- reactiveVal(NULL)
   max_val_nd <- reactiveVal(NULL)
+  year_data <- reactiveVal(NULL) 
+  clicked_point <- reactiveVal(NULL)
+  nd_year_data <- reactiveVal(NULL) 
+  indicator_desc <- reactiveVal(NULL)
+  indicator_desc <- reactiveVal(NULL)
+  countryND <- reactiveVal(NULL)
+  varND <- reactiveVal(NULL)
+  year <- reactiveVal(NULL)
+
   observeEvent(input$month_slider, {
     req(input$month_slider)
     month <- input$month_slider
     chosenMonth(month)
   })
   
-  year_data <- reactiveVal(NULL) 
   observeEvent(input$month_slider, {
     req(input$month_slider)
     col <- chosenMonth()
@@ -49,8 +57,6 @@ server <- function(input, output) {
     hist <- hist(wide[[col]],
                  xlab = col)
   })
-  
-  clicked_point <- reactiveVal(NULL)
   
   observeEvent(input$map_marker_click, {
     click <- input$map_marker_click$id
@@ -102,7 +108,6 @@ server <- function(input, output) {
   
   # For ND Gain Data interactive map
   
-  nd_year_data <- reactiveVal(NULL) 
   observeEvent(c(input$nd_year,
                input$variable_nd), {
     req(input$nd_year)
@@ -113,9 +118,21 @@ server <- function(input, output) {
       filter(Year == input$nd_year)
     
     nd_year_data(data)
-    
+    year(input$nd_year)
   }
   )
+  
+  output$variableNameOutput <- renderText({
+    req(varND())
+    var <- varND()
+    label <- gainVarsNames[gainVars == var]
+    return(label)
+  })
+  
+  output$yearOutput <- renderText({
+    req(year())
+    return(year())
+  })
   
   output$my_map <- renderLeaflet({
     
@@ -202,21 +219,18 @@ server <- function(input, output) {
       )
   })
   
-  countryND <- reactiveVal(NULL)
-  
   observeEvent(input$country_nd, {
     req(input$country_nd)
     country <- input$country_nd
     countryND(country)
   })
   
-  varND <- reactiveVal(NULL)
-  
   observeEvent(input$variable_nd, {
     req(input$variable_nd)
     var <- input$variable_nd
     varND(var)
   })
+
   
   output$nd_graph <- renderPlot({
     filtered <- gain %>%
@@ -262,8 +276,6 @@ server <- function(input, output) {
   })
   
   # Reactive value for indicator descriptions
-  
-  indicator_desc <- reactiveVal(NULL)
   
   observeEvent(input$variable_nd, {
     req(varND())
