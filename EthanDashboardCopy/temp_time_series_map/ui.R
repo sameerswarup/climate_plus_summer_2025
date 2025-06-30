@@ -11,7 +11,7 @@ ui <- bslib::page_sidebar(
                 label = "Choose a map type:",
                 choices = c("Global Temperature Anomaly" = "global_temp_anomaly",
                             "ND Gain Data" = "nd_gain"),
-                selected = "global_temp_anomaly"),
+                selected = "nd_gain"),
     
     # Conditional Panel for Global Temperature Anomaly
     
@@ -52,12 +52,12 @@ ui <- bslib::page_sidebar(
       ),
       tags$small(
         style = "font-style: italic;",
-        "All countries, to different extents, are facing the challenges of adaptation. Due to
-        geographical location or socio-economic condition, some countries are more vulnerable
-        to the impacts of climate change than others. Further, some countries are more ready to
-        take on adaptation actions by leveraging public and private sector investments, through
-        government action, community awareness, and the ability to facilitate private sector
-        responses. ND-GAIN measures both of these dimensions: vulnerability and readiness."
+        "The Notre Dame Global Adaptation Initiative’s (ND-GAIN) Country Index is a free, open
+        source index that shows a country’s current vulnerability to climate disruptions. It also
+        assesses a country’s readiness to leverage private and public sector investment for
+        adaptive actions. The ND-GAIN Country Index brings together more than 40 core
+        indicators to measure vulnerability and readiness of 182 UN countries from 1995 to the
+        present (10 countries only have readiness scores)."
       ),
       selectInput(inputId = "country_nd",
                   label = "Choose a country:",
@@ -67,6 +67,11 @@ ui <- bslib::page_sidebar(
                   label = "Choose a variable/indicator:",
                   choices = gainVars,
                   selected = "Value..gain"),
+      
+      tags$small(
+        style = "font-style: italic;",
+        textOutput("indDescOutput")
+      ),
       sliderInput(inputId = "nd_year",
                   label = "Choose a year:",
                   min = 1995,
@@ -74,8 +79,19 @@ ui <- bslib::page_sidebar(
                   value = 1995,
                   sep = "",
                   animate = TRUE),
+      
       card(
-        card_header("Data Summary")
+        card_header("Data Summary"),
+        tags$div(
+          style = "text-align: center;",
+          tags$h4(textOutput("variableNameAndYearOutput")        
+          )
+          
+        ),
+        value_box(
+          title = "Hello",
+          value = textOutput("nd_year_score")
+        )
       ),
       plotOutput("nd_graph")
       

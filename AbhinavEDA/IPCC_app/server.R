@@ -1,9 +1,26 @@
 server <- function(input, output, session) {
   
+  world_bounds <- list(
+    list(-85, -180),
+    list(85, 180)
+  )
+  
   # Reactive values to store current raster
   current_raster <- reactiveVal(NULL)
   original_raster <- reactiveVal(NULL)
   current_metadata <- reactiveVal(NULL)
+  chosenMonth <- reactiveVal(NULL)
+  min_val_nd <- reactiveVal(NULL)
+  max_val_nd <- reactiveVal(NULL)
+  year_data <- reactiveVal(NULL) 
+  clicked_point <- reactiveVal(NULL)
+  nd_year_data <- reactiveVal(NULL) 
+  nd_year_score <- reactiveVal(NULL)
+  indicator_desc <- reactiveVal(NULL)
+  indicator_desc <- reactiveVal(NULL)
+  countryND <- reactiveVal(NULL)
+  varND <- reactiveVal(NULL)
+  year <- reactiveVal(NULL)
   
   # Data type selector (second level dropdown)
   output$data_type_selector <- renderUI({
@@ -30,7 +47,12 @@ server <- function(input, output, session) {
   # Variable information display
   output$variable_info <- renderUI({
     req(input$climate_variable)
-    metadata <- variable_metadata[[input$climate_variable]]
+    
+    if (!is.null(variable_metadata[[input$climate_variable]][[input$data_type]])) {
+      metadata <- variable_metadata[[input$climate_variable]][[input$data_type]]
+    } else {
+      metadata <- variable_metadata[[input$climate_variable]]
+    }
     
     tags$div(
       style = "background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;",
@@ -52,7 +74,12 @@ server <- function(input, output, session) {
     if (length(raster_values) == 0) return(NULL)
     
     value_range <- range(raster_values, na.rm = TRUE)
-    metadata <- variable_metadata[[input$climate_variable]]
+    
+    if (!is.null(variable_metadata[[input$climate_variable]][[input$data_type]])) {
+      metadata <- variable_metadata[[input$climate_variable]][[input$data_type]]
+    } else {
+      metadata <- variable_metadata[[input$climate_variable]]
+    }
     
     # Determine step size based on variable type
     if(input$climate_variable == "Ocean pH") {
@@ -81,7 +108,12 @@ server <- function(input, output, session) {
     
     r <- current_raster()
     values_data <- values(r, na.rm = TRUE)
-    metadata <- variable_metadata[[input$climate_variable]]
+    
+    if (!is.null(variable_metadata[[input$climate_variable]][[input$data_type]])) {
+      metadata <- variable_metadata[[input$climate_variable]][[input$data_type]]
+    } else {
+      metadata <- variable_metadata[[input$climate_variable]]
+    }
     
     if (length(values_data) == 0) {
       return("No data to display")
@@ -105,10 +137,7 @@ server <- function(input, output, session) {
   output$climate_map <- renderLeaflet({
     leaflet(options = leafletOptions(
       worldCopyJump = FALSE,
-      maxBounds = list(
-        list(-180, -85),
-        list(180, 85)
-      ),
+      maxBounds = world_bounds,
       maxBoundsViscosity = 1.0
     )) %>%
       addTiles() %>%
@@ -119,47 +148,70 @@ server <- function(input, output, session) {
   observe({
     req(input$climate_variable, input$data_type, input$time_period)
     
-    # Debug print statements
+    cat("🌎 Loading selection:\n")
     cat("Climate Variable:", input$climate_variable, "\n")
     cat("Data Type:", input$data_type, "\n") 
     cat("Time Period:", input$time_period, "\n")
     
-    # Get file path with error checking
+    tiff_path <- NULL
     tryCatch({
       tiff_path <- climate_data_options[[input$climate_variable]][[input$data_type]][[input$time_period]]
       cat("File path:", tiff_path, "\n")
       
-      if (is.null(tiff_path) || is.na(tiff_path)) {
-        return()
-      }
-      
-      if (!file.exists(tiff_path)) {
+      if (is.null(tiff_path) || is.na(tiff_path) || !file.exists(tiff_path)) {
+        showNotification(
+          paste("⚠️ File not found:", tiff_path),
+          type = "error", duration = 5
+        )
         return()
       }
     }, error = function(e) {
+      showNotification("⚠️ Error resolving file path.", type = "error")
       return()
     })
     
-    # Load and process raster
-    r <- rast(tiff_path)
-    
-    # Check and fix CRS if needed
-    if (is.na(crs(r))) {
-      crs(r) <- "EPSG:4326"
-    }
-    
-    # Crop polar edges to avoid projection issues
-    r <- crop(r, ext(-180, 180, -85, 85))
-    
-    # Check for data
-    if (all(is.na(values(r, na.rm = FALSE)))) {
-      return()
-    }
-    
-    # Store original raster and metadata
-    original_raster(r)
-    current_raster(r)
-    current_metadata(variable_metadata[[input$climate_variable]])
+    tryCatch({
+      showNotification(
+        paste("Loading raster file:", basename(tiff_path)),
+        type = "message", duration = 4
+      )
+      
+      r <- rast(tiff_path)
+      
+      if (is.na(crs(r))) {
+        crs(r) <- "EPSG:4326"
+      }
+      
+      r <- crop(r, ext(-180, 180, -85, 85))
+      
+      gauss_kernel <- matrix(c(1,2,1,2,4,2,1,2,1), nrow = 3) / 16
+      r <- focal(r, w = gauss_kernel, fun = sum, na.policy = "omit")
+      
+      if (all(is.na(values(r, na.rm = FALSE)))) {
+        showNotification("⚠️ Raster contains only NA values!", type = "warning")
+        return()
+      }
+      
+      # Store after fully processed
+      original_raster(r)
+      current_raster(r)
+      
+      if (!is.null(variable_metadata[[input$climate_variable]][[input$data_type]])) {
+        current_metadata(variable_metadata[[input$climate_variable]][[input$data_type]])
+      } else {
+        current_metadata(variable_metadata[[input$climate_variable]])
+      }
+      
+      cat("✅ COMPLETED LOAD of raster file:", tiff_path, "\n")
+      showNotification(
+        paste("✅ Finished loading:", basename(tiff_path)),
+        type = "message", duration = 6
+      )
+      
+    }, error = function(e) {
+      showNotification("❌ Error loading raster file.", type = "error")
+      cat("❌ Error loading raster:", conditionMessage(e), "\n")
+    })
   })
   
   # Apply filters when filter controls change
@@ -168,20 +220,16 @@ server <- function(input, output, session) {
     
     r <- original_raster()
     
-    # Apply filtering based on mode
     if (input$filter_mode != "none" && !is.null(input$value_range)) {
       r_filtered <- r
       
       if (input$filter_mode == "range") {
-        # Show only values within range
         r_filtered[r_filtered < input$value_range[1] | r_filtered > input$value_range[2]] <- NA
         
       } else if (input$filter_mode == "above") {
-        # Show only values above threshold
         r_filtered[r_filtered <= input$value_range[2]] <- NA
         
       } else if (input$filter_mode == "below") {
-        # Show only values below threshold  
         r_filtered[r_filtered >= input$value_range[1]] <- NA
       }
       
@@ -198,24 +246,20 @@ server <- function(input, output, session) {
     r <- current_raster()
     metadata <- current_metadata()
     
-    # Get value range for color palette (excluding NAs)
     raster_values <- values(r, na.rm = TRUE)
     if (length(raster_values) == 0) {
       return()
     }
     
-    # Use original data range for consistent color scale
     original_values <- values(original_raster(), na.rm = TRUE)
     color_range <- range(original_values, na.rm = TRUE)
     
-    # Create color palette based on variable type
     pal <- colorNumeric(
       palette = metadata$color_palette, 
       domain = color_range,
       na.color = "transparent"
     )
     
-    # Create legend title
     legend_title <- paste0(
       input$climate_variable, "<br>",
       input$data_type, "<br>",
@@ -223,7 +267,6 @@ server <- function(input, output, session) {
       "(", metadata$unit, ")"
     )
     
-    # Update map
     leafletProxy("climate_map") %>%
       clearImages() %>%
       clearControls() %>%
@@ -254,11 +297,182 @@ server <- function(input, output, session) {
     updateRadioButtons(session, "filter_mode", selected = "none")
     req(original_raster())
     
-    # Reset slider to full range
     r <- original_raster()
     raster_values <- values(r, na.rm = TRUE)
     value_range <- range(raster_values, na.rm = TRUE)
     
     updateSliderInput(session, "value_range", value = value_range)
   })
+  
+  observeEvent(input$country_nd, {
+    req(input$country_nd)
+    country <- input$country_nd
+    countryND(country)
+  })
+  
+  observeEvent(c(input$nd_year,
+                 input$variable_nd), {
+                   req(input$nd_year)
+                   req(input$variable_nd)
+                   req(countryND())
+                   country<-countryND()
+                   data <- gain %>%
+                     select(ISO3, Name, Year, input$variable_nd) %>%
+                     filter(Year == input$nd_year)
+                   
+                   score <- data %>%
+                     filter(Name == country) %>%
+                     pull(input$variable_nd)
+                   
+                   nd_year_score(score)
+                   nd_year_data(data)
+                   year(input$nd_year)
+                 }
+  )
+  
+  output$variableNameAndYearOutput <- renderText({
+    req(varND())
+    req(year())
+    var <- varND()
+    year <- year()
+    country <- countryND()
+    
+    label <- gainVarsNames[gainVars == var]
+    label <- paste(label, "for", country, "in", year)
+    return(label)
+  })
+  
+  output$nd_gain_map <- renderLeaflet({
+    year <- input$nd_year
+    year_data <- gain %>%
+      filter(Year == year)
+    ndVar <- input$variable_nd
+    pal <- colorNumeric(
+      palette = "YlGn",  
+      domain = c(min_val_nd(), max_val_nd()),
+      reverse = TRUE
+    )
+    
+    leaflet(options = leafletOptions(
+      worldCopyJump = FALSE,
+      maxBounds = world_bounds,
+      maxBoundsViscosity = 1.0
+    )) %>% 
+      addTiles() %>%
+      setView(lng = 0, lat = 0, zoom = 2)
+  })
+  
+  
+  observe({
+    req(input$nd_year)
+    data <- left_join(world_sf, nd_year_data(), by = c("iso_a3" = "ISO3"))
+    
+    valid_vals <- na.omit(data[[input$variable_nd]])
+    req(length(valid_vals) > 0)  # Make sure there's data
+    
+    min_val_nd(min(valid_vals))
+    max_val_nd(max(valid_vals))
+    
+    pal <- colorNumeric(
+      palette = "YlGn",  
+      domain = data$value,
+      reverse = TRUE
+    )
+    
+    label <- gainVarsNames[gainVars == input$variable_nd]
+    
+    leafletProxy("nd_gain_map", data = data) |>
+      clearMarkers() |>
+      addPolygons(
+        fillColor = ~pal(get(input$variable_nd)),  # use tidy eval
+        fillOpacity = 0.8,
+        color = "white",
+        weight = 1,
+        smoothFactor = 0.5,
+        label = ~paste0(Name, ": ", round(get(input$variable_nd), 4)),
+        layerId = ~iso_a3
+      ) |>
+      addLegend(
+        pal = pal,
+        values = c(min_val_nd(), max_val_nd()),
+        opacity = 0.9,
+        title = ~paste0(label, " Score"),
+        position = "bottomright"
+      )
+  })
+  
+  
+  
+  observeEvent(input$variable_nd, {
+    req(input$variable_nd)
+    var <- input$variable_nd
+    varND(var)
+  })
+  
+  
+  output$nd_graph <- renderPlot({
+    filtered <- gain %>%
+      filter(Name == countryND())
+    
+    label <- gainVarsNames[gainVars == varND()]
+    
+    ggplot(filtered, aes(x = Year, .data[[varND()]])) +
+      geom_line(
+        size = 1.2,
+        alpha = 0.8
+      ) +              # line plot over time
+      geom_point(
+        size = 3
+      ) +             # points for each month
+      labs(title = paste0(label, " for ", countryND(), " (1995-2022)"),
+           subtitle = "Data Sourced from the University of Notre Dame Global Adaptation Initiative",
+           x = "Date",
+           y = label) +
+      theme_fivethirtyeight() +
+      theme( # modifies any visual things
+        
+        axis.title.x = element_text(
+          margin = margin(t = 15),
+          face = "bold"
+        ),
+        axis.title.y = element_text(
+          margin = margin (r = 15),
+          face = "bold"
+        ),
+        plot.title = element_text(
+          size = 15,
+          hjust = 0.5
+        ),
+        plot.subtitle = element_text(
+          size = 10,
+          hjust = 0.5),
+        text = element_text(
+          family = "Sans"
+        )
+      )
+    
+  })
+  
+  # Reactive value for indicator descriptions
+  
+  observeEvent(input$variable_nd, {
+    req(varND())
+    var <- varND()
+    desc <- ndGainDescriptions %>%
+      filter(variable_name == var) %>%
+      pull(description)
+    
+    indicator_desc(desc) 
+  })
+  
+  output$indDescOutput <- renderText({
+    desc <- indicator_desc()
+    return(desc)
+  })
+  
+  
+  output$nd_year_score <- renderText({
+    return(nd_year_score())
+  })
+  
 }
