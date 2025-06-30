@@ -161,6 +161,7 @@ ui <- fluidPage(
       .search-container {
         position: relative;
         margin-bottom: 15px;
+        width: 100%;
       }
       
       .search-icon {
@@ -179,6 +180,9 @@ ui <- fluidPage(
         font-size: 14px;
         background: #fff;
         transition: all 0.2s ease;
+        width: 100% !important;
+        box-sizing: border-box;
+        margin: 0;
       }
       
       #country_search:focus, #country_search_graphs:focus {
@@ -243,6 +247,19 @@ ui <- fluidPage(
       .btn-primary:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
+      }
+      
+      .btn-secondary {
+        background: linear-gradient(135deg, #6c757d, #5a6268);
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+      }
+      
+      .btn-secondary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
       }
       
       .form-check {
@@ -325,7 +342,7 @@ ui <- fluidPage(
         tags$div(class = "menu-item active", `data-section` = "map",
                  tags$i(class = "fas fa-map"), "Interactive Map"),
         tags$div(class = "menu-item", `data-section` = "graphs",
-                 tags$i(class = "fas fa-chart-line"), "Custom Graphs"),
+                 tags$i(class = "fas fa-chart-line"), "Country Analysis"),
         tags$div(class = "menu-item", `data-section` = "comparison",
                  tags$i(class = "fas fa-balance-scale"), "Comparison"),
         tags$div(class = "menu-item", `data-section` = "about",
@@ -424,33 +441,66 @@ ui <- fluidPage(
       id = "graphs-section",
       
       tags$div(class = "section-header",
-               tags$i(class = "fas fa-chart-line"), "Custom Analysis"),
+               tags$i(class = "fas fa-chart-line"), "Country Analysis"),
       
       tags$div(
         class = "control-group",
-        selectInput("global_or_country", "Analysis Level:",
-                    choices = c("Global" = "global", "Country" = "country"),
-                    selected = "global"),
-        uiOutput("global_or_country_components")
+        tags$div(class = "control-title", "Country Search"),
+        tags$div(
+          class = "search-container",
+          tags$i(class = "fas fa-search search-icon"),
+          textInput(
+            "country_search_graphs", 
+            label = NULL,
+            value = "",
+            placeholder = "Search for a country...",
+            width = "100%"
+          ),
+          tags$div(id = "country_suggestions_graphs")
+        ),
+        actionButton(
+          "global_scale_button", 
+          tags$div(
+            style = "display: flex; align-items: center; gap: 6px; justify-content: center;",
+            tags$i(class = "fas fa-globe", style = "font-size: 12px;"),
+            "View Global Scale"
+          ),
+          style = "width: 100%; margin-bottom: 15px;",
+          class = "btn btn-secondary"
+        )
       ),
       
       tags$div(
         class = "control-group",
-        conditionalPanel(
-          condition = "input.global_or_country == 'global'",
-          tags$div(class = "plot-container",
-                   plotOutput("global_custom_scatter", height = "300px")),
-          verbatimTextOutput("global_correlation")
-        ),
-        conditionalPanel(
-          condition = "input.global_or_country == 'country'",
-          textOutput("countryDisplay"),
-          tags$div(class = "plot-container",
-                   plotOutput("country_histogram", height = "200px")),
-          tags$div(class = "plot-container",
-                   plotOutput("custom_scatter", height = "300px")),
-          verbatimTextOutput("correlation")
-        )
+        tags$div(class = "control-title", "Analysis Variables"),
+        selectInput("country_histogram_indicator", "Histogram variable:", 
+                    choices = c("Distance to Coast (km)" = "distance_to_coast_km", 
+                                "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                                "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                                "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"), 
+                    selected = "povmap.grdi.v1.sc"),
+        selectInput("first_indicator", "First indicator:", 
+                    choices = c("Distance to Coast (km)" = "distance_to_coast_km", 
+                                "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                                "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                                "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"), 
+                    selected = "povmap.grdi.v1.sc"),
+        selectInput("second_indicator", "Second indicator:", 
+                    choices = c("Distance to Coast (km)" = "distance_to_coast_km", 
+                                "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                                "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                                "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"), 
+                    selected = "perc.pop.world.coastal.merit.10m.log.sc")
+      ),
+      
+      tags$div(
+        class = "control-group",
+        textOutput("countryDisplay"),
+        tags$div(class = "plot-container",
+                 plotOutput("country_histogram", height = "200px")),
+        tags$div(class = "plot-container",
+                 plotOutput("custom_scatter", height = "300px")),
+        verbatimTextOutput("correlation")
       )
     ),
     
