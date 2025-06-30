@@ -1,5 +1,10 @@
 server <- function(input, output, session) {
   
+  world_bounds <- list(
+    list(-85, -180),
+    list(85, 180)
+  )
+  
   # Reactive values to store current raster
   current_raster <- reactiveVal(NULL)
   original_raster <- reactiveVal(NULL)
@@ -132,10 +137,7 @@ server <- function(input, output, session) {
   output$climate_map <- renderLeaflet({
     leaflet(options = leafletOptions(
       worldCopyJump = FALSE,
-      maxBounds = list(
-        list(-180, -85),
-        list(180, 85)
-      ),
+      maxBounds = world_bounds,
       maxBoundsViscosity = 1.0
     )) %>%
       addTiles() %>%
@@ -340,25 +342,25 @@ server <- function(input, output, session) {
     return(label)
   })
   
-  
-  
   output$nd_gain_map <- renderLeaflet({
     year <- input$nd_year
-      year_data <- gain %>%
-        filter(Year == year)
-      ndVar <- input$variable_nd
-      pal <- colorNumeric(
-        palette = "YlGn",  
-        domain = c(min_val_nd(), max_val_nd()),
-        reverse = TRUE
-      )
-      
-      leaflet() %>% 
-        addTiles() %>%
-        setView(lng = 2.5, lat = 7.5, zoom = 2)
+    year_data <- gain %>%
+      filter(Year == year)
+    ndVar <- input$variable_nd
+    pal <- colorNumeric(
+      palette = "YlGn",  
+      domain = c(min_val_nd(), max_val_nd()),
+      reverse = TRUE
+    )
     
-  }
-  )
+    leaflet(options = leafletOptions(
+      worldCopyJump = FALSE,
+      maxBounds = world_bounds,
+      maxBoundsViscosity = 1.0
+    )) %>% 
+      addTiles() %>%
+      setView(lng = 0, lat = 0, zoom = 2)
+  })
   
   
   observe({
