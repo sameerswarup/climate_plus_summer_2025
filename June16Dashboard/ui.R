@@ -6,14 +6,11 @@ library(shinyjs)
 ui <- fluidPage(
   title = "High Stakes Socio-Economic Mapping of Coastal Zones",
   
-  # Initialize shinyjs
   useShinyjs(),
   
-  # Custom CSS for full-screen overlay layout
   tags$head(
     tags$link(rel = "stylesheet", href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"),
     tags$style(HTML("
-      /* Remove default margins and padding */
       body, html {
         margin: 0;
         padding: 0;
@@ -26,7 +23,6 @@ ui <- fluidPage(
         height: 100vh;
       }
       
-      /* Full screen map */
       #map {
         position: absolute;
         top: 0;
@@ -36,51 +32,6 @@ ui <- fluidPage(
         z-index: 1;
       }
       
-      /* Comparison maps - side by side */
-      .comparison-container {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 1;
-        display: none;
-      }
-      
-      .comparison-container.active {
-        display: flex;
-      }
-      
-      .comparison-map {
-        width: 50%;
-        height: 100vh;
-        position: relative;
-      }
-      
-      .map-label {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        background: rgba(255, 255, 255, 0.9);
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-weight: 600;
-        font-size: 14px;
-        z-index: 1000;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      }
-      
-      .map-label.map1 {
-        background: rgba(13, 110, 253, 0.9);
-        color: white;
-      }
-      
-      .map-label.map2 {
-        background: rgba(220, 53, 69, 0.9);
-        color: white;
-      }
-      
-      /* Floating controls panel */
       .controls-panel {
         position: absolute;
         top: 20px;
@@ -96,7 +47,6 @@ ui <- fluidPage(
         border: 1px solid rgba(255, 255, 255, 0.3);
       }
       
-      /* Hamburger menu styling */
       .hamburger-menu {
         position: absolute;
         top: 15px;
@@ -120,7 +70,6 @@ ui <- fluidPage(
         color: #495057;
       }
       
-      /* Dropdown menu */
       .menu-dropdown {
         position: absolute;
         top: 100%;
@@ -169,7 +118,6 @@ ui <- fluidPage(
         width: 16px;
       }
       
-      /* Panel sections */
       .panel-section {
         display: none;
       }
@@ -178,7 +126,6 @@ ui <- fluidPage(
         display: block;
       }
       
-      /* Control styling */
       .control-group {
         padding: 15px;
         border-bottom: 1px solid rgba(0, 0, 0, 0.1);
@@ -195,7 +142,6 @@ ui <- fluidPage(
         font-size: 14px;
       }
       
-      /* Section headers */
       .section-header {
         font-weight: 600;
         color: #2c3e50;
@@ -212,7 +158,6 @@ ui <- fluidPage(
         color: #0d6efd;
       }
       
-      /* Search bar styling */
       .search-container {
         position: relative;
         margin-bottom: 15px;
@@ -227,7 +172,7 @@ ui <- fluidPage(
         z-index: 10;
       }
       
-      #country_search {
+      #country_search, #country_search_graphs {
         padding-left: 35px !important;
         border: 2px solid #e9ecef;
         border-radius: 8px;
@@ -236,14 +181,13 @@ ui <- fluidPage(
         transition: all 0.2s ease;
       }
       
-      #country_search:focus {
+      #country_search:focus, #country_search_graphs:focus {
         border-color: #0d6efd;
         box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
         outline: none;
       }
       
-      /* Suggestions dropdown */
-      #country_suggestions {
+      #country_suggestions, #country_suggestions_graphs {
         position: absolute;
         top: 100%;
         left: 0;
@@ -276,17 +220,6 @@ ui <- fluidPage(
         border-bottom: none;
       }
       
-      /* Selection indicator */
-      #current_selection_indicator {
-        margin-top: 12px;
-        padding: 8px 12px;
-        background: #f8f9fa;
-        border-radius: 6px;
-        border-left: 4px solid #0d6efd;
-        display: none;
-      }
-      
-      /* Custom form controls */
       .form-select, .form-control {
         border: 2px solid #e9ecef;
         border-radius: 6px;
@@ -299,7 +232,6 @@ ui <- fluidPage(
         box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
       }
       
-      /* Button styling */
       .btn-primary {
         background: linear-gradient(135deg, #0d6efd, #0b5ed7);
         border: none;
@@ -313,7 +245,6 @@ ui <- fluidPage(
         box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
       }
       
-      /* Checkbox styling */
       .form-check {
         margin: 8px 0;
       }
@@ -324,7 +255,6 @@ ui <- fluidPage(
         font-weight: 500;
       }
       
-      /* Plot containers */
       .plot-container {
         margin: 15px 0;
         background: rgba(248, 249, 250, 0.8);
@@ -333,7 +263,6 @@ ui <- fluidPage(
         border: 1px solid rgba(0, 0, 0, 0.05);
       }
       
-      /* Scrollbar styling */
       .controls-panel::-webkit-scrollbar {
         width: 6px;
       }
@@ -348,7 +277,6 @@ ui <- fluidPage(
         border-radius: 3px;
       }
       
-      /* Mobile responsiveness */
       @media (max-width: 768px) {
         .controls-panel {
           width: calc(100vw - 40px);
@@ -358,41 +286,35 @@ ui <- fluidPage(
     "))
   ),
   
-  # Full screen map
-  conditionalPanel(
-    condition = "input.menu_section != 'comparison'",
-    leafletOutput("map", width = "100%", height = "100vh")
-  ),
+  leafletOutput("map", width = "100%", height = "100vh"),
   
-  # Comparison maps container - show when comparison is selected
-  conditionalPanel(
-    condition = "input.menu_section == 'comparison'",
+  tags$div(
+    id = "comparison-maps",
+    style = "display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1;",
     tags$div(
       style = "display: flex; height: 100vh;",
       tags$div(
-        style = "width: 50%; height: 100vh;",
-        leafletOutput("compare_map_1", width = "100%", height = "100vh"),
+        style = "width: 50%; position: relative;",
+        leafletOutput("map1", width = "100%", height = "100vh"),
         tags$div(
-          style = "position: absolute; top: 15px; left: 15px; background: rgba(13, 110, 253, 0.9); color: white; padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);",
-          "Map 1 - TEST"
+          style = "position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);",
+          "Map 1"
         )
       ),
       tags$div(
-        style = "width: 50%; height: 100vh;",
-        leafletOutput("compare_map_2", width = "100%", height = "100vh"),
+        style = "width: 50%; position: relative;",
+        leafletOutput("map2", width = "100%", height = "100vh"),
         tags$div(
-          style = "position: absolute; top: 15px; left: 15px; background: rgba(220, 53, 69, 0.9); color: white; padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);",
-          "Map 2 - TEST"
+          style = "position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);",
+          "Map 2"
         )
       )
     )
   ),
   
-  # Floating controls panel with hamburger menu
   tags$div(
     class = "controls-panel",
     
-    # Hamburger menu
     tags$div(
       class = "hamburger-menu",
       id = "hamburger-menu",
@@ -405,13 +327,12 @@ ui <- fluidPage(
         tags$div(class = "menu-item", `data-section` = "graphs",
                  tags$i(class = "fas fa-chart-line"), "Custom Graphs"),
         tags$div(class = "menu-item", `data-section` = "comparison",
-                 tags$i(class = "fas fa-balance-scale"), "Country Comparison"),
+                 tags$i(class = "fas fa-balance-scale"), "Comparison"),
         tags$div(class = "menu-item", `data-section` = "about",
                  tags$i(class = "fas fa-info-circle"), "About")
       )
     ),
     
-    # Header section (Duke logo + title) - appears on all tabs
     tags$div(
       class = "header-section",
       style = "text-align: center; padding: 20px 15px 15px 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.1);",
@@ -431,12 +352,10 @@ ui <- fluidPage(
       )
     ),
     
-    # Interactive Map Section (Default)
     tags$div(
       class = "panel-section active",
       id = "map-section",
       
-      # Search section
       tags$div(
         class = "control-group",
         tags$div(class = "control-title", "Country Search"),
@@ -461,19 +380,9 @@ ui <- fluidPage(
           ),
           style = "width: 100%;",
           class = "btn btn-primary"
-        ),
-        # Current selection indicator
-        tags$div(
-          id = "current_selection_indicator",
-          tags$small(
-            style = "color: #495057; font-weight: 500;",
-            tags$span("Selected: "),
-            tags$span(id = "selected_country_name", style = "font-weight: 600; color: #0d6efd;")
-          )
         )
       ),
       
-      # Map controls section
       tags$div(
         class = "control-group",
         tags$div(class = "control-title", "Map Controls"),
@@ -498,7 +407,6 @@ ui <- fluidPage(
         )
       ),
       
-      # Descriptions section
       tags$div(
         class = "control-group",
         tags$div(class = "control-title", "About Composite Scores"),
@@ -511,7 +419,6 @@ ui <- fluidPage(
       )
     ),
     
-    # Custom Graphs Section
     tags$div(
       class = "panel-section",
       id = "graphs-section",
@@ -527,7 +434,6 @@ ui <- fluidPage(
         uiOutput("global_or_country_components")
       ),
       
-      # Results area
       tags$div(
         class = "control-group",
         conditionalPanel(
@@ -548,7 +454,6 @@ ui <- fluidPage(
       )
     ),
     
-    # Country Comparison Section
     tags$div(
       class = "panel-section",
       id = "comparison-section",
@@ -558,7 +463,6 @@ ui <- fluidPage(
       
       tags$div(
         class = "control-group",
-        tags$div(class = "control-title", "Country Search"),
         selectizeInput("comparison_country_search", "Search Country:",
                        choices = NULL, selected = NULL,
                        options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
@@ -583,12 +487,11 @@ ui <- fluidPage(
       
       tags$div(
         class = "control-group",
-        tags$p("Note: Comparison maps will appear side-by-side when this mode is active.", 
+        tags$p("Note: Comparison maps will appear as overlays when this mode is active.", 
                style = "font-size: 12px; color: #6c757d; font-style: italic;")
       )
     ),
     
-    # About Section
     tags$div(
       class = "panel-section",
       id = "about-section",
@@ -604,123 +507,172 @@ ui <- fluidPage(
     )
   ),
   
-  # JavaScript for hamburger menu and search functionality
   tags$script(HTML("
     $(document).ready(function() {
-      // Hamburger menu functionality
       $('#hamburger-menu').click(function(e) {
         e.stopPropagation();
         $('#menu-dropdown').toggleClass('show');
       });
       
-      // Close dropdown when clicking outside
       $(document).click(function(e) {
         if (!$(e.target).closest('#hamburger-menu').length) {
           $('#menu-dropdown').removeClass('show');
         }
       });
       
-      // Menu item selection
       $('.menu-item').click(function(e) {
         e.preventDefault();
         
-        // Remove active class from all menu items and sections
         $('.menu-item').removeClass('active');
         $('.panel-section').removeClass('active');
         
-        // Add active class to clicked menu item
         $(this).addClass('active');
         
-        // Show corresponding section
         var section = $(this).data('section');
         $('#' + section + '-section').addClass('active');
         
-        // Set Shiny input for conditional panels
-        Shiny.setInputValue('menu_section', section, {priority: 'event'});
+        if (section === 'comparison') {
+          $('#map').hide();
+          $('#comparison-maps').show();
+          setTimeout(function() {
+            window.dispatchEvent(new Event('resize'));
+            if (window.Shiny) {
+              Shiny.setInputValue('trigger_map_resize', Math.random(), {priority: 'event'});
+            }
+          }, 100);
+        } else {
+          $('#comparison-maps').hide();
+          $('#map').show();
+          setTimeout(function() {
+            window.dispatchEvent(new Event('resize'));
+          }, 100);
+        }
         
-        // Hide dropdown
         $('#menu-dropdown').removeClass('show');
+        
+        // Re-initialize search functionality when switching to graphs section
+        if (section === 'graphs') {
+          setTimeout(function() {
+            setupCountrySearch('country_search_graphs', 'country_suggestions_graphs');
+          }, 100);
+        }
       });
       
-      // Country search functionality
       var countries = [];
       var selectedIndex = -1;
+      var currentSuggestionsId = '';
       
       Shiny.addCustomMessageHandler('updateCountriesList', function(data) {
         countries = data;
       });
       
-      $('#country_search').on('input', function() {
-        var query = $(this).val().toLowerCase();
-        var suggestions = $('#country_suggestions');
+      function setupCountrySearch(inputId, suggestionsId) {
+        // Remove any existing event handlers to prevent duplicates
+        $('#' + inputId).off('input keydown');
         
-        if (query.length === 0) {
-          suggestions.hide();
-          return;
-        }
-        
-        var matches = countries.filter(function(country) {
-          return country.toLowerCase().includes(query);
-        }).slice(0, 10);
-        
-        if (matches.length === 0) {
-          suggestions.hide();
-          return;
-        }
-        
-        var html = '';
-        matches.forEach(function(country, index) {
-          html += '<div class=\"country-suggestion\" data-country=\"' + country + '\">' + country + '</div>';
+        $('#' + inputId).on('input', function() {
+          var query = $(this).val().toLowerCase();
+          var suggestions = $('#' + suggestionsId);
+          currentSuggestionsId = suggestionsId;
+          
+          if (query.length === 0) {
+            suggestions.hide();
+            return;
+          }
+          
+          var matches = countries.filter(function(country) {
+            return country.toLowerCase().includes(query);
+          }).slice(0, 10);
+          
+          if (matches.length === 0) {
+            suggestions.hide();
+            return;
+          }
+          
+          var html = '';
+          matches.forEach(function(country, index) {
+            html += '<div class=\"country-suggestion\" data-country=\"' + country + '\" data-input=\"' + inputId + '\">' + country + '</div>';
+          });
+          
+          suggestions.html(html).show();
+          selectedIndex = -1;
         });
         
-        suggestions.html(html).show();
+        $('#' + inputId).on('keydown', function(e) {
+          var suggestions = $('#' + suggestionsId + ' .country-suggestion');
+          
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedIndex = Math.min(selectedIndex + 1, suggestions.length - 1);
+            updateSelection(suggestionsId);
+          } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedIndex = Math.max(selectedIndex - 1, -1);
+            updateSelection(suggestionsId);
+          } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (selectedIndex >= 0) {
+              var country = suggestions.eq(selectedIndex).data('country');
+              $('#' + inputId).val(country);
+              suggestions.parent().hide();
+              Shiny.setInputValue(inputId + '_selected', country, {priority: 'event'});
+            }
+          } else if (e.key === 'Escape') {
+            suggestions.parent().hide();
+            selectedIndex = -1;
+          }
+        });
+      }
+      
+      // Initialize main search immediately
+      setupCountrySearch('country_search', 'country_suggestions');
+      
+      // Handle clicks on suggestions
+      $(document).on('click', '.country-suggestion', function() {
+        var country = $(this).data('country');
+        var inputId = $(this).data('input');
+        
+        $('#' + inputId).val(country);
+        $(this).parent().hide();
+        Shiny.setInputValue(inputId + '_selected', country, {priority: 'event'});
         selectedIndex = -1;
       });
       
-      $(document).on('click', '.country-suggestion', function() {
-        var country = $(this).data('country');
-        $('#country_search').val(country);
-        $('#country_suggestions').hide();
-        Shiny.setInputValue('country_search_selected', country, {priority: 'event'});
-      });
-      
-      $('#country_search').on('keydown', function(e) {
-        var suggestions = $('.country-suggestion');
-        
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          selectedIndex = Math.min(selectedIndex + 1, suggestions.length - 1);
-          updateSelection();
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          selectedIndex = Math.max(selectedIndex - 1, -1);
-          updateSelection();
-        } else if (e.key === 'Enter') {
-          e.preventDefault();
-          if (selectedIndex >= 0) {
-            var country = suggestions.eq(selectedIndex).data('country');
-            $('#country_search').val(country);
-            $('#country_suggestions').hide();
-            Shiny.setInputValue('country_search_selected', country, {priority: 'event'});
-          }
-        } else if (e.key === 'Escape') {
-          $('#country_suggestions').hide();
+      // Close suggestions when clicking outside
+      $(document).on('click', function(e) {
+        if (!$(e.target).closest('#country_search, #country_suggestions, #country_search_graphs, #country_suggestions_graphs').length) {
+          $('#country_suggestions, #country_suggestions_graphs').hide();
           selectedIndex = -1;
         }
       });
       
-      $(document).on('click', function(e) {
-        if (!$(e.target).closest('#country_search, #country_suggestions').length) {
-          $('#country_suggestions').hide();
-        }
-      });
-      
-      function updateSelection() {
-        $('.country-suggestion').removeClass('highlighted');
+      function updateSelection(suggestionsId) {
+        $('#' + suggestionsId + ' .country-suggestion').removeClass('highlighted');
         if (selectedIndex >= 0) {
-          $('.country-suggestion').eq(selectedIndex).addClass('highlighted');
+          $('#' + suggestionsId + ' .country-suggestion').eq(selectedIndex).addClass('highlighted');
         }
       }
+      
+      // Watch for UI changes and reinitialize search when graphs UI is rendered
+      var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'childList') {
+            // Check if country_search_graphs was added to the DOM
+            if ($('#country_search_graphs').length > 0 && !$('#country_search_graphs').data('initialized')) {
+              setTimeout(function() {
+                setupCountrySearch('country_search_graphs', 'country_suggestions_graphs');
+                $('#country_search_graphs').data('initialized', true);
+              }, 50);
+            }
+          }
+        });
+      });
+      
+      // Start observing
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
     });
   "))
 )
