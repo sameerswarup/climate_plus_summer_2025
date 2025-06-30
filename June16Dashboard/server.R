@@ -1,4 +1,4 @@
-# server.R
+# server.R - Simplified version
 server <- function(input, output, session) {
   
   selected_country <- reactiveVal(NULL)
