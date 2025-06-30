@@ -2,6 +2,17 @@ library(shiny)
 library(leaflet)
 library(terra)
 library(bslib)
+library(shiny)
+library(leaflet)
+library(dplyr)
+library(sf)
+library(viridis)
+library(tidyverse)
+library(qs)
+library(pryr)
+library(rnaturalearth)
+library(shinyjs)
+library(ggthemes)
 
 # Composite score options
 
