@@ -87,7 +87,6 @@ ui <- page_sidebar(
         present (10 countries only have readiness scores)."
         )
       ),
-      
       card(
         card_header("Map Controls"),
         selectInput(inputId = "country_nd",
@@ -111,7 +110,6 @@ ui <- page_sidebar(
                     sep = "",
                     animate = TRUE)
       ),
-      
       card(
         card_header("Data Summary"),
         tags$div(
@@ -125,14 +123,8 @@ ui <- page_sidebar(
           value = textOutput("nd_year_score")
         )
       ),
-      
       plotOutput("nd_graph")
-      
-
     )
-    
-    
-      
     ),
     
     
