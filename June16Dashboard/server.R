@@ -332,9 +332,43 @@ server <- function(input, output, session) {
     if (is.null(data) || !(x_col %in% names(data)) || !(y_col %in% names(data))) return()
     if (all(is.na(data[[x_col]])) || all(is.na(data[[y_col]]))) return()
     
-    plot(data[[x_col]], data[[y_col]], main = title,
-         xlab = names(choices)[choices == x_col],
-         ylab = names(choices)[choices == y_col])
+    if (title == "Global") {
+      subtitle = "Each Point Represents a Country"
+      title = paste0(title, ": ", x_col, " vs. ", y_col)
+    } else {
+      subtitle = paste0("Each Point Represents a Point Within ", title)
+      title = paste0(title, ": ", x_col, " vs. ", y_col)
+    }
+    
+    ggplot(data, aes(x = .data[[x_col]], y = .data[[y_col]])) +
+      geom_point()+
+      labs(title = title,
+           subtitle = subtitle,
+           x = names(choices)[choices == x_col],
+           y = names(choices)[choices == y_col]) +
+      theme_bw() +
+      theme(
+        plot.title = element_text(
+          size = 14,
+          hjust = 0.5
+        ),
+        plot.subtitle = element_text(
+          size = 12,
+          hjust = 0.5
+        ),
+        axis.title.x = element_text(
+          size = 10,
+          margin = margin(t = 10)
+        ),
+        axis.title.y = element_text(
+          size = 10,
+          margin = margin(r = 10)
+        )
+      )
+    # 
+    # plot(data[[x_col]], data[[y_col]], main = title,
+    #      xlab = names(choices)[choices == x_col],
+    #      ylab = names(choices)[choices == y_col])
   }
   
   calculate_correlation <- function(data, x_col, y_col) {

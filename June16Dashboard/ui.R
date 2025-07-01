@@ -500,7 +500,8 @@ ui <- fluidPage(
                  plotOutput("country_histogram", height = "200px",
                             width = "95%")),
         tags$div(class = "plot-container",
-                 plotOutput("custom_scatter", height = "300px")),
+                 plotOutput("custom_scatter", height = "300px",
+                            width = "95%")),
         verbatimTextOutput("correlation")
       )
     ),
