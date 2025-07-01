@@ -93,18 +93,28 @@ server <- function(input, output, session) {
   select_country <- function(country) {
     if (is.null(country) || country == "" || country == "Global (Default)") {
       selected_country(NULL)
+      chosen_country(NULL)
+      country_dataset(NULL)
       updateTextInput(session, "country_search", value = "")
       updateTextInput(session, "country_search_graphs", value = "")
       zoom_to_country("map", NULL)
       update_map_layers_only()
     } else {
       selected_country(country)
+      chosen_country(country)
+      country_dataset(filter(df, COUNTRY == country))  # ✅ move this here
       updateTextInput(session, "country_search", value = country)
       updateTextInput(session, "country_search_graphs", value = country)
       zoom_to_country("map", country)
       update_map_layers_only()
     }
   }
+  
+  observe({
+    if (is.null(selected_country())) {
+      select_country("Bangladesh")  # or any default country
+    }
+  })
   
   update_map_layers_only <- function() {
     if (!map_initialized()) return()
@@ -210,29 +220,24 @@ server <- function(input, output, session) {
   }
   
   # Event handlers for country selection
-  observeEvent(input$country_search_graphs_selected, {
-    select_country(input$country_search_graphs_selected)
+  observeEvent({
+    input$country_search_graphs_selected
+    input$country_search_graphs
+  }, {
+    country <- input$country_search_graphs_selected %||% input$country_search_graphs
+    if (!is.null(country) && country != "") {
+      select_country(country)
+    }
   })
   
-  observeEvent(input$country_search_selected, {
-    select_country(input$country_search_selected)
-  })
-  
-  # Show global analysis in a modal overlay
-  observeEvent(input$global_scale_button, {
-    showModal(modalDialog(
-      title = "Global Scale Analysis",
-      size = "l",
-      fluidRow(
-        column(6, selectInput("first_indicator_global", "First indicator:", 
-                              choices = global_level_choices, selected = "Gov_effect.sc")),
-        column(6, selectInput("second_indicator_global", "Second indicator:", 
-                              choices = global_level_choices, selected = "le.ineq.log.sc"))
-      ),
-      plotOutput("global_custom_scatter", height = "400px"),
-      verbatimTextOutput("global_correlation"),
-      footer = modalButton("Close")
-    ))
+  observeEvent({
+    input$country_search_selected
+    input$country_search
+  }, {
+    country <- input$country_search_selected %||% input$country_search
+    if (!is.null(country) && country != "") {
+      select_country(country)
+    }
   })
   
   observeEvent(input$map_shape_click, {
@@ -302,16 +307,16 @@ server <- function(input, output, session) {
   })
   
   # Update country dataset when country is selected
-  observe({
-    country <- selected_country()
-    if (!is.null(country)) {
-      chosen_country(country)
-      country_dataset(filter(df, COUNTRY == country))
-    } else {
-      chosen_country(NULL)
-      country_dataset(NULL)
-    }
-  })
+  # observe({
+  #   country <- selected_country()
+  #   if (!is.null(country)) {
+  #     chosen_country(country)
+  #     country_dataset(filter(df, COUNTRY == country))
+  #   } else {
+  #     chosen_country(NULL)
+  #     country_dataset(NULL)
+  #   }
+  # })
   
   output$countryDisplay <- renderText({
     country <- chosen_country()
@@ -320,49 +325,6 @@ server <- function(input, output, session) {
     } else {
       paste("Currently analyzing:", country, "- Map automatically zoomed to this country")
     }
-  })
-  
-  # Country analysis UI components (always shown)
-  output$country_analysis_components <- renderUI({
-    country_choices <- c("Distance to Coast (km)" = "distance_to_coast_km", 
-                         "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
-                         "Relative Deprivation Index" = "povmap.grdi.v1.sc",
-                         "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
-    
-    tagList(
-      tags$div(
-        class = "control-title", 
-        "Country Search"
-      ),
-      tags$div(
-        class = "search-container",
-        tags$i(class = "fas fa-search search-icon"),
-        textInput(
-          "country_search_graphs", 
-          label = NULL,
-          value = "",
-          placeholder = "Search for a country...",
-          width = "100%"
-        ),
-        tags$div(id = "country_suggestions_graphs")
-      ),
-      actionButton(
-        "global_scale_button", 
-        tags$div(
-          style = "display: flex; align-items: center; gap: 6px; justify-content: center;",
-          tags$i(class = "fas fa-globe", style = "font-size: 12px;"),
-          "View Global Scale"
-        ),
-        style = "width: 100%; margin-bottom: 15px;",
-        class = "btn btn-secondary"
-      ),
-      selectInput("country_histogram_indicator", "Histogram variable:", 
-                  choices = country_choices, selected = "povmap.grdi.v1.sc"),
-      selectInput("first_indicator", "First indicator:", 
-                  choices = country_choices, selected = "povmap.grdi.v1.sc"),
-      selectInput("second_indicator", "Second indicator:", 
-                  choices = country_choices, selected = "perc.pop.world.coastal.merit.10m.log.sc")
-    )
   })
   
   # Plotting functions
@@ -452,6 +414,35 @@ server <- function(input, output, session) {
                          "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
     
     label <- names(country_choices)[country_choices == chi]
-    hist(col, main = paste0("Histogram of ", label, " for ", chosen_country()), xlab = label)
+    
+    ggplot(data, aes(x= .data[[chi]])) +
+      geom_histogram(bins = 30, fill = "#00539B", color = "white") +
+      labs(title = paste0(label, " for ", chosen_country()),
+           subtitle = paste0("Each Point Is a Point Within ", chosen_country()),
+        x = label, y = "Frequency") +
+      theme_bw()+ 
+      theme(
+        plot.title = element_text(
+          size = 14,
+          hjust = 0.5
+        ),
+        plot.subtitle = element_text(
+          size = 12,
+          hjust = 0.5
+        ),
+        axis.title.x = element_text(
+          size = 10,
+          margin = margin(t = 10)
+        ),
+        axis.title.y = element_text(
+          size = 10,
+          margin = margin(r = 10)
+        )
+      ) 
+    # hist(col, main = paste0("Histogram of ", label, " for ", chosen_country()), xlab = label)
+    
+    
   })
+  
+  
 }

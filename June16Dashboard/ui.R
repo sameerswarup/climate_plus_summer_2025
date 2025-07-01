@@ -497,7 +497,8 @@ ui <- fluidPage(
         class = "control-group",
         textOutput("countryDisplay"),
         tags$div(class = "plot-container",
-                 plotOutput("country_histogram", height = "200px")),
+                 plotOutput("country_histogram", height = "200px",
+                            width = "95%")),
         tags$div(class = "plot-container",
                  plotOutput("custom_scatter", height = "300px")),
         verbatimTextOutput("correlation")

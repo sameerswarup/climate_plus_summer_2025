@@ -8,6 +8,8 @@ library(tidyverse)
 library(qs)
 library(rnaturalearth)
 library(shinyjs)
+library(ggplot2)
+library(ggthemes)
 
 # Load the main datasets
 df <- readRDS("data/inequity_filtered5k.rds") %>%
