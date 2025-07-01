@@ -203,6 +203,120 @@ server <- function(input, output, session) {
     }
   }
   
+  
+  
+  update_comparison_map_layers_only <- function() {
+    print("in")
+    if (!map_initialized()) return()
+    
+    if (is.null(input$variable_choice) || is.null(input$indicator_category)) return()
+    
+    var <- input$variable_choice
+    country <- selected_country()
+    
+    if (var %in% composite_arith_list) {
+      global_data <- combined_scores_global
+      polygon_data <- combined_scores_global_polygons
+    } else {
+      global_data <- average_country_nogeo
+      polygon_data <- average_country_polygons
+    }
+    
+    pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
+    
+    leafletProxy("map1") %>%
+      clearMarkers() %>% clearShapes() %>% clearControls()
+    
+    print("2")
+
+    if (is.null(country)) {
+      print("3")
+      
+      leafletProxy("map1") %>%
+        addPolygons(
+          data = polygon_data,
+          fillColor = ~pal(get(var)), fillOpacity = 0.7, color = ~pal(get(var)),
+          weight = 2, opacity = 0.9,
+          highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
+          layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "polygons"
+        ) %>%
+        # {if (should_show_points(var)) {
+        #   addCircleMarkers(., 
+        #                    data = global_data, radius = 6, fillColor = ~pal(get(var)), fillOpacity = 0.9,
+        #                    stroke = TRUE, color = "white", weight = 1,
+        #                    label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
+        #                    layerId = ~paste0("marker_", COUNTRY), group = "markers"
+        #   )
+        # } else . } %>%
+        addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
+                  title = paste(input$indicator_category), position = "bottomright")
+      print("3 done")
+    } else {
+      print("4")
+      if (!should_show_points(var)) {
+        selected_country_data <- polygon_data %>% filter(COUNTRY == country)
+        other_countries_data <- polygon_data %>% filter(COUNTRY != country)
+        
+        if (nrow(other_countries_data) > 0) {
+          print("5")
+          leafletProxy("map1") %>%
+            addPolygons(
+              data = other_countries_data,
+              fillColor = "transparent", fillOpacity = 0, 
+              color = ~pal(get(var)), weight = 2, opacity = 0.5,
+              highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1),
+              layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3))
+            )
+        }
+        
+        if (nrow(selected_country_data) > 0) {
+          print("6")
+          leafletProxy("map1") %>%
+            addPolygons(
+              data = selected_country_data,
+              fillColor = ~pal(get(var)), fillOpacity = 0.8,
+              color = ~pal(get(var)), weight = 3, opacity = 1,
+              highlightOptions = highlightOptions(color = "#FFFFFF", weight = 5, bringToFront = TRUE, opacity = 1, fillOpacity = 0.9),
+              layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3))
+            )
+        }
+        
+        leafletProxy("map1") %>%
+          addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
+                    title = paste(input$indicator_category), position = "bottomright")
+      } else {
+        print("7")
+        country_data <- df %>% filter(COUNTRY == country)
+        if (nrow(country_data) > 0) {
+          use_local <- isTRUE(input$use_country_specific_scale)
+          domain_data <- if (use_local) country_data[[var]] else average_country_nogeo[[var]]
+          
+          pal_country <- colorNumeric("Purples", domain = domain_data, na.color = "transparent")
+          border_pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
+          
+          leafletProxy("map1") %>%
+            addPolygons(
+              data = polygon_data,
+              fillColor = "transparent", fillOpacity = 0, color = ~border_pal(get(var)),
+              weight = 1, opacity = 0.4,
+              highlightOptions = highlightOptions(color = "#FFFFFF", weight = 3, bringToFront = TRUE, opacity = 1),
+              layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3))
+            ) %>%
+            addCircleMarkers(
+              data = country_data, radius = 6, fillColor = ~pal_country(get(var)), fillOpacity = 0.9,
+              stroke = TRUE, color = "black", weight = 0.7,
+              label = ~paste0(COUNTRY, ": ", round(get(var), 3))
+            ) %>%
+            addLegend(pal = pal_country, values = domain_data, opacity = 0.9,
+                      title = paste0(country, if (use_local) " (Local Scale)" else " (Global Scale)"),
+                      position = "bottomright")
+        }
+      }
+    }
+  }
+  
+  
+  
   observeEvent(input$country_search_graphs_selected, {
     select_country(input$country_search_graphs_selected)
   })
@@ -227,7 +341,55 @@ server <- function(input, output, session) {
     select_country(clicked_country)
   })
   
+  #COMPARISON
+  output$map1 <- renderLeaflet({
+    leaflet() %>%
+      addTiles()  
+  })
+  output$map2 <- renderLeaflet({
+    leaflet() %>%
+      addTiles()  
+  })
+  
+  #INTERACTIVE
   output$map <- renderLeaflet({
+    var <- "gov.score.rank"
+    
+    if (var %in% composite_arith_list) {
+      global_data <- combined_scores_global
+      polygon_data <- combined_scores_global_polygons
+    } else {
+      global_data <- average_country_nogeo
+      polygon_data <- average_country_polygons
+    }
+    
+    pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
+    map <- create_base_map(FALSE)
+    
+    result <- map %>%
+      addPolygons(
+        data = polygon_data,
+        fillColor = ~pal(get(var)), fillOpacity = 0.7, color = ~pal(get(var)),
+        weight = 2, opacity = 0.9,
+        highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
+        layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "polygons"
+      ) %>%
+      {if (should_show_points(var)) {
+        addCircleMarkers(., 
+                         data = global_data, radius = 6, fillColor = ~pal(get(var)), fillOpacity = 0.9,
+                         stroke = TRUE, color = "white", weight = 1,
+                         label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
+                         layerId = ~paste0("marker_", COUNTRY), group = "markers"
+        )
+      } else . } %>%
+      addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
+                title = "Weak Governance", position = "bottomright")
+    
+    map_initialized(TRUE)
+    return(result)
+  })
+  
+    output$map <- renderLeaflet({
     var <- "gov.score.rank"
     
     if (var %in% composite_arith_list) {
@@ -278,6 +440,23 @@ server <- function(input, output, session) {
     
     update_map_layers_only()
   })
+  
+  
+  
+  #COMPARISON
+  observeEvent({
+    input$comparison_country_search #; input$variable_choice
+  }, {
+    req(input$indicator_category)
+    req(input$variable_choice)
+    req(map_initialized())
+    
+    update_comparison_map_layers_only()
+  })
+  
+  
+  
+  
   
   observeEvent(input$country_select, {
     if (!is.null(input$country_select)) {
