@@ -309,18 +309,18 @@ ui <- fluidPage(
     id = "comparison-maps",
     # style = "display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1;",
     tags$div(
-      style = "display: flex; height: 100vh;",
+      style = "display: flex; flex-direction: column; height: 100vh;",
       tags$div(
-        style = "width: 50%; position: relative;",
-        leafletOutput("map1", width = "100%", height = "100vh"),
+        style = "height: 50%; position: relative; width: 100%;",
+        leafletOutput("map1", width = "100%", height = "100%"),
         tags$div(
           style = "position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);",
           "Map 1"
         )
       ),
       tags$div(
-        style = "width: 50%; position: relative;",
-        leafletOutput("map2", width = "100%", height = "100vh"),
+        style = "height: 50%; position: relative; width: 100%;",
+        leafletOutput("map2", width = "100%", height = "100%"),
         tags$div(
           style = "position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);",
           "Map 2"
