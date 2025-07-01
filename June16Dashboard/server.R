@@ -415,47 +415,7 @@ server <- function(input, output, session) {
     return(result)
   })
   
-<<<<<<< HEAD
-    output$map <- renderLeaflet({
-    var <- "gov.score.rank"
-    
-    if (var %in% composite_arith_list) {
-      global_data <- combined_scores_global
-      polygon_data <- combined_scores_global_polygons
-    } else {
-      global_data <- average_country_nogeo
-      polygon_data <- average_country_polygons
-    }
-    
-    pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
-    map <- create_base_map(FALSE)
-    
-    result <- map %>%
-      addPolygons(
-        data = polygon_data,
-        fillColor = ~pal(get(var)), fillOpacity = 0.7, color = ~pal(get(var)),
-        weight = 2, opacity = 0.9,
-        highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
-        layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "polygons"
-      ) %>%
-      {if (should_show_points(var)) {
-        addCircleMarkers(., 
-                         data = global_data, radius = 6, fillColor = ~pal(get(var)), fillOpacity = 0.9,
-                         stroke = TRUE, color = "white", weight = 1,
-                         label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
-                         layerId = ~paste0("marker_", COUNTRY), group = "markers"
-        )
-      } else . } %>%
-      addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
-                title = "Weak Governance", position = "bottomright")
-    
-    map_initialized(TRUE)
-    return(result)
-  })
-  
-=======
-  # Satellite view toggle
->>>>>>> 8c47f88eedb0614dd4279ab902f8ce4f39bd9ccc
+
   observeEvent(input$satellite_view, {
     tiles <- if (input$satellite_view) providers$Esri.WorldImagery else providers$Esri.WorldStreetMap
     leafletProxy("map") %>% clearTiles() %>% addProviderTiles(tiles)
@@ -483,10 +443,6 @@ server <- function(input, output, session) {
     
     update_comparison_map_layers_only()
   })
-  
-  
-  
-  
   
   observeEvent(input$country_select, {
     if (!is.null(input$country_select)) {
@@ -545,12 +501,12 @@ server <- function(input, output, session) {
         ),
         axis.title.x = element_text(
           face = "bold",
-          size = 10,
+          size = 12,
           margin = margin(t = 10, b = 10)
         ),
         axis.title.y = element_text(
           face = "bold",
-          size = 10,
+          size = 12,
           margin = margin(r = 10,l = 10)
         )
       )
@@ -617,6 +573,14 @@ server <- function(input, output, session) {
     create_scatter_plot(country_dataset(), input$first_indicator, input$second_indicator, country_choices, chosen_country())
   })
   
+  output$custom_scatter_zoom <- renderPlot({
+    country_choices <- c("Distance to Coast (km)" = "distance_to_coast_km", 
+                         "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                         "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                         "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
+    create_scatter_plot(country_dataset(), input$first_indicator, input$second_indicator, country_choices, chosen_country())
+  })
+  
   output$global_custom_scatter <- renderPlot({
     create_scatter_plot(average_country_nogeo, input$first_indicator_global, input$second_indicator_global, global_level_choices, "Global")
   })
@@ -633,7 +597,7 @@ server <- function(input, output, session) {
     showModal(modalDialog(
       title = "Country Scale Scatterplot",
       size = "l",
-      plotOutput("custom_scatter", height = "400px"),
+      plotOutput("custom_scatter_zoom", height = "400px"),
       verbatimTextOutput("correlation"),
       footer = modalButton("Close")
     ))
@@ -643,12 +607,12 @@ server <- function(input, output, session) {
     showModal(modalDialog(
       title = "Country Scale Histogram",
       size = "l",
-      plotOutput("country_histogram", height = "400px"),
+      plotOutput("country_histogram_zoom", height = "400px"),
       footer = modalButton("Close")
     ))
   })
   
-  output$country_histogram <- renderPlot({
+  renderHistogram <- renderPlot({
     data <- country_dataset()
     if (is.null(data) || nrow(data) == 0) return() 
     
@@ -669,7 +633,7 @@ server <- function(input, output, session) {
       geom_histogram(bins = 30, fill = "#00539B", color = "white") +
       labs(title = paste0(label, " for ", chosen_country()),
            subtitle = paste0("Each Point Is a Point Within ", chosen_country()),
-        x = label, y = "Frequency") +
+           x = label, y = "Frequency") +
       theme_hc()+ 
       theme(
         plot.title = element_text(
@@ -683,18 +647,20 @@ server <- function(input, output, session) {
         ),
         axis.title.x = element_text(
           face = "bold",
-          size = 10,
+          size = 12,
           margin = margin(t = 10)
         ),
         axis.title.y = element_text(
           face = "bold",
-          size = 10,
+          size = 12,
           margin = margin(r = 10)
         )
       ) 
-
+    
     
   })
+  output$country_histogram_zoom <- renderHistogram
+  output$country_histogram <- renderHistogram
   
   # Descriptions of indicators (inequity)
   
