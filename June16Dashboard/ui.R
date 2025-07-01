@@ -307,7 +307,7 @@ ui <- fluidPage(
   
   tags$div(
     id = "comparison-maps",
-    style = "display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1;",
+    # style = "display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1;",
     tags$div(
       style = "display: flex; height: 100vh;",
       tags$div(
