@@ -311,7 +311,8 @@ server <- function(input, output, session) {
   })
   
   observeEvent(c(input$nd_year,
-                 input$variable_nd), {
+                 input$variable_nd,
+                 input$country_nd), {
                    req(input$nd_year)
                    req(input$variable_nd)
                    req(countryND())

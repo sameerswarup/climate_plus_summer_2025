@@ -1,4 +1,4 @@
-# global.R - Using dedicated polygon datasets
+# global.R - Simplified version
 library(shiny)
 library(leaflet)
 library(dplyr)
@@ -6,21 +6,17 @@ library(sf)
 library(viridis)
 library(tidyverse)
 library(qs)
-library(pryr)
 library(rnaturalearth)
 library(shinyjs)
+library(ggplot2)
 library(ggthemes)
 
-# Load the original point-level data
+# Load the main datasets
 df <- readRDS("data/inequity_filtered5k.rds") %>%
   st_transform(4326)
 
-# Load the pre-created polygon datasets
 country_polygons_with_data <- readRDS("data/country_polygons_with_data.rds")
 country_centroids_with_data <- readRDS("data/country_centroids_with_data.rds")
-
-# Load additional data
-countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
 
 # Set up the main datasets for the app
 combined_scores_global <- country_centroids_with_data
@@ -36,9 +32,7 @@ indicator_map <- list(
 )
 
 composite_choices <- names(indicator_map)
-indicator_choices <- composite_choices
 composite_arith_list <- c("vulnerab.score.rank", "ineq.score.rank", "gov.score.rank")
-indicator_arith_map <- indicator_map
 
 # Indicator descriptions
 indicator_descriptions <- list(
@@ -46,21 +40,6 @@ indicator_descriptions <- list(
   "Social Inequality" = "Measures economic and social disparities through gender wage gaps, income distribution differences, and unequal health outcomes across different population groups.",
   "Weak Governance" = "Measures how well governments function through public service quality, business regulation effectiveness, law enforcement, corruption prevention, political stability, and citizen participation in decision-making."
 )
-
-# Helper function for flag paths
-findPNGpath <- function(name_en, countryCodes) {
-  pngDefaultPath <- "www/flags/"
-  alpha2 <- countryCodes %>%
-    filter(Country == name_en) %>%
-    pull(Alpha.2.code)
-  
-  if (length(alpha2) == 0) return("www/globe.png")
-  
-  alpha2 <- substring(alpha2, 3, 4)
-  alpha2 <- paste0(tolower(alpha2))
-  pngFinal <- paste0(pngDefaultPath, alpha2, ".png")
-  return(pngFinal)
-}
 
 # Global level choices for analysis
 global_level_choices <- c(
@@ -77,9 +56,6 @@ global_level_choices <- c(
   "Inequality Adjusted Life Expectancy" = "le.ineq.log.sc"
 )
 
-# Load data descriptions
-inequity_data_descriptions <- read.csv("data/inequity_data_descriptions.csv")
-
 # Create country centroids for zooming (filter out invalid coordinates)
 country_centroids <- country_centroids_with_data %>%
   st_coordinates() %>%
@@ -87,25 +63,3 @@ country_centroids <- country_centroids_with_data %>%
   bind_cols(COUNTRY = country_centroids_with_data$COUNTRY) %>%
   select(COUNTRY, X, Y) %>%
   filter(!is.na(X) & !is.na(Y) & is.finite(X) & is.finite(Y))
-
-composite_score_list <- c("vulnerab.score.rank", "ineq.score.rank", "gov.score.rank")
-
-# Define global variables
-use_polygons <- TRUE
-
-# Legacy function for backward compatibility
-aggregate_country <- function(data, use_polygons = TRUE) {
-  if (use_polygons) {
-    return(country_polygons_with_data)
-  } else {
-    return(country_centroids_with_data)
-  }
-}
-
-country_choices <- c("Distance to Coast (km)" = "distance_to_coast_km", 
-                     "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
-                     "Relative Deprivation Index" = "povmap.grdi.v1.sc",
-                     "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
-
-# Load ND Gain Data
-gain <- readRDS("data/filteredNDGainData copy.rds")

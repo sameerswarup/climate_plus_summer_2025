@@ -1,18 +1,10 @@
-# server.R
+# server.R - Simplified version
 server <- function(input, output, session) {
   
   selected_country <- reactiveVal(NULL)
   chosen_country <- reactiveVal(NULL)
   country_dataset <- reactiveVal(NULL)
   map_initialized <- reactiveVal(FALSE)
-  
-  description_reactives <- list(
-    first_global = reactiveVal(NULL),
-    second_global = reactiveVal(NULL),
-    first_country = reactiveVal(NULL),
-    second_country = reactiveVal(NULL),
-    histogram = reactiveVal(NULL)
-  )
   
   indicator_choice_list <- list(
     "Socio-Ecological Vulnerability" = c("Socio-Ecological Vulnerability (Composite)" = "vulnerab.score.rank",
@@ -32,10 +24,6 @@ server <- function(input, output, session) {
                           "Low Voice and Accountability" = "Voice_account.sc",
                           "Political Instability" = "Political_stab.sc")
   )
-  
-  selected_var <- reactive(req(input$variable_choice))
-  map_1_selected_var <- reactive(req(input$map_1_variable_choice))
-  map_2_selected_var <- reactive(req(input$map_2_variable_choice))
   
   should_show_points <- function(var) {
     var %in% c("mean.count.grav.V2.log.sc", "povmap.grdi.v1.sc", 
@@ -68,40 +56,65 @@ server <- function(input, output, session) {
     }
   }
   
+  # Update dropdown choices based on indicator category
   observeEvent(input$indicator_category, {
     updateSelectInput(session, "variable_choice", choices = indicator_choice_list[[input$indicator_category]])
   })
   
-  observeEvent(input$map_1_indicator_category, {
-    updateSelectInput(session, "map_1_variable_choice", choices = indicator_choice_list[[input$map_1_indicator_category]])
+  # Sync map variable with histogram variable selection
+  observeEvent(input$country_histogram_indicator, {
+    req(input$country_histogram_indicator)
+    
+    # Find which indicator category contains this variable
+    target_category <- NULL
+    target_variable <- input$country_histogram_indicator
+    
+    for (category in names(indicator_choice_list)) {
+      if (target_variable %in% indicator_choice_list[[category]]) {
+        target_category <- category
+        break
+      }
+    }
+    
+    # Update the map to show this variable
+    if (!is.null(target_category)) {
+      updateSelectInput(session, "indicator_category", selected = target_category)
+      updateSelectInput(session, "variable_choice", selected = target_variable)
+    }
   })
   
-  observeEvent(input$map_2_indicator_category, {
-    updateSelectInput(session, "map_2_variable_choice", choices = indicator_choice_list[[input$map_2_indicator_category]])
-  })
-  
+  # Initialize country choices
   observe({
     countries_list <- c("Global (Default)", sort(unique(average_country_nogeo$COUNTRY)))
     updateSelectizeInput(session, "comparison_country_search", choices = countries_list, server = TRUE)
-    
     session$sendCustomMessage("updateCountriesList", countries_list)
   })
   
   select_country <- function(country) {
     if (is.null(country) || country == "" || country == "Global (Default)") {
       selected_country(NULL)
+      chosen_country(NULL)
+      country_dataset(NULL)
       updateTextInput(session, "country_search", value = "")
       updateTextInput(session, "country_search_graphs", value = "")
       zoom_to_country("map", NULL)
       update_map_layers_only()
     } else {
       selected_country(country)
+      chosen_country(country)
+      country_dataset(filter(df, COUNTRY == country))  # ✅ move this here
       updateTextInput(session, "country_search", value = country)
       updateTextInput(session, "country_search_graphs", value = country)
       zoom_to_country("map", country)
       update_map_layers_only()
     }
   }
+  
+  observe({
+    if (is.null(selected_country())) {
+      select_country("Bangladesh")  # or any default country
+    }
+  })
   
   update_map_layers_only <- function() {
     if (!map_initialized()) return()
@@ -125,6 +138,7 @@ server <- function(input, output, session) {
       clearMarkers() %>% clearShapes() %>% clearControls()
     
     if (is.null(country)) {
+      # Global view
       leafletProxy("map") %>%
         addPolygons(
           data = polygon_data,
@@ -144,6 +158,7 @@ server <- function(input, output, session) {
         addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
                   title = paste(input$indicator_category), position = "bottomright")
     } else {
+      # Country-specific view
       if (!should_show_points(var)) {
         selected_country_data <- polygon_data %>% filter(COUNTRY == country)
         other_countries_data <- polygon_data %>% filter(COUNTRY != country)
@@ -174,6 +189,7 @@ server <- function(input, output, session) {
           addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
                     title = paste(input$indicator_category), position = "bottomright")
       } else {
+        # Point data for country
         country_data <- df %>% filter(COUNTRY == country)
         if (nrow(country_data) > 0) {
           use_local <- isTRUE(input$use_country_specific_scale)
@@ -203,7 +219,7 @@ server <- function(input, output, session) {
     }
   }
   
-  
+
   
   update_comparison_map_layers_only <- function() {
     print("in")
@@ -315,18 +331,31 @@ server <- function(input, output, session) {
     }
   }
   
-  
+  # Event handlers for country selection
+  observeEvent({
+    input$country_search_graphs_selected
+    input$country_search_graphs
+  }, {
+    country <- input$country_search_graphs_selected %||% input$country_search_graphs
+    if (!is.null(country) && country != "") {
+      select_country(country)
+    }
+  }) 
   
   observeEvent(input$country_search_graphs_selected, {
     select_country(input$country_search_graphs_selected)
+    
+
   })
   
-  observeEvent(input$country_search_selected, {
-    select_country(input$country_search_selected)
-  })
-  
-  observeEvent(input$global_view_button, {
-    select_country(NULL)
+  observeEvent({
+    input$country_search_selected
+    input$country_search
+  }, {
+    country <- input$country_search_selected %||% input$country_search
+    if (!is.null(country) && country != "") {
+      select_country(country)
+    }
   })
   
   observeEvent(input$map_shape_click, {
@@ -352,6 +381,8 @@ server <- function(input, output, session) {
   })
   
   #INTERACTIVE
+
+  # Main map output
   output$map <- renderLeaflet({
     var <- "gov.score.rank"
     
@@ -389,6 +420,7 @@ server <- function(input, output, session) {
     return(result)
   })
   
+<<<<<<< HEAD
     output$map <- renderLeaflet({
     var <- "gov.score.rank"
     
@@ -426,22 +458,25 @@ server <- function(input, output, session) {
     return(result)
   })
   
+=======
+  # Satellite view toggle
+>>>>>>> 8c47f88eedb0614dd4279ab902f8ce4f39bd9ccc
   observeEvent(input$satellite_view, {
     tiles <- if (input$satellite_view) providers$Esri.WorldImagery else providers$Esri.WorldStreetMap
     leafletProxy("map") %>% clearTiles() %>% addProviderTiles(tiles)
   })
   
+  # Update map when variable choices change
   observeEvent({
     input$use_country_specific_scale; input$variable_choice
   }, {
     req(input$indicator_category)
     req(input$variable_choice)
     req(map_initialized())
-    
     update_map_layers_only()
   })
   
-  
+
   
   #COMPARISON
   observeEvent({
@@ -474,6 +509,7 @@ server <- function(input, output, session) {
       country_dataset(NULL)
     }
   })
+
   
   output$countryDisplay <- renderText({
     country <- chosen_country()
@@ -484,75 +520,49 @@ server <- function(input, output, session) {
     }
   })
   
-  output$global_or_country_components <- renderUI({
-    if (input$global_or_country == "global") {
-      create_global_analysis_ui()
-    } else if (input$global_or_country == "country") {
-      create_country_analysis_ui()
-    }
-  })
-  
-  create_global_analysis_ui <- function() {
-    tagList(
-      selectInput("first_indicator_global", "First indicator:", 
-                  choices = global_level_choices, selected = "Gov_effect.sc"),
-      selectInput("second_indicator_global", "Second indicator:", 
-                  choices = global_level_choices, selected = "le.ineq.log.sc")
-    )
-  }
-  
-  create_country_analysis_ui <- function() {
-    country_choices <- c("Distance to Coast (km)" = "distance_to_coast_km", 
-                         "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
-                         "Relative Deprivation Index" = "povmap.grdi.v1.sc",
-                         "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
-    
-    tagList(
-      tags$div(
-        class = "control-group",
-        tags$div(class = "control-title", "Country Search"),
-        tags$div(
-          class = "search-container",
-          tags$i(class = "fas fa-search search-icon"),
-          textInput(
-            "country_search_graphs", 
-            label = NULL,
-            value = "",
-            placeholder = "Search for a country...",
-            width = "100%"
-          ),
-          tags$div(id = "country_suggestions_graphs")
-        )
-      ),
-      selectInput("country_histogram_indicator", "Histogram variable:", 
-                  choices = country_choices, selected = "povmap.grdi.v1.sc"),
-      selectInput("first_indicator", "First indicator:", 
-                  choices = country_choices, selected = "povmap.grdi.v1.sc"),
-      selectInput("second_indicator", "Second indicator:", 
-                  choices = country_choices, selected = "perc.pop.world.coastal.merit.10m.log.sc")
-    )
-  }
-  
+  # Plotting functions
   create_scatter_plot <- function(data, x_col, y_col, choices, title) {
     if (is.null(data) || !(x_col %in% names(data)) || !(y_col %in% names(data))) return()
     if (all(is.na(data[[x_col]])) || all(is.na(data[[y_col]]))) return()
     
-    plot(data[[x_col]], data[[y_col]], main = title,
-         xlab = names(choices)[choices == x_col],
-         ylab = names(choices)[choices == y_col])
+    if (title == "Global") {
+      subtitle = "Each Point Represents a Country"
+      title = paste0(title, ": ", x_col, " vs. ", y_col)
+    } else {
+      subtitle = paste0("Each Point Represents a Point Within ", title)
+      title = paste0(title, ": ", x_col, " vs. ", y_col)
+    }
+    
+    ggplot(data, aes(x = .data[[x_col]], y = .data[[y_col]])) +
+      geom_point()+
+      labs(title = title,
+           subtitle = subtitle,
+           x = names(choices)[choices == x_col],
+           y = names(choices)[choices == y_col]) +
+      theme_bw() +
+      theme(
+        plot.title = element_text(
+          size = 14,
+          hjust = 0.5
+        ),
+        plot.subtitle = element_text(
+          size = 12,
+          hjust = 0.5
+        ),
+        axis.title.x = element_text(
+          size = 10,
+          margin = margin(t = 10)
+        ),
+        axis.title.y = element_text(
+          size = 10,
+          margin = margin(r = 10)
+        )
+      )
+    # 
+    # plot(data[[x_col]], data[[y_col]], main = title,
+    #      xlab = names(choices)[choices == x_col],
+    #      ylab = names(choices)[choices == y_col])
   }
-  
-  output$custom_scatter <- renderPlot({
-    country_choices <- c("Distance to Coast (km)" = "distance_to_coast_km", 
-                         "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
-                         "Relative Deprivation Index" = "povmap.grdi.v1.sc",
-                         "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
-    create_scatter_plot(country_dataset(), input$first_indicator, input$second_indicator, country_choices, chosen_country())
-  })
-  
-  output$global_custom_scatter <- renderPlot({
-    create_scatter_plot(average_country_nogeo, input$first_indicator_global, input$second_indicator_global, global_level_choices, "Global")
-  })
   
   calculate_correlation <- function(data, x_col, y_col) {
     if (is.null(data) || nrow(data) == 0) return("No data available")
@@ -572,6 +582,40 @@ server <- function(input, output, session) {
     paste("Pearson Coefficient (r) =", round(cor_result, 4),
           "\nSpearman Coefficient (rho) =", round(spr_cor_result, 4))
   }
+  
+  # Show global analysis in a modal overlay
+  observeEvent(input$global_scale_button, {
+    showModal(modalDialog(
+      title = "Global Scale Analysis",
+      size = "l",
+      fluidRow(
+        column(6, selectInput("first_indicator_global", "First indicator:", 
+                              choices = global_level_choices, selected = "Gov_effect.sc")),
+        column(6, selectInput("second_indicator_global", "Second indicator:", 
+                              choices = global_level_choices, selected = "le.ineq.log.sc"))
+      ),
+      plotOutput("global_custom_scatter", height = "400px"),
+      verbatimTextOutput("global_correlation"),
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$global_view_button, {
+    select_country(NULL)
+  })
+  
+  # Plotting outputs - only country analysis now, plus global modal
+  output$custom_scatter <- renderPlot({
+    country_choices <- c("Distance to Coast (km)" = "distance_to_coast_km", 
+                         "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                         "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                         "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
+    create_scatter_plot(country_dataset(), input$first_indicator, input$second_indicator, country_choices, chosen_country())
+  })
+  
+  output$global_custom_scatter <- renderPlot({
+    create_scatter_plot(average_country_nogeo, input$first_indicator_global, input$second_indicator_global, global_level_choices, "Global")
+  })
   
   output$correlation <- renderText({
     calculate_correlation(country_dataset(), input$first_indicator, input$second_indicator)
@@ -597,6 +641,35 @@ server <- function(input, output, session) {
                          "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
     
     label <- names(country_choices)[country_choices == chi]
-    hist(col, main = paste0("Histogram of ", label, " for ", chosen_country()), xlab = label)
+    
+    ggplot(data, aes(x= .data[[chi]])) +
+      geom_histogram(bins = 30, fill = "#00539B", color = "white") +
+      labs(title = paste0(label, " for ", chosen_country()),
+           subtitle = paste0("Each Point Is a Point Within ", chosen_country()),
+        x = label, y = "Frequency") +
+      theme_bw()+ 
+      theme(
+        plot.title = element_text(
+          size = 14,
+          hjust = 0.5
+        ),
+        plot.subtitle = element_text(
+          size = 12,
+          hjust = 0.5
+        ),
+        axis.title.x = element_text(
+          size = 10,
+          margin = margin(t = 10)
+        ),
+        axis.title.y = element_text(
+          size = 10,
+          margin = margin(r = 10)
+        )
+      ) 
+    # hist(col, main = paste0("Histogram of ", label, " for ", chosen_country()), xlab = label)
+    
+    
   })
+  
+  
 }

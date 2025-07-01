@@ -112,18 +112,23 @@ ui <- page_sidebar(
       ),
       card(
         card_header("Data Summary"),
-        tags$div(
-          style = "text-align: center;",
-          tags$h4(textOutput("variableNameAndYearOutput")        
-          )
-          
-        ),
+        
         value_box(
-          title = "Hello",
+          title = textOutput("variableNameAndYearOutput"),
           value = textOutput("nd_year_score")
         )
       ),
-      plotOutput("nd_graph")
+      plotOutput("nd_graph"),
+      
+      card(
+        card_header("Data Source"),
+        tags$a(href = "https://gain.nd.edu/our-work/country-index/download-data/",
+               "Notre Dame Global Adaptation Initiative",
+               target = "_blank"),
+        tags$small("Download up to half a million data points for more than 180 UN countries. Data is updated annually, but includes all ND-GAIN indicators across 20+ years. Data is provided as separate CSV files in a single compressed file.",
+                   style = "font-style: italic")
+      )
+      
     )
     ),
     
