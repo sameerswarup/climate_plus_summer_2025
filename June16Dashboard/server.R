@@ -214,8 +214,6 @@ server <- function(input, output, session) {
     }
   }
   
-
-  
   update_comparison_map_layers_only <- function() {
     print("in")
     if (!map_initialized()) return()
@@ -239,7 +237,7 @@ server <- function(input, output, session) {
       clearMarkers() %>% clearShapes() %>% clearControls()
     
     print("2")
-
+    
     if (is.null(country)) {
       print("3")
       
@@ -339,8 +337,6 @@ server <- function(input, output, session) {
   
   observeEvent(input$country_search_graphs_selected, {
     select_country(input$country_search_graphs_selected)
-    
-
   })
   
   observeEvent({
@@ -376,7 +372,6 @@ server <- function(input, output, session) {
   })
   
   #INTERACTIVE
-
   # Main map output
   output$map <- renderLeaflet({
     var <- "gov.score.rank"
@@ -431,8 +426,6 @@ server <- function(input, output, session) {
     update_map_layers_only()
   })
   
-
-  
   #COMPARISON
   observeEvent({
     input$comparison_country_search #; input$variable_choice
@@ -460,7 +453,6 @@ server <- function(input, output, session) {
       country_dataset(NULL)
     }
   })
-
   
   output$countryDisplay <- renderText({
     country <- chosen_country()
@@ -510,18 +502,7 @@ server <- function(input, output, session) {
           margin = margin(r = 10,l = 10)
         )
       )
-    
-    # ggplotly(p) %>%
-    #   layout(title = list(
-    #     text = title,
-    #     font = list(size = 10)  # change font size here
-    #   )) %>%
-    #   config(displayModeBar = "static", modeBarButtonsToAdd = list("fullscreen"))
-    
-    # 
-    # plot(data[[x_col]], data[[y_col]], main = title,
-    #      xlab = names(choices)[choices == x_col],
-    #      ylab = names(choices)[choices == y_col])
+
   }
   
   calculate_correlation <- function(data, x_col, y_col) {
@@ -598,6 +579,7 @@ server <- function(input, output, session) {
       title = "Country Scale Scatterplot",
       size = "l",
       plotOutput("custom_scatter_zoom", height = "400px"),
+      downloadButton("sigma", "Download Plot"),
       verbatimTextOutput("correlation"),
       footer = modalButton("Close")
     ))
@@ -608,6 +590,7 @@ server <- function(input, output, session) {
       title = "Country Scale Histogram",
       size = "l",
       plotOutput("country_histogram_zoom", height = "400px"),
+      downloadButton("sigma", "Download Plot"),
       footer = modalButton("Close")
     ))
   })
@@ -656,7 +639,7 @@ server <- function(input, output, session) {
           margin = margin(r = 10)
         )
       ) 
-    
+
     
   })
   output$country_histogram_zoom <- renderHistogram
@@ -706,5 +689,15 @@ server <- function(input, output, session) {
     clicked_score_country_histogram(click)
   })
   
+  # Download png plots/histograms
   
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste('plot-', Sys.Date(), '.png', sep='')
+    },
+    content = function(con) {
+      write.csv(data, con)
+    }
+  )
+
 }
