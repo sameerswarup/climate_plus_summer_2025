@@ -474,23 +474,29 @@ ui <- fluidPage(
         class = "control-group",
         tags$div(class = "control-title", "Analysis Variables"),
         selectInput("country_histogram_indicator", "Histogram variable:", 
-                    choices = c("Distance to Coast (km)" = "distance_to_coast_km", 
-                                "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                    choices = c("Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
                                 "Relative Deprivation Index" = "povmap.grdi.v1.sc",
                                 "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"), 
                     selected = "povmap.grdi.v1.sc"),
+        tags$small(textOutput("country_histogram_description"),
+                   style = "font-style: italic"),
+        tags$br(),
         selectInput("first_indicator", "First indicator:", 
-                    choices = c("Distance to Coast (km)" = "distance_to_coast_km", 
-                                "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                    choices = c("Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
                                 "Relative Deprivation Index" = "povmap.grdi.v1.sc",
                                 "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"), 
                     selected = "povmap.grdi.v1.sc"),
+        tags$small(textOutput("first_indicator_country_description"),
+                   style = "font-style: italic"),
+        tags$br(),
         selectInput("second_indicator", "Second indicator:", 
-                    choices = c("Distance to Coast (km)" = "distance_to_coast_km", 
-                                "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                    choices = c("Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
                                 "Relative Deprivation Index" = "povmap.grdi.v1.sc",
                                 "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"), 
-                    selected = "perc.pop.world.coastal.merit.10m.log.sc")
+                    selected = "perc.pop.world.coastal.merit.10m.log.sc"),
+        tags$small(textOutput("second_indicator_country_description"),
+                   style = "font-style: italic")
+        
       ),
       
       tags$div(
@@ -499,10 +505,31 @@ ui <- fluidPage(
         tags$div(class = "plot-container",
                  plotOutput("country_histogram", height = "200px",
                             width = "95%")),
+        actionButton(
+          "histogram_zoom",
+          tags$div(
+            style = "display: flex; align-items: center; gap: 6px; justify-content: center;",
+            tags$i(class = "fas fa-search-plus", style = "font-size: 12px;"),
+            "Display Full Histogram"
+          ),
+          style = "width: 100%;",
+          class = "btn btn-secondary"
+        ),
         tags$div(class = "plot-container",
                  plotOutput("custom_scatter", height = "300px",
                             width = "95%")),
-        verbatimTextOutput("correlation")
+        verbatimTextOutput("correlation"),
+        actionButton(
+          "scatter_zoom",
+          tags$div(
+            style = "display: flex; align-items: center; gap: 6px; justify-content: center;",
+            tags$i(class = "fas fa-search-plus", style = "font-size: 12px;"),
+            "Display Full Graph"
+          ),
+          style = "width: 100%;",
+          class = "btn btn-secondary"
+        )
+        
       )
     ),
     

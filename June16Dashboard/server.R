@@ -110,11 +110,6 @@ server <- function(input, output, session) {
     }
   }
   
-  observe({
-    if (is.null(selected_country())) {
-      select_country("Bangladesh")  # or any default country
-    }
-  })
   
   update_map_layers_only <- function() {
     if (!map_initialized()) return()
@@ -333,11 +328,9 @@ server <- function(input, output, session) {
     if (all(is.na(data[[x_col]])) || all(is.na(data[[y_col]]))) return()
     
     if (title == "Global") {
-      subtitle = "Each Point Represents a Country"
-      title = paste0(title, ": ", x_col, " vs. ", y_col)
+      subtitle = paste0(names(choices)[choices == x_col], " vs. ", names(choices)[choices == y_col])
     } else {
-      subtitle = paste0("Each Point Represents a Point Within ", title)
-      title = paste0(title, ": ", x_col, " vs. ", y_col)
+      subtitle = paste0(names(choices)[choices == x_col], " vs. ", names(choices)[choices == y_col])
     }
     
     ggplot(data, aes(x = .data[[x_col]], y = .data[[y_col]])) +
@@ -346,9 +339,10 @@ server <- function(input, output, session) {
            subtitle = subtitle,
            x = names(choices)[choices == x_col],
            y = names(choices)[choices == y_col]) +
-      theme_bw() +
+      theme_hc() +
       theme(
         plot.title = element_text(
+          face = "bold",
           size = 14,
           hjust = 0.5
         ),
@@ -357,14 +351,24 @@ server <- function(input, output, session) {
           hjust = 0.5
         ),
         axis.title.x = element_text(
+          face = "bold",
           size = 10,
-          margin = margin(t = 10)
+          margin = margin(t = 10, b = 10)
         ),
         axis.title.y = element_text(
+          face = "bold",
           size = 10,
-          margin = margin(r = 10)
+          margin = margin(r = 10,l = 10)
         )
       )
+    
+    # ggplotly(p) %>%
+    #   layout(title = list(
+    #     text = title,
+    #     font = list(size = 10)  # change font size here
+    #   )) %>%
+    #   config(displayModeBar = "static", modeBarButtonsToAdd = list("fullscreen"))
+    
     # 
     # plot(data[[x_col]], data[[y_col]], main = title,
     #      xlab = names(choices)[choices == x_col],
@@ -432,6 +436,25 @@ server <- function(input, output, session) {
     calculate_correlation(average_country_nogeo, input$first_indicator_global, input$second_indicator_global)
   })
   
+  observeEvent(input$scatter_zoom, {
+    showModal(modalDialog(
+      title = "Country Scale Scatterplot",
+      size = "l",
+      plotOutput("custom_scatter", height = "400px"),
+      verbatimTextOutput("correlation"),
+      footer = modalButton("Close")
+    ))
+  })
+  
+  observeEvent(input$histogram_zoom, {
+    showModal(modalDialog(
+      title = "Country Scale Histogram",
+      size = "l",
+      plotOutput("country_histogram", height = "400px"),
+      footer = modalButton("Close")
+    ))
+  })
+  
   output$country_histogram <- renderPlot({
     data <- country_dataset()
     if (is.null(data) || nrow(data) == 0) return() 
@@ -454,9 +477,10 @@ server <- function(input, output, session) {
       labs(title = paste0(label, " for ", chosen_country()),
            subtitle = paste0("Each Point Is a Point Within ", chosen_country()),
         x = label, y = "Frequency") +
-      theme_bw()+ 
+      theme_hc()+ 
       theme(
         plot.title = element_text(
+          face = "bold",
           size = 14,
           hjust = 0.5
         ),
@@ -465,17 +489,62 @@ server <- function(input, output, session) {
           hjust = 0.5
         ),
         axis.title.x = element_text(
+          face = "bold",
           size = 10,
           margin = margin(t = 10)
         ),
         axis.title.y = element_text(
+          face = "bold",
           size = 10,
           margin = margin(r = 10)
         )
       ) 
-    # hist(col, main = paste0("Histogram of ", label, " for ", chosen_country()), xlab = label)
+
     
-    
+  })
+  
+  # Descriptions of indicators (inequity)
+  
+  clicked_scores <- list(
+    first_global = reactiveVal(NULL),
+    second_global = reactiveVal(NULL),
+    first_country = reactiveVal(NULL),
+    second_country = reactiveVal(NULL)
+  )
+  clicked_score_country_histogram = reactiveVal(NULL)
+  
+  
+  observe_map <- list(
+    first_indicator_global = "first_global",
+    second_indicator_global = "second_global",
+    first_indicator = "first_country",
+    second_indicator = "second_country"
+  )
+  
+  lapply(names(observe_map), function(id) {
+    observeEvent(input[[id]], {
+      clicked_scores[[observe_map[[id]]]](input[[id]])
+    })
+  })
+  
+  description_output <- function(score_reactive) {
+    renderText({
+      req(score_reactive())
+      inequity_data_descriptions %>%
+        filter(variable_name == score_reactive()) %>%
+        pull(description)
+    })
+  }
+  
+  output$first_indicator_country_description <- description_output(clicked_scores$first_country)
+  output$second_indicator_country_description <- description_output(clicked_scores$second_country)
+  output$first_indicator_global_description <- description_output(clicked_scores$first_global)
+  output$second_indicator_global_description <- description_output(clicked_scores$second_global)
+  output$country_histogram_description <- description_output(clicked_score_country_histogram)
+  
+  observeEvent(input$country_histogram_indicator, {
+    click <- input$country_histogram_indicator
+    clicked_score_country_histogram(click)
   })
   
   
