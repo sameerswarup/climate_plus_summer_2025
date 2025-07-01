@@ -219,8 +219,6 @@ server <- function(input, output, session) {
     }
   }
   
-
-  
   update_comparison_map_layers_only <- function() {
     print("in")
     if (!map_initialized()) return()
@@ -244,7 +242,7 @@ server <- function(input, output, session) {
       clearMarkers() %>% clearShapes() %>% clearControls()
     
     print("2")
-
+    
     if (is.null(country)) {
       print("3")
       
@@ -344,8 +342,6 @@ server <- function(input, output, session) {
   
   observeEvent(input$country_search_graphs_selected, {
     select_country(input$country_search_graphs_selected)
-    
-
   })
   
   observeEvent({
@@ -381,7 +377,6 @@ server <- function(input, output, session) {
   })
   
   #INTERACTIVE
-
   # Main map output
   output$map <- renderLeaflet({
     var <- "gov.score.rank"
@@ -420,47 +415,7 @@ server <- function(input, output, session) {
     return(result)
   })
   
-<<<<<<< HEAD
-    output$map <- renderLeaflet({
-    var <- "gov.score.rank"
-    
-    if (var %in% composite_arith_list) {
-      global_data <- combined_scores_global
-      polygon_data <- combined_scores_global_polygons
-    } else {
-      global_data <- average_country_nogeo
-      polygon_data <- average_country_polygons
-    }
-    
-    pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
-    map <- create_base_map(FALSE)
-    
-    result <- map %>%
-      addPolygons(
-        data = polygon_data,
-        fillColor = ~pal(get(var)), fillOpacity = 0.7, color = ~pal(get(var)),
-        weight = 2, opacity = 0.9,
-        highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
-        layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", round(get(var), 3)), group = "polygons"
-      ) %>%
-      {if (should_show_points(var)) {
-        addCircleMarkers(., 
-                         data = global_data, radius = 6, fillColor = ~pal(get(var)), fillOpacity = 0.9,
-                         stroke = TRUE, color = "white", weight = 1,
-                         label = ~paste0(COUNTRY, ": ", round(get(var), 3)),
-                         layerId = ~paste0("marker_", COUNTRY), group = "markers"
-        )
-      } else . } %>%
-      addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
-                title = "Weak Governance", position = "bottomright")
-    
-    map_initialized(TRUE)
-    return(result)
-  })
-  
-=======
   # Satellite view toggle
->>>>>>> 8c47f88eedb0614dd4279ab902f8ce4f39bd9ccc
   observeEvent(input$satellite_view, {
     tiles <- if (input$satellite_view) providers$Esri.WorldImagery else providers$Esri.WorldStreetMap
     leafletProxy("map") %>% clearTiles() %>% addProviderTiles(tiles)
@@ -476,8 +431,6 @@ server <- function(input, output, session) {
     update_map_layers_only()
   })
   
-
-  
   #COMPARISON
   observeEvent({
     input$comparison_country_search #; input$variable_choice
@@ -488,10 +441,6 @@ server <- function(input, output, session) {
     
     update_comparison_map_layers_only()
   })
-  
-  
-  
-  
   
   observeEvent(input$country_select, {
     if (!is.null(input$country_select)) {
@@ -509,7 +458,6 @@ server <- function(input, output, session) {
       country_dataset(NULL)
     }
   })
-
   
   output$countryDisplay <- renderText({
     country <- chosen_country()
@@ -558,10 +506,6 @@ server <- function(input, output, session) {
           margin = margin(r = 10)
         )
       )
-    # 
-    # plot(data[[x_col]], data[[y_col]], main = title,
-    #      xlab = names(choices)[choices == x_col],
-    #      ylab = names(choices)[choices == y_col])
   }
   
   calculate_correlation <- function(data, x_col, y_col) {
@@ -646,7 +590,7 @@ server <- function(input, output, session) {
       geom_histogram(bins = 30, fill = "#00539B", color = "white") +
       labs(title = paste0(label, " for ", chosen_country()),
            subtitle = paste0("Each Point Is a Point Within ", chosen_country()),
-        x = label, y = "Frequency") +
+           x = label, y = "Frequency") +
       theme_bw()+ 
       theme(
         plot.title = element_text(
@@ -666,10 +610,5 @@ server <- function(input, output, session) {
           margin = margin(r = 10)
         )
       ) 
-    # hist(col, main = paste0("Histogram of ", label, " for ", chosen_country()), xlab = label)
-    
-    
   })
-  
-  
 }
