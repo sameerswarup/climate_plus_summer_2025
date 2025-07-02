@@ -36,7 +36,7 @@ ui <- fluidPage(
         position: absolute;
         top: 20px;
         left: 20px;
-        width: 400px;
+        width: 340px;
         max-height: calc(100vh - 40px);
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
