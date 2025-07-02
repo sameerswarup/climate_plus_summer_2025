@@ -284,11 +284,11 @@ server <- function(input, output, session) {
     
     # Create legend title based on whether composite score is selected
     legend_title <- if (var %in% composite_arith_list) {
-      paste(input$indicator_category)
+      paste(input$map_1_indicator_category)
     } else {
       # Find the variable name for display - show ONLY the variable name
-      var_display_name <- names(indicator_choice_list[[input$indicator_category]])[
-        indicator_choice_list[[input$indicator_category]] == var
+      var_display_name <- names(indicator_choice_list[[input$map_1_indicator_category]])[
+        indicator_choice_list[[input$map_1_indicator_category]] == var
       ]
       var_display_name
     }
@@ -380,12 +380,14 @@ server <- function(input, output, session) {
     zoom_to_country("map1", selected_country())
   }
   
+  
+  
   update_comparison_map_2_layers_only <- function() {
     if (!map_initialized()) return()
     
-    if (is.null(input$variable_choice) || is.null(input$indicator_category)) return()
+    if (is.null(input$map_2_variable_choice) || is.null(input$map_2_indicator_category)) return()
     
-    var <- input$variable_choice
+    var <- input$map_2_variable_choice
     country <- selected_country()
     
     if (var %in% composite_arith_list) {
@@ -401,11 +403,11 @@ server <- function(input, output, session) {
     
     # Create legend title based on whether composite score is selected
     legend_title <- if (var %in% composite_arith_list) {
-      paste(input$indicator_category)
+      paste(input$map_2_indicator_category)
     } else {
       # Find the variable name for display - show ONLY the variable name
-      var_display_name <- names(indicator_choice_list[[input$indicator_category]])[
-        indicator_choice_list[[input$indicator_category]] == var
+      var_display_name <- names(indicator_choice_list[[input$map_2_indicator_category]])[
+        indicator_choice_list[[input$map_2_indicator_category]] == var
       ]
       var_display_name
     }
