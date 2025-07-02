@@ -42,6 +42,7 @@ server <- function(input, output, session) {
   
   create_base_map <- function(satellite = FALSE) {
     map <- leaflet(options = leafletOptions(
+      zoomControl = FALSE,
       maxBounds = list(list(-90, -180), list(90, 180)),
       maxBoundsViscosity = 1.0,
       minZoom = 2,
@@ -49,9 +50,17 @@ server <- function(input, output, session) {
       worldCopyJump = FALSE
     ))
     if (satellite) {
-      map %>% addProviderTiles(providers$Esri.WorldImagery)
+      map %>% addProviderTiles(providers$Esri.WorldImagery) %>% htmlwidgets::onRender("
+      function(el, x) {
+        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
+      }
+    ") 
     } else {
-      map %>% addProviderTiles(providers$Esri.WorldStreetMap)
+      map %>% addProviderTiles(providers$Esri.WorldStreetMap) %>% htmlwidgets::onRender("
+      function(el, x) {
+        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
+      }
+    ") 
     }
   }
   
@@ -62,14 +71,22 @@ server <- function(input, output, session) {
       updateTextInput(session, "country_search", value = "")
       updateTextInput(session, "country_search_graphs", value = "")
       zoom_to_country("map", NULL)
+      #zoom_to_country("map1", NULL)
+      #zoom_to_country("map2", NULL)
     } else {
       selected_country(country)
       country_dataset(filter(df, COUNTRY == country))
       updateTextInput(session, "country_search", value = country)
       updateTextInput(session, "country_search_graphs", value = country)
       zoom_to_country("map", country)
+      #zoom_to_country("map1", country)
+      #zoom_to_country("map2", country)
+      zoom_to_country("map2", country)
+      print("zooming")
     }
     update_map_layers_only()
+    #update_comparison_map_1_layers_only()
+    #update_comparison_map_2_layers_only()
   }
   
   update_map_layers_only <- function() {
@@ -225,13 +242,18 @@ server <- function(input, output, session) {
     select_country(NULL)
   })
   
+  
+  
+  
   #COMPARISON MAPS
   update_comparison_map_1_layers_only <- function() {
+    
     if (!map_initialized()) return()
     
-    if (is.null(input$variable_choice) || is.null(input$indicator_category)) return()
+    if (is.null(input$map_1_variable_choice) || is.null(input$map_1_indicator_category)) return()
     
-    var <- input$variable_choice
+    var <- input$map_1_variable_choice
+    
     country <- selected_country()
     
     if (var %in% composite_arith_list) {
@@ -268,7 +290,7 @@ server <- function(input, output, session) {
           )
         } else . } %>%
         addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
-                  title = paste(input$indicator_category), position = "bottomright")
+                  title = paste(input$map_1_indicator_category), position = "bottomright")
     } else {
       if (!should_show_points(var)) {
         selected_country_data <- polygon_data %>% filter(COUNTRY == country)
@@ -298,7 +320,7 @@ server <- function(input, output, session) {
         
         leafletProxy("map1") %>%
           addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
-                    title = paste(input$indicator_category), position = "bottomright")
+                    title = paste(input$map_1_indicator_category), position = "bottomright")
       } else {
         country_data <- df %>% filter(COUNTRY == country)
         if (nrow(country_data) > 0) {
@@ -327,6 +349,8 @@ server <- function(input, output, session) {
         }
       }
     }
+    
+    zoom_to_country("map1", selected_country())
   }
   
   update_comparison_map_2_layers_only <- function() {
@@ -430,28 +454,55 @@ server <- function(input, output, session) {
         }
       }
     }
+    
+    zoom_to_country("map2", selected_country())
+    
   }
+  
+  
+  #COMPARISON VARIABLE SELECTION
+  observeEvent(input$map_1_indicator_category, {
+    updateSelectInput(session, "map_1_variable_choice", choices = indicator_choice_list[[input$map_1_indicator_category]])
+  })
+  
+  observeEvent(input$map_2_indicator_category, {
+    updateSelectInput(session, "map_2_variable_choice", choices = indicator_choice_list[[input$map_2_indicator_category]])
+  })
+  
   
   #COMPARISON MAP OUTPUTS
   output$map1 <- renderLeaflet({
     tiles <- providers$Esri.WorldStreetMap
-    leaflet() %>%
-      addProviderTiles(tiles)  
+    leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+      addProviderTiles(tiles) %>%
+      htmlwidgets::onRender("
+      function(el, x) {
+        this.attributionControl.setPosition('topright');
+        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
+      }
+    ") 
   })
   
   output$map2 <- renderLeaflet({
     tiles <- providers$Esri.WorldStreetMap
-    leaflet() %>%
-      addProviderTiles(tiles)  
+    leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+      addProviderTiles(tiles) %>%
+      htmlwidgets::onRender("
+      function(el, x) {
+        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
+      }
+    ") 
   })
   
   #COMPARISON OBSERVER
   observeEvent({
-    input$comparison_country_search
+    input$comparison_country_search; input$map_1_indicator_category; input$map_2_indicator_category; input$map_1_variable_choice; input$map_2_variable_choice
   }, {
-    req(input$indicator_category)
-    req(input$variable_choice)
+    req(input$map_1_indicator_category)
+    req(input$map_1_variable_choice)
     req(map_initialized())
+    
+    selected_country(input$comparison_country_search)
     
     update_comparison_map_1_layers_only()
     update_comparison_map_2_layers_only()
