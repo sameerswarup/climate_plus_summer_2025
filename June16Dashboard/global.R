@@ -10,6 +10,7 @@ library(rnaturalearth)
 library(shinyjs)
 library(ggplot2)
 library(ggthemes)
+library(plotly)
 
 # Load the main datasets
 df <- readRDS("data/inequity_filtered5k.rds") %>%
@@ -63,3 +64,5 @@ country_centroids <- country_centroids_with_data %>%
   bind_cols(COUNTRY = country_centroids_with_data$COUNTRY) %>%
   select(COUNTRY, X, Y) %>%
   filter(!is.na(X) & !is.na(Y) & is.finite(X) & is.finite(Y))
+
+inequity_data_descriptions <- read.csv("data/inequity_data_descriptions.csv")

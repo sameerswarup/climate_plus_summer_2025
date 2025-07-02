@@ -933,77 +933,46 @@ server <- function(input, output, session) {
     }
   }, deleteFile = FALSE)
   
-  # Data Descriptions
-  clicked_score_first_global <- reactiveVal(NULL)
-  clicked_score_second_global <- reactiveVal(NULL)
-  clicked_score_first_country <- reactiveVal(NULL)
-  clicked_score_second_country <- reactiveVal(NULL)
-  clicked_score_country_histogram <- reactiveVal(NULL)
+  clicked_scores <- list(
+    first_global = reactiveVal(NULL),
+    second_global = reactiveVal(NULL),
+    first_country = reactiveVal(NULL),
+    second_country = reactiveVal(NULL)
+  )
   
-  observeEvent(input$second_indicator_global, {
-    click <- input$second_indicator_global
-    clicked_score_second_global(click)
+  observe_map <- list(
+    first_indicator_global = "first_global",
+    second_indicator_global = "second_global",
+    first_indicator = "first_country",
+    second_indicator = "second_country"
+  )
+  
+  lapply(names(observe_map), function(id) {
+    observeEvent(input[[id]], {
+      clicked_scores[[observe_map[[id]]]](input[[id]])
+    })
   })
   
-  observeEvent(input$first_indicator_global, {
-    click <- input$first_indicator_global
-    clicked_score_first_global(click)
-  })
+  description_output <- function(score_reactive) {
+    renderText({
+      req(score_reactive())
+      inequity_data_descriptions %>%
+        filter(variable_name == score_reactive()) %>%
+        pull(description)
+    })
+  }
   
-  observeEvent(input$first_indicator, {
-    click <- input$first_indicator
-    clicked_score_first_country(click)
-  })
-  
-  observeEvent(input$second_indicator, {
-    click <- input$second_indicator
-    clicked_score_second_country(click)
-  })
-  
-  output$first_indicator_country_description <- renderText({
-    req(clicked_score_first_country())
-    descriptions <- inequity_data_descriptions %>%
-      filter(variable_name == clicked_score_first_country()) %>%
-      pull(description)
-    return(descriptions)
-  })
-  
-  output$second_indicator_country_description <- renderText({
-    req(clicked_score_second_country())
-    descriptions <- inequity_data_descriptions %>%
-      filter(variable_name == clicked_score_second_country()) %>%
-      pull(description)
-    return(descriptions)
-  })
-  
-  output$first_indicator_global_description <- renderText({
-    req(clicked_score_first_global())
-    descriptions <- inequity_data_descriptions %>%
-      filter(variable_name == clicked_score_first_global()) %>%
-      pull(description)
-    return(descriptions)
-  })
-  
-  output$second_indicator_global_description <- renderText({
-    req(clicked_score_second_global())
-    descriptions <- inequity_data_descriptions %>%
-      filter(variable_name == clicked_score_second_global()) %>%
-      pull(description)
-    return(descriptions)
-  })
+  output$first_indicator_country_description <- description_output(first_country())
+  output$second_indicator_country_description <- description_output(second_country())
+  output$first_indicator_global_description <- description_output(first_global())
+  output$second_indicator_global_description <- description_output(second_global())
+  output$country_histogram_description <- description_output(clicked_score_country_histogram())
   
   observeEvent(input$country_histogram_indicator, {
     click <- input$country_histogram_indicator
     clicked_score_country_histogram(click)
   })
   
-  output$country_histogram_indicator_description <- renderText({
-    req(clicked_score_country_histogram())
-    descriptions <- inequity_data_descriptions %>%
-      filter(variable_name == clicked_score_country_histogram()) %>%
-      pull(description)
-    return(descriptions)
-  })
   
   # Data+ logo
   output$dataplus_logo <- renderImage({
