@@ -115,7 +115,7 @@ update_comparison_map_1_layers_only <- function() {
     }
   }
   
-  zoom_to_country("map1", selected_country())
+  zoom_to_country("map1", selected_country(), 5)
 }
 
 
@@ -234,7 +234,7 @@ update_comparison_map_2_layers_only <- function() {
     }
   }
   
-  zoom_to_country("map2", selected_country())
+  zoom_to_country("map2", selected_country(), 5)
   
 }
 
@@ -284,5 +284,33 @@ observeEvent({
   selected_country(input$comparison_country_search)
   
   update_comparison_map_1_layers_only()
+  update_comparison_map_2_layers_only()
+})
+
+
+
+
+
+
+observeEvent(input$map1_shape_click, {
+  select_country(input$map1_shape_click$id)
+  update_comparison_map_1_layers_only()
+})
+
+observeEvent(input$map1_marker_click, {
+  clicked_country <- gsub("^marker_", "", input$map1_marker_click$id)
+  select_country(clicked_country)
+  update_comparison_map_1_layers_only()
+})
+
+
+observeEvent(input$map2_shape_click, {
+  select_country(input$map2_shape_click$id)
+  update_comparison_map_2_layers_only()
+})
+
+observeEvent(input$map2_marker_click, {
+  clicked_country <- gsub("^marker_", "", input$map2_marker_click$id)
+  select_country(clicked_country)
   update_comparison_map_2_layers_only()
 })

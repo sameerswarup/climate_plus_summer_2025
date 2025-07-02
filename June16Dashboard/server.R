@@ -18,12 +18,12 @@ server <- function(input, output, session) {
     !is.null(selected_country()) && var %in% socio_ecological_vars
   }
   
-  zoom_to_country <- function(map_id, country) {
+  zoom_to_country <- function(map_id, country, zoom_val = 5) {
     coords <- if (is.null(country) || country == "Global (Default)") {
       list(X = 0, Y = 20, zoom = 2)
     } else {
       zoom_coords <- country_centroids %>% filter(COUNTRY == country) %>% select(X, Y) %>% as.list()
-      if (length(zoom_coords$X) > 0) c(zoom_coords, zoom = 5) else list(X = 0, Y = 20, zoom = 2)
+      if (length(zoom_coords$X) > 0) c(zoom_coords, zoom = zoom_val) else list(X = 0, Y = 20, zoom = 2)
     }
     leafletProxy(map_id) %>% setView(lng = coords$X, lat = coords$Y, zoom = coords$zoom)
   }
@@ -59,22 +59,14 @@ server <- function(input, output, session) {
       updateTextInput(session, "country_search", value = "")
       updateTextInput(session, "country_search_graphs", value = "")
       zoom_to_country("map", NULL)
-      #zoom_to_country("map1", NULL)
-      #zoom_to_country("map2", NULL)
     } else {
       selected_country(country)
       country_dataset(filter(df, COUNTRY == country))
       updateTextInput(session, "country_search", value = country)
       updateTextInput(session, "country_search_graphs", value = country)
       zoom_to_country("map", country)
-      #zoom_to_country("map1", country)
-      #zoom_to_country("map2", country)
-      zoom_to_country("map2", country)
-      print("zooming")
     }
     update_map_layers_only()
-    #update_comparison_map_1_layers_only()
-    #update_comparison_map_2_layers_only()
   }
   
   update_map_layers_only <- function() {
