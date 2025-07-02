@@ -21,6 +21,7 @@ server <- function(input, output, session) {
   countryND <- reactiveVal(NULL)
   varND <- reactiveVal(NULL)
   year <- reactiveVal(NULL)
+  world_polygons <- reactiveVal(world_sf)
   
   # Data type selector (second level dropdown)
   output$data_type_selector <- renderUI({
@@ -302,16 +303,30 @@ server <- function(input, output, session) {
       "Units: ", metadata$unit
     )
     
-    leafletProxy("climate_map") %>%
+    map_proxy <- leafletProxy("climate_map") %>%
       clearImages() %>%
       clearControls() %>%
+      clearShapes() %>%
       addRasterImage(
         r, 
         colors = pal, 
-        opacity = if (input$climate_variable == "Heating Degree Days") 0.4 else 0.8,
+        opacity = 0.8,
         project = TRUE,
         group = "raster"
-      ) %>%
+      )
+    
+      if (input$climate_variable == "Heating Degree Days") {
+        map_proxy <- map_proxy %>%
+          addPolygons(
+            data = world_polygons(),
+            color = "black",
+            weight = 1,
+            fill = FALSE,
+            opacity = 1
+          )
+      }
+      
+      map_proxy %>%
       addLegend(
         position = "bottomright",
         pal = pal, 
