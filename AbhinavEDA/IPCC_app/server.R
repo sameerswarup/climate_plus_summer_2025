@@ -133,6 +133,30 @@ server <- function(input, output, session) {
     )
   })
   
+  #Click Reaction
+  output$click_info <- renderText({
+    info <- clicked_point()
+    if (is.null(info)) return("Click on the map to see details.")
+    
+    variable_label <- if (!is.null(current_metadata())) {
+      current_metadata()$description
+    } else {
+      "Value"
+    }
+    
+    val_text <- if (!is.null(info$value) && !is.na(info$value)) {
+      round(info$value, 3)
+    } else {
+      "NA"
+    }
+    
+    paste0(
+      "Latitude: ", round(info$lat, 5), "\n",
+      "Longitude: ", round(info$lng, 5), "\n",
+      variable_label, ": ", val_text
+    )
+  })
+  
   # Initial blank map with world bounds restriction
   output$climate_map <- renderLeaflet({
     leaflet(options = leafletOptions(
@@ -254,17 +278,28 @@ server <- function(input, output, session) {
     original_values <- values(original_raster(), na.rm = TRUE)
     color_range <- range(original_values, na.rm = TRUE)
     
-    pal <- colorNumeric(
-      palette = metadata$color_palette, 
-      domain = color_range,
-      na.color = "transparent"
-    )
+    if (input$climate_variable == "Heating Degree Days") {
+      # For Heating Degree Days ONLY, bake in transparency to the color scale itself
+      pal_colors <- viridisLite::viridis(256, alpha = 0.4)
+      pal <- colorNumeric(
+        palette = pal_colors,
+        domain = color_range,
+        na.color = "transparent"
+      )
+    } else {
+      # All other variables use normal palette (no alpha)
+      pal <- colorNumeric(
+        palette = metadata$color_palette,
+        domain = color_range,
+        na.color = "transparent"
+      )
+    }
     
     legend_title <- paste0(
-      input$climate_variable, "<br>",
-      input$data_type, "<br>",
-      input$time_period, "<br>",
-      "(", metadata$unit, ")"
+      "Variable: ", input$climate_variable, "<br>",
+      "Type: ", input$data_type, "<br>",
+      "Term: ", input$time_period, "<br>",
+      "Units: ", metadata$unit
     )
     
     leafletProxy("climate_map") %>%
@@ -273,7 +308,7 @@ server <- function(input, output, session) {
       addRasterImage(
         r, 
         colors = pal, 
-        opacity = 0.8,
+        opacity = if (input$climate_variable == "Heating Degree Days") 0.4 else 0.8,
         project = TRUE,
         group = "raster"
       ) %>%
@@ -291,6 +326,48 @@ server <- function(input, output, session) {
         lat2 = ymax(ext(r))
       )
   })
+  
+  # --- NEW CODE START ---
+  observeEvent(input$climate_map_click, {
+    click <- input$climate_map_click
+    if (is.null(click)) return()
+    
+    lat <- click$lat
+    lng <- click$lng
+    
+    val <- NULL
+    if (!is.null(original_raster())) {
+      val_extracted <- terra::extract(original_raster(), matrix(c(lng, lat), ncol = 2))
+      print(val_extracted)  # optional for debugging
+      if (!is.null(val_extracted) && nrow(val_extracted) >= 1) {
+        val <- val_extracted[1, ncol(val_extracted)]
+      }
+    }
+    
+    # Store in reactive for UI if needed
+    clicked_point(list(lat = lat, lng = lng, value = val))
+    
+    # Get variable description for label
+    variable_label <- if (!is.null(current_metadata())) {
+      current_metadata()$description
+    } else {
+      "Value"
+    }
+    
+    # Create text for popup
+    popup_text <- paste0(
+      "<strong>Latitude:</strong> ", round(lat, 5), "<br>",
+      "<strong>Longitude:</strong> ", round(lng, 5), "<br>",
+      "<strong>", variable_label, ":</strong> ", 
+      ifelse(is.na(val), "NA", round(val, 3))
+    )
+    
+    # Add popup to map
+    leafletProxy("climate_map") %>%
+      clearPopups() %>%
+      addPopups(lng = lng, lat = lat, popup = popup_text)
+  })
+  # --- NEW CODE END ---
   
   # Reset filters
   observeEvent(input$reset_filters, {
@@ -474,6 +551,82 @@ server <- function(input, output, session) {
   
   output$nd_year_score <- renderText({
     return(nd_year_score())
+  })
+  
+  output$histogram_plot <- renderPlotly({
+    req(current_raster(), input$climate_variable)
+    r <- current_raster()
+    vals <- as.vector(values(r, na.rm = TRUE))
+    vals <- vals[!is.na(vals)]
+    req(length(vals) > 0)
+    
+    df <- data.frame(Value = vals)
+    
+    p <- ggplot(df, aes(x = Value)) +
+      geom_histogram(fill = "steelblue", color = "white", bins = 30, alpha = 0.8) +
+      labs(
+        title = paste("Histogram of", input$climate_variable),
+        x = "Value",
+        y = "Count"
+      ) +
+      theme_fivethirtyeight() +
+      theme(
+        axis.title.x = element_text(
+          margin = margin(t = 15),
+          face = "bold",
+          family = "Arial"
+        ),
+        axis.title.y = element_text(
+          margin = margin(r = 15),
+          face = "bold",
+          family = "Arial"
+        ),
+        plot.title = element_text(
+          size = 11,
+          hjust = 0.5,
+          family = "Arial"
+        ),
+        text = element_text(
+          family = "Arial"
+        )
+      )
+    
+    ggplotly(p)
+  })
+  
+  output$boxplot_plot <- renderPlotly({
+    req(current_raster(), input$climate_variable)
+    r <- current_raster()
+    vals <- as.vector(values(r, na.rm = TRUE))
+    vals <- vals[!is.na(vals)]
+    req(length(vals) > 0)
+    
+    df <- data.frame(Value = vals)
+    
+    p <- ggplot(df, aes(y = Value)) +
+      geom_boxplot(fill = "steelblue", color = "black", alpha = 0.8) +
+      labs(
+        title = paste("Boxplot of", input$climate_variable),
+        y = "Value"
+      ) +
+      theme_fivethirtyeight() +
+      theme(
+        axis.title.y = element_text(
+          margin = margin(r = 15),
+          face = "bold",
+          family = "Arial"
+        ),
+        plot.title = element_text(
+          size = 11,
+          hjust = 0.5,
+          family = "Arial"
+        ),
+        text = element_text(
+          family = "Arial"
+        )
+      )
+    
+    ggplotly(p)
   })
   
 }
