@@ -25,8 +25,12 @@ server <- function(input, output, session) {
   )
   
   should_show_points <- function(var) {
-    # No points for any variables - all will use polygon shading only
-    FALSE
+    # Show points for Socio-Ecological Vulnerability individual indicators when a country is selected
+    socio_ecological_vars <- c("mean.count.grav.V2.log.sc", "povmap.grdi.v1.sc", 
+                               "perc.pop.world.coastal.merit.10m.log.sc", "Nutritional.dependence.sc")
+    
+    # Only show points if: 1) a country is selected AND 2) it's a socio-ecological variable (not composite)
+    !is.null(selected_country()) && var %in% socio_ecological_vars
   }
   
   zoom_to_country <- function(map_id, country) {
@@ -154,7 +158,8 @@ server <- function(input, output, session) {
         
         leafletProxy("map") %>%
           addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
-                    title = legend_title, position = "bottomright")
+                    title = paste0("<b>", country, "</b><br>", legend_title),
+                    position = "bottomright")
       } else {
         # Point data for country
         country_data <- df %>% filter(COUNTRY == country)
@@ -179,7 +184,7 @@ server <- function(input, output, session) {
               label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
             ) %>%
             addLegend(pal = pal_country, values = domain_data, opacity = 0.9,
-                      title = paste0("<b>", country, "</b><br>", legend_title, if (use_local) "<br><i>(Local Scale)</i>" else "<br><i>(Global Scale)</i>"),
+                      title = paste0("<b>", country, "</b><br>", legend_title, "<br><i>(", if (use_local) "Local" else "Global", ")</i>"),
                       position = "bottomright")
         }
       }
@@ -319,7 +324,8 @@ server <- function(input, output, session) {
         
         leafletProxy("map1") %>%
           addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
-                    title = legend_title, position = "bottomright")
+                    title = paste0("<b>", country, "</b><br>", legend_title),
+                    position = "bottomright")
       } else {
         country_data <- df %>% filter(COUNTRY == country)
         if (nrow(country_data) > 0) {
@@ -343,7 +349,7 @@ server <- function(input, output, session) {
               label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
             ) %>%
             addLegend(pal = pal_country, values = domain_data, opacity = 0.9,
-                      title = paste0("<b>", country, "</b><br>", legend_title, if (use_local) "<br><i>(Local Scale)</i>" else "<br><i>(Global Scale)</i>"),
+                      title = paste0("<b>", country, "</b><br>", legend_title, "<br><i>(", if (use_local) "Local" else "Global", ")</i>"),
                       position = "bottomright")
         }
       }
@@ -433,7 +439,8 @@ server <- function(input, output, session) {
         
         leafletProxy("map2") %>%
           addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
-                    title = legend_title, position = "bottomright")
+                    title = paste0("<b>", country, "</b><br>", legend_title),
+                    position = "bottomright")
       } else {
         country_data <- df %>% filter(COUNTRY == country)
         if (nrow(country_data) > 0) {
@@ -457,7 +464,7 @@ server <- function(input, output, session) {
               label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
             ) %>%
             addLegend(pal = pal_country, values = domain_data, opacity = 0.9,
-                      title = paste0("<b>", country, "</b><br>", legend_title, if (use_local) "<br><i>(Local Scale)</i>" else "<br><i>(Global Scale)</i>"),
+                      title = paste0("<b>", country, "</b><br>", legend_title, "<br><i>(", if (use_local) "Local" else "Global", ")</i>"),
                       position = "bottomright")
         }
       }
