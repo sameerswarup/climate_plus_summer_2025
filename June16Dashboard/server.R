@@ -707,7 +707,12 @@ server <- function(input, output, session) {
       title = "Country Scale Scatterplot",
       size = "l",
       plotOutput("custom_scatter_zoom", height = "400px"),
-      downloadButton("sigma", "Download Plot"),
+      tags$br(),
+      
+      tags$div(style = "text-align: center;",
+               downloadButton("downloadCustomScatter", "Download Plot")
+               
+      ),
       verbatimTextOutput("correlation"),
       footer = modalButton("Close")
     ))
@@ -718,7 +723,11 @@ server <- function(input, output, session) {
       title = "Country Scale Histogram",
       size = "l",
       plotOutput("country_histogram_zoom", height = "400px"),
-      downloadButton("sigma", "Download Plot"),
+      tags$br(),
+      tags$div(style = "text-align: center;",
+        downloadButton("downloadHistogram", "Download Plot")
+        
+      ),
       footer = modalButton("Close")
     ))
   })
@@ -785,13 +794,12 @@ server <- function(input, output, session) {
     },
     content = function(con) {
       ggsave(
-        filename = file,
+        filename = con,
         plot = REAcustom_scatter(),
         device = "png",
         width = 8,
         height = 6
       )
-      
     }
   )
   
@@ -801,14 +809,15 @@ server <- function(input, output, session) {
     },
     content = function(con) {
       ggsave(
-        filename = file,
+        filename = con,
         plot = REAglobal_custom_scatter(),
         device = "png",
         width = 8,
         height = 6
       )
-      
-    }
+    },
+    contentType = "image/png"
+    
   )
   
   output$downloadHistogram <- downloadHandler(
@@ -817,14 +826,15 @@ server <- function(input, output, session) {
     },
     content = function(con) {
       ggsave(
-        filename = file,
+        filename = con,
         plot = REArenderHistogram(),
         device = "png",
         width = 8,
         height = 6
       )
-      
-    }
+    },
+    contentType = "image/png"
+    
   )
   
   # Descriptions of indicators (inequity)
