@@ -13,6 +13,7 @@ library(pryr)
 library(rnaturalearth)
 library(shinyjs)
 library(ggthemes)
+library(plotly)
 
 world_sf = ne_countries(scale="medium", returnclass = "sf")
 
@@ -125,7 +126,7 @@ variable_metadata <- list(
     color_palette = "viridis"
   ),
   "Sea Level Rise" = list(
-    unit = "meters",
+    unit = "Meters",
     description = "Sea Level Change",
     baseline = "1995-2014",
     color_palette = "viridis"
@@ -138,7 +139,7 @@ variable_metadata <- list(
       color_palette = "viridis"
     ),
     "Value" = list(
-      unit = "degree days",
+      unit = "Degree days",
       description = "Heating Degree Days Value",
       baseline = "1995–2014",
       color_palette = "viridis"
