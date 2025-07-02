@@ -663,12 +663,18 @@ server <- function(input, output, session) {
   })
   
   # Plotting outputs - only country analysis now, plus global modal
-  output$custom_scatter <- renderPlot({
+  
+  REAcustom_scatter <- reactive({
     country_choices <- c("Distance to Coast (km)" = "distance_to_coast_km", 
                          "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
                          "Relative Deprivation Index" = "povmap.grdi.v1.sc",
                          "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
     create_scatter_plot(country_dataset(), input$first_indicator, input$second_indicator, country_choices, chosen_country())
+  })
+  
+  output$custom_scatter <- renderPlot({
+    req(REAcustom_scatter)
+    custom_scatter()
   })
   
   output$custom_scatter_zoom <- renderPlot({
@@ -679,8 +685,13 @@ server <- function(input, output, session) {
     create_scatter_plot(country_dataset(), input$first_indicator, input$second_indicator, country_choices, chosen_country())
   })
   
-  output$global_custom_scatter <- renderPlot({
+  REAglobal_custom_scatter <- reactive({
     create_scatter_plot(average_country_nogeo, input$first_indicator_global, input$second_indicator_global, global_level_choices, "Global")
+  })
+  
+  output$global_custom_scatter <- renderPlot({
+    req(REAglobal_custom_scatter)
+    REAglobal_custom_scatter()
   })
   
   output$correlation <- renderText({
@@ -712,7 +723,7 @@ server <- function(input, output, session) {
     ))
   })
   
-  renderHistogram <- renderPlot({
+  REArenderHistogram <- reactive({
     data <- country_dataset()
     if (is.null(data) || nrow(data) == 0) return() 
     
@@ -756,11 +767,65 @@ server <- function(input, output, session) {
           margin = margin(r = 10)
         )
       ) 
-
+  })
+  
+  renderHistogram <- renderPlot({
+    req(REArenderHistogram)
+    REArenderHistogram()
     
   })
   output$country_histogram_zoom <- renderHistogram
   output$country_histogram <- renderHistogram
+  
+  # Download png plots/histograms
+  
+  output$downloadCustomScatter <- downloadHandler(
+    filename = function() {
+      paste('plot-', Sys.Date(), '.png', sep='')
+    },
+    content = function(con) {
+      ggsave(
+        filename = file,
+        plot = REAcustom_scatter(),
+        device = "png",
+        width = 8,
+        height = 6
+      )
+      
+    }
+  )
+  
+  output$downloadGlobalCustomScatter <- downloadHandler(
+    filename = function() {
+      paste('plot-', Sys.Date(), '.png', sep='')
+    },
+    content = function(con) {
+      ggsave(
+        filename = file,
+        plot = REAglobal_custom_scatter(),
+        device = "png",
+        width = 8,
+        height = 6
+      )
+      
+    }
+  )
+  
+  output$downloadHistogram <- downloadHandler(
+    filename = function() {
+      paste('plot-', Sys.Date(), '.png', sep='')
+    },
+    content = function(con) {
+      ggsave(
+        filename = file,
+        plot = REArenderHistogram(),
+        device = "png",
+        width = 8,
+        height = 6
+      )
+      
+    }
+  )
   
   # Descriptions of indicators (inequity)
   
@@ -806,15 +871,6 @@ server <- function(input, output, session) {
     clicked_score_country_histogram(click)
   })
   
-  # Download png plots/histograms
   
-  output$downloadData <- downloadHandler(
-    filename = function() {
-      paste('plot-', Sys.Date(), '.png', sep='')
-    },
-    content = function(con) {
-      write.csv(data, con)
-    }
-  )
 
 }
