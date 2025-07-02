@@ -66,3 +66,22 @@ country_centroids <- country_centroids_with_data %>%
   filter(!is.na(X) & !is.na(Y) & is.finite(X) & is.finite(Y))
 
 inequity_data_descriptions <- read.csv("data/inequity_data_descriptions.csv")
+
+indicator_choice_list <- list(
+  "Socio-Ecological Vulnerability" = c("Socio-Ecological Vulnerability (Composite)" = "vulnerab.score.rank",
+                                       "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                                       "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                                       "Coastal Climate Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc",
+                                       "Nutritional Dependence" = "Nutritional.dependence.sc"),
+  "Social Inequality" = c("Social Inequality (Composite)" = "ineq.score.rank",
+                          "Gender Inequality" = "gender.ineq.sc",
+                          "Income Inequality" = "income.ineq.sc",
+                          "Inequality Adjusted Life Expectancy" = "le.ineq.log.sc"),
+  "Weak Governance" = c("Weak Governance (Composite)" = "gov.score.rank",
+                        "Government Ineffectiveness" = "Gov_effect.sc",
+                        "Poor Regulatory Quality" = "Reg_quality.sc",
+                        "Weak Rule of Law" = "Rule_law.sc",
+                        "Weak Control of Corruption" = "control_corr.sc",
+                        "Low Voice and Accountability" = "Voice_account.sc",
+                        "Political Instability" = "Political_stab.sc")
+)

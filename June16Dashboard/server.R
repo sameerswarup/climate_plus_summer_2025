@@ -30,6 +30,7 @@ server <- function(input, output, session) {
   
   create_base_map <- function(satellite = FALSE) {
     map <- leaflet(options = leafletOptions(
+      zoomControl = FALSE,
       maxBounds = list(list(-90, -180), list(90, 180)),
       maxBoundsViscosity = 1.0,
       minZoom = 2,
@@ -37,9 +38,17 @@ server <- function(input, output, session) {
       worldCopyJump = FALSE
     ))
     if (satellite) {
-      map %>% addProviderTiles(providers$Esri.WorldImagery)
+      map %>% addProviderTiles(providers$Esri.WorldImagery) %>% htmlwidgets::onRender("
+      function(el, x) {
+        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
+      }
+    ") 
     } else {
-      map %>% addProviderTiles(providers$Esri.WorldStreetMap)
+      map %>% addProviderTiles(providers$Esri.WorldStreetMap) %>% htmlwidgets::onRender("
+      function(el, x) {
+        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
+      }
+    ") 
     }
   }
   
@@ -50,14 +59,22 @@ server <- function(input, output, session) {
       updateTextInput(session, "country_search", value = "")
       updateTextInput(session, "country_search_graphs", value = "")
       zoom_to_country("map", NULL)
+      #zoom_to_country("map1", NULL)
+      #zoom_to_country("map2", NULL)
     } else {
       selected_country(country)
       country_dataset(filter(df, COUNTRY == country))
       updateTextInput(session, "country_search", value = country)
       updateTextInput(session, "country_search_graphs", value = country)
       zoom_to_country("map", country)
+      #zoom_to_country("map1", country)
+      #zoom_to_country("map2", country)
+      zoom_to_country("map2", country)
+      print("zooming")
     }
     update_map_layers_only()
+    #update_comparison_map_1_layers_only()
+    #update_comparison_map_2_layers_only()
   }
   
   update_map_layers_only <- function() {
@@ -224,9 +241,7 @@ server <- function(input, output, session) {
   observeEvent(input$global_view_button, {
     select_country(NULL)
   })
-  
 
-  
   # Main map output
   output$map <- renderLeaflet({
     var <- "gov.score.rank"

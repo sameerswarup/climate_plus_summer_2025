@@ -314,7 +314,7 @@ ui <- fluidPage(
         style = "height: 50%; position: relative; width: 100%;",
         leafletOutput("map1", width = "100%", height = "100%"),
         tags$div(
-          style = "position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);",
+          style = "position: absolute; top: 30px; right: 50px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);",
           "Map 1"
         )
       ),
@@ -322,7 +322,7 @@ ui <- fluidPage(
         style = "height: 50%; position: relative; width: 100%;",
         leafletOutput("map2", width = "100%", height = "100%"),
         tags$div(
-          style = "position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);",
+          style = "position: absolute; top: 10px; right: 50px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);",
           "Map 2"
         )
       )
@@ -534,6 +534,7 @@ ui <- fluidPage(
       )
     ),
     
+    #COMPARISON
     tags$div(
       class = "panel-section",
       id = "comparison-section",
