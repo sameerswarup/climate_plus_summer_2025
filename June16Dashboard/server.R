@@ -3,7 +3,8 @@ server <- function(input, output, session) {
   
   source("modules/countryAnalysisModule.R", local = TRUE)
   source("modules/countryComparison.R", local = TRUE)
-  
+  source("modules/ndGain.R", local = TRUE)
+  source("modules/ipcc.R", local = TRUE)
   
   selected_country <- reactiveVal(NULL)  # Start with global view
   country_dataset <- reactiveVal(NULL)
