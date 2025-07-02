@@ -518,6 +518,7 @@ ui <- fluidPage(
         tags$div(class = "plot-container",
                  plotOutput("custom_scatter", height = "300px",
                             width = "95%")),
+
         verbatimTextOutput("correlation"),
         actionButton(
           "scatter_zoom",

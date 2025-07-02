@@ -226,6 +226,7 @@ server <- function(input, output, session) {
   })
   
 
+  
   # Main map output
   output$map <- renderLeaflet({
     var <- "gov.score.rank"
