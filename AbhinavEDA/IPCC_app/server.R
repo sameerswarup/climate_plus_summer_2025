@@ -22,6 +22,11 @@ server <- function(input, output, session) {
   varND <- reactiveVal(NULL)
   year <- reactiveVal(NULL)
   world_polygons <- reactiveVal(world_sf)
+  filtered_world_polygons <- reactive({
+    req(world_polygons())
+    world_polygons() %>%
+      filter(continent != "Antarctica")
+  })
   
   # Data type selector (second level dropdown)
   output$data_type_selector <- renderUI({
@@ -68,6 +73,24 @@ server <- function(input, output, session) {
   # Dynamic range slider based on current data and variable
   output$value_range_slider <- renderUI({
     req(original_raster(), input$climate_variable)
+    
+  output$manual_min_input <- renderUI({
+      req(input$value_range)
+      numericInput(
+        "manual_min",
+        "Minimum Value",
+        value = input$value_range[1]
+      )
+  })
+    
+  output$manual_max_input <- renderUI({
+      req(input$value_range)
+      numericInput(
+        "manual_max",
+        "Maximum Value",
+        value = input$value_range[2]
+      )
+  })
     
     r <- original_raster()
     raster_values <- values(r, na.rm = TRUE)
@@ -318,7 +341,7 @@ server <- function(input, output, session) {
       if (input$climate_variable == "Heating Degree Days") {
         map_proxy <- map_proxy %>%
           addPolygons(
-            data = world_polygons(),
+            data = filtered_world_polygons(),
             color = "black",
             weight = 1,
             fill = FALSE,
@@ -422,6 +445,15 @@ server <- function(input, output, session) {
                    year(input$nd_year)
                  }
   )
+  
+  observeEvent(c(input$manual_min, input$manual_max), {
+    req(input$manual_min, input$manual_max)
+    updateSliderInput(
+      session,
+      "value_range",
+      value = c(input$manual_min, input$manual_max)
+    )
+  })
   
   output$variableNameAndYearOutput <- renderText({
     req(varND())

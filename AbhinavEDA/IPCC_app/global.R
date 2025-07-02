@@ -17,6 +17,8 @@ library(plotly)
 
 world_sf <- ne_countries(scale = "medium", returnclass = "sf")
 
+world_sf <- world_sf[world_sf$continent != "Antarctica", ]
+
 # ND Gain Columns
 
 gainVars <- list(

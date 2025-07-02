@@ -38,6 +38,8 @@ ui <- page_sidebar(
       card(
         card_header("Data Filters"),
         uiOutput("value_range_slider"),
+        uiOutput("manual_min_input"),
+        uiOutput("manual_max_input"),
         radioButtons("filter_mode", "Filter Mode:",
                      choices = list(
                        "Show All Data" = "none",
