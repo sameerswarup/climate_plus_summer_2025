@@ -674,7 +674,7 @@ server <- function(input, output, session) {
   
   output$custom_scatter <- renderPlot({
     req(REAcustom_scatter)
-    custom_scatter()
+    REAcustom_scatter()
   })
   
   output$custom_scatter_zoom <- renderPlot({
