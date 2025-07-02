@@ -15,7 +15,7 @@ library(shinyjs)
 library(ggthemes)
 library(plotly)
 
-world_sf = ne_countries(scale="medium", returnclass = "sf")
+world_sf <- ne_countries(scale = "medium", returnclass = "sf")
 
 # ND Gain Columns
 
