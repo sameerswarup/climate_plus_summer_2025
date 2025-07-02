@@ -283,14 +283,7 @@ output$country_histogram_description <- description_output(clicked_score_country
 observeEvent(input$country_histogram_indicator, {
   clicked_score_country_histogram(input$country_histogram_indicator)
 })
-observe({
-  cat("Selected country:", selected_country(), "\n")
-  cat("Histogram input:", input$country_histogram_indicator, "\n")
-  # Check if data is available
-  if (!is.null(country_dataset())) {
-    cat("Data rows:", nrow(country_dataset()), "\n")
-  }
-})
+
 outputOptions(output, "country_histogram", suspendWhenHidden = FALSE)
 outputOptions(output, "custom_scatter", suspendWhenHidden = FALSE)
 outputOptions(output, "first_indicator_country_description", suspendWhenHidden = FALSE)
