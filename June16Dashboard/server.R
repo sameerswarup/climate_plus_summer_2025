@@ -25,9 +25,12 @@ server <- function(input, output, session) {
   )
   
   should_show_points <- function(var) {
-    var %in% c("mean.count.grav.V2.log.sc", "povmap.grdi.v1.sc", 
-               "perc.pop.world.coastal.merit.10m.log.sc", "Nutritional.dependence.sc",
-               "vulnerab.score.rank")
+    # Show points for Socio-Ecological Vulnerability individual indicators when a country is selected
+    socio_ecological_vars <- c("mean.count.grav.V2.log.sc", "povmap.grdi.v1.sc", 
+                               "perc.pop.world.coastal.merit.10m.log.sc", "Nutritional.dependence.sc")
+    
+    # Only show points if: 1) a country is selected AND 2) it's a socio-ecological variable (not composite)
+    !is.null(selected_country()) && var %in% socio_ecological_vars
   }
   
   zoom_to_country <- function(map_id, country) {
@@ -106,6 +109,17 @@ server <- function(input, output, session) {
     # Check if variable exists and has valid data
     if (!(var %in% names(global_data)) || all(is.na(global_data[[var]]))) return()
     
+    # Create legend title based on whether composite score is selected
+    legend_title <- if (var %in% composite_arith_list) {
+      paste(input$indicator_category)
+    } else {
+      # Find the variable name for display - show ONLY the variable name
+      var_display_name <- names(indicator_choice_list[[input$indicator_category]])[
+        indicator_choice_list[[input$indicator_category]] == var
+      ]
+      var_display_name
+    }
+    
     pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
     
     leafletProxy("map") %>%
@@ -130,7 +144,7 @@ server <- function(input, output, session) {
           )
         } else . } %>%
         addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
-                  title = paste(input$indicator_category), position = "bottomright")
+                  title = legend_title, position = "bottomright")
     } else {
       # Country-specific view
       if (!should_show_points(var)) {
@@ -161,7 +175,8 @@ server <- function(input, output, session) {
         
         leafletProxy("map") %>%
           addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
-                    title = paste(input$indicator_category), position = "bottomright")
+                    title = paste0("<b>", country, "</b><br>", legend_title),
+                    position = "bottomright")
       } else {
         # Point data for country
         country_data <- df %>% filter(COUNTRY == country)
@@ -186,7 +201,7 @@ server <- function(input, output, session) {
               label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
             ) %>%
             addLegend(pal = pal_country, values = domain_data, opacity = 0.9,
-                      title = paste0(country, if (use_local) " (Local Scale)" else " (Global Scale)"),
+                      title = paste0("<b>", country, "</b><br>", legend_title, "<br><i>(", if (use_local) "Local" else "Global", ")</i>"),
                       position = "bottomright")
         }
       }
@@ -267,6 +282,17 @@ server <- function(input, output, session) {
     # Check if variable exists and has valid data
     if (!(var %in% names(global_data)) || all(is.na(global_data[[var]]))) return()
     
+    # Create legend title based on whether composite score is selected
+    legend_title <- if (var %in% composite_arith_list) {
+      paste(input$indicator_category)
+    } else {
+      # Find the variable name for display - show ONLY the variable name
+      var_display_name <- names(indicator_choice_list[[input$indicator_category]])[
+        indicator_choice_list[[input$indicator_category]] == var
+      ]
+      var_display_name
+    }
+    
     pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
     
     leafletProxy("map1") %>%
@@ -290,7 +316,7 @@ server <- function(input, output, session) {
           )
         } else . } %>%
         addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
-                  title = paste(input$map_1_indicator_category), position = "bottomright")
+        title = legend_title, position = "bottomright")
     } else {
       if (!should_show_points(var)) {
         selected_country_data <- polygon_data %>% filter(COUNTRY == country)
@@ -320,7 +346,8 @@ server <- function(input, output, session) {
         
         leafletProxy("map1") %>%
           addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
-                    title = paste(input$map_1_indicator_category), position = "bottomright")
+                    title = paste0("<b>", country, "</b><br>", legend_title),
+                    position = "bottomright")
       } else {
         country_data <- df %>% filter(COUNTRY == country)
         if (nrow(country_data) > 0) {
@@ -344,7 +371,7 @@ server <- function(input, output, session) {
               label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
             ) %>%
             addLegend(pal = pal_country, values = domain_data, opacity = 0.9,
-                      title = paste0(country, if (use_local) " (Local Scale)" else " (Global Scale)"),
+                      title = paste0("<b>", country, "</b><br>", legend_title, "<br><i>(", if (use_local) "Local" else "Global", ")</i>"),
                       position = "bottomright")
         }
       }
@@ -372,6 +399,17 @@ server <- function(input, output, session) {
     # Check if variable exists and has valid data
     if (!(var %in% names(global_data)) || all(is.na(global_data[[var]]))) return()
     
+    # Create legend title based on whether composite score is selected
+    legend_title <- if (var %in% composite_arith_list) {
+      paste(input$indicator_category)
+    } else {
+      # Find the variable name for display - show ONLY the variable name
+      var_display_name <- names(indicator_choice_list[[input$indicator_category]])[
+        indicator_choice_list[[input$indicator_category]] == var
+      ]
+      var_display_name
+    }
+    
     pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
     
     leafletProxy("map2") %>%
@@ -395,7 +433,7 @@ server <- function(input, output, session) {
           )
         } else . } %>%
         addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
-                  title = paste(input$indicator_category), position = "bottomright")
+                  title = legend_title, position = "bottomright")
     } else {
       if (!should_show_points(var)) {
         selected_country_data <- polygon_data %>% filter(COUNTRY == country)
@@ -425,7 +463,8 @@ server <- function(input, output, session) {
         
         leafletProxy("map2") %>%
           addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
-                    title = paste(input$indicator_category), position = "bottomright")
+                    title = paste0("<b>", country, "</b><br>", legend_title),
+                    position = "bottomright")
       } else {
         country_data <- df %>% filter(COUNTRY == country)
         if (nrow(country_data) > 0) {
@@ -449,7 +488,7 @@ server <- function(input, output, session) {
               label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
             ) %>%
             addLegend(pal = pal_country, values = domain_data, opacity = 0.9,
-                      title = paste0(country, if (use_local) " (Local Scale)" else " (Global Scale)"),
+                      title = paste0("<b>", country, "</b><br>", legend_title, "<br><i>(", if (use_local) "Local" else "Global", ")</i>"),
                       position = "bottomright")
         }
       }
