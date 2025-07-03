@@ -676,4 +676,16 @@ server <- function(input, output, session) {
     ggplotly(p)
   })
   
+  output$data_summary_vb <- renderUI({
+    var <- varND()
+    varName <- gainVarsNames[gainVars == var]
+    iconName <- ndGainIcons[[varName]]
+    
+    value_box(
+      title = textOutput("variableNameAndYearOutput"),
+      showcase = icon(iconName),
+      value = textOutput("nd_year_score")
+    )
+  })
+  
 }

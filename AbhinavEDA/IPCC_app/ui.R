@@ -135,10 +135,7 @@ ui <- page_sidebar(
       
       card(
         card_header("Data Summary"),
-        value_box(
-          title = textOutput("variableNameAndYearOutput"),
-          value = textOutput("nd_year_score")
-        )
+        uiOutput("data_summary_vb")
       ),
       
       plotOutput("nd_graph"),

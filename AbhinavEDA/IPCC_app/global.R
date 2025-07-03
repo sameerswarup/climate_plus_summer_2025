@@ -167,3 +167,23 @@ ndNamedCols <- unlist(gainVars, use.names = FALSE)
 # Indicator Descriptions
 
 ndGainDescriptions <- read.csv("data/ndgain_indicator_descriptions.csv")
+
+# Icons
+ndGainIcons <- list(
+  "Projected Change of Biome Distribution" = "mountain-sun",
+  "Projected Change of Marine Biodiversity" = "fish",
+  "Projected Change of Warm Periods" = "temperature-high",
+  "Projected Change of Deaths from Climate Change Induced Diseases" = "disease",
+  "Projected Change in Vector-Borne Diseases" = "square-virus",
+  "Dependency on External Resource for Health Services" = "kit-medical",
+  "Medical Staff" = "user-nurse",
+  "Projected Change of Sea Level Rise Impacts" = "water",
+  "Population Living Under 5m Above Sea Level" = "people-group",
+  "Economic Readiness" = "money-bill-transfer",
+  "Ecosystem Vulnerability" = "seedling",
+  "Food Vulnerability" = "wheat-awn-circle-exclamation",
+  "Governance Readiness" = "person-chalkboard",
+  "GAIN" = "tree",
+  "Health Vulnerability" = "virus-covid",
+  "Infrastructure Vulnerability" = "building-circle-exclamation"
+)
