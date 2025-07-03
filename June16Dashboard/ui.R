@@ -504,7 +504,7 @@ ui <- fluidPage(
         textOutput("countryDisplay"),
         tags$div(class = "plot-container",
                  style = "overflow-x: auto;",
-                 plotOutput("country_histogram", height = "200px",
+                 plotOutput("country_histogram", height = "120px",
                             width = "100%")),
         actionButton(
           "histogram_zoom",
@@ -518,7 +518,7 @@ ui <- fluidPage(
         ),
         tags$div(class = "plot-container",
                  style = "overflow-x: auto;",
-                 plotOutput("custom_scatter", height = "300px",
+                 plotOutput("custom_scatter", height = "170px",
                             width = "100%")),
 
         verbatimTextOutput("correlation"),
