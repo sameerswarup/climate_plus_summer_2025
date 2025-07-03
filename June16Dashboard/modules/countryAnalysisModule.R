@@ -165,7 +165,9 @@ observeEvent(input$scatter_zoom, {
     tags$div(style = "text-align: center;",
              downloadButton("downloadCustomScatter", "Download Plot")
              
-    ),      verbatimTextOutput("correlation"),
+    ),      
+    tags$br(),
+    verbatimTextOutput("correlation"),
     footer = modalButton("Close")
   ))
 })
@@ -181,6 +183,8 @@ observeEvent(input$histogram_zoom, {
              downloadButton("downloadHistogram", "Download Plot")
              
     ),
+    tags$br(),
+    textOutput("country_histogram_description_zoom"),
     footer = modalButton("Close")
   ))
 })
@@ -279,6 +283,8 @@ output$second_indicator_country_description <- description_output(clicked_scores
 output$first_indicator_global_description <- description_output(clicked_scores$first_global)
 output$second_indicator_global_description <- description_output(clicked_scores$second_global)
 output$country_histogram_description <- description_output(clicked_score_country_histogram)
+output$country_histogram_description_zoom <- description_output(clicked_score_country_histogram)
+
 
 observeEvent(input$country_histogram_indicator, {
   clicked_score_country_histogram(input$country_histogram_indicator)
