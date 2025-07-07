@@ -275,7 +275,7 @@ output$map2 <- renderLeaflet({
 
 #COMPARISON OBSERVER
 observeEvent({
-  input$comparison_country_search; input$map_1_indicator_category; input$map_2_indicator_category; input$map_1_variable_choice; input$map_2_variable_choice
+  input$comparison_country_search; input$map_1_indicator_category; input$map_1_variable_choice; 
 }, {
   req(input$map_1_indicator_category)
   req(input$map_1_variable_choice)
@@ -284,10 +284,20 @@ observeEvent({
   selected_country(input$comparison_country_search)
   
   update_comparison_map_1_layers_only()
-  update_comparison_map_2_layers_only()
 })
 
 
+observeEvent({
+  input$map_2_country_search; input$map_2_indicator_category; input$map_2_variable_choice
+}, {
+  req(input$map_2_indicator_category)
+  req(input$map_2_variable_choice)
+  req(map_initialized())
+  
+  selected_country(input$map_2_country_search)
+  
+  update_comparison_map_2_layers_only()
+})
 
 
 
