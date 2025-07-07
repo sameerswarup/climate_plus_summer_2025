@@ -303,7 +303,25 @@ ui <- fluidPage(
     "))
   ),
   
-  leafletOutput("map", width = "100%", height = "100vh"),
+  
+    # Main map (for Social Inequality, Weak Governance, and Socio-Ecological Vulnerability with Inequity)
+    conditionalPanel(
+      condition = "input.indicator_category == 'Social Inequality' || input.indicator_category == 'Weak Governance' || (input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Inequity')",
+      leafletOutput("map", width = "100%", height = "100vh")
+    ),
+    
+    # ND Gain map
+    conditionalPanel(
+      condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND Gain'",
+      leafletOutput("nd_gain_map", width = "100%", height = "100vh")
+    ),
+    
+    # Climate Risk map
+    conditionalPanel(
+      condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Climate Risk'",
+      leafletOutput("climate_map", width = "100%", height = "100vh")
+    ),
+  
   
   tags$div(
     id = "comparison-maps",
@@ -405,11 +423,18 @@ ui <- fluidPage(
         tags$div(class = "control-title", "Map Controls"),
         selectInput("indicator_category", "Theme:", 
                     choices = composite_choices, selected = "Weak Governance"),
-        conditionalPanel(condition = "input.indicator_category == 'Socio-Ecological Vulnerability'",
-                         selectInput("composite_choice", "Composite Score:",
-                                     choices = names(composite_data_options), selected = "Climate Risk")
-                         ),
-        selectInput("variable_choice", "Variable:", choices = NULL),
+
+        # Optional: hide composite_choice unless relevant
+        conditionalPanel(
+          condition = "input.indicator_category == 'Socio-Ecological Vulnerability'",
+          selectInput("composite_choice", "Composite Score:",
+                      choices = names(composite_data_options), selected = "Inequity")
+          ),
+        conditionalPanel(
+          condition = "input.indicator_category == 'Social Inequality' || input.indicator_category == 'Weak Governance' || (input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Inequity')",
+          selectInput("variable_choice", "Variable:", choices = NULL),
+          
+        ),
         tags$div(
           class = "form-check",
           checkboxInput(
@@ -437,7 +462,141 @@ ui <- fluidPage(
           tags$p(tags$strong("Social Inequality:"), "Gender gaps, income distribution, health outcome disparities."),
           tags$p(tags$strong("Socio-Ecological Vulnerability:"), "Environmental degradation, coastal risks, nutritional dependencies.")
         )
-      )
+      ),
+      
+      conditionalPanel(
+        condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND Gain'",
+        card(
+          tags$h3("What is ND Gain?"),
+          tags$small(
+            style = "font-style: italic;",
+            "The Notre Dame Global Adaptation Initiative’s (ND-GAIN) Country Index is a free, open
+          source index that shows a country’s current vulnerability to climate disruptions. It also
+          assesses a country’s readiness to leverage private and public sector investment for
+          adaptive actions. The ND-GAIN Country Index brings together more than 40 core
+          indicators to measure vulnerability and readiness of 182 UN countries from 1995 to the
+          present (10 countries only have readiness scores)."
+          )
+        ),
+        
+        card(
+          card_header("Map Controls"),
+          selectInput(inputId = "country_nd",
+                      label = "Choose a country:",
+                      choices = country_names,
+                      selected = "Afghanistan"),
+          selectInput(inputId = "variable_nd",
+                      label = "Choose a variable/indicator:",
+                      choices = gainVars,
+                      selected = "Value..gain"),
+          tags$small(
+            style = "font-style: italic;",
+            textOutput("indDescOutput")
+          ),
+          sliderInput(inputId = "nd_year",
+                      label = "Choose a year:",
+                      min = 1995,
+                      max = 2022,
+                      value = 1995,
+                      sep = "",
+                      animate = TRUE)
+        ),
+        
+        card(
+          card_header("Data Summary"),
+          uiOutput("data_summary_vb")
+        ),
+        
+        plotOutput("nd_graph"),
+        
+        card(
+          card_header("Data Source"),
+          tags$a(
+            href = "https://gain.nd.edu/our-work/country-index/download-data/",
+            "Notre Dame Global Adaptation Initiative",
+            target = "_blank"
+          ),
+          tags$small(
+            "Download up to half a million data points for more than 180 UN countries. Data is updated annually, but includes all ND-GAIN indicators across 20+ years. Data is provided as separate CSV files in a single compressed file.",
+            style = "font-style: italic"
+          )
+        )
+        ),
+      
+      conditionalPanel(
+        condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Climate Risk'",
+        card(
+          card_header("Climate Variable Controls"),
+          # Climate variable selector (top level)
+          selectInput("climate_variable", 
+                      "Select Climate Variable:", 
+                      choices = names(climate_data_options)),
+          # Data type selector (second level)
+          uiOutput("data_type_selector"),
+          # Time period selector (third level)
+          uiOutput("time_period_selector"),
+          # Variable info display
+          uiOutput("variable_info")
+        ),
+        
+        # Filter controls card
+        card(
+          card_header("Data Filters"),
+          uiOutput("value_range_slider"),
+          uiOutput("manual_min_input"),
+          uiOutput("manual_max_input"),
+          radioButtons("filter_mode", "Filter Mode:",
+                       choices = list(
+                         "Show All Data" = "none",
+                         "Show Values in Range" = "range",
+                         "Show Above Threshold" = "above", 
+                         "Show Below Threshold" = "below"
+                       ),
+                       selected = "none"
+          ),
+          actionButton("reset_filters", "Reset Filters", 
+                       class = "btn-outline-secondary btn-sm",
+                       style = "margin-top: 10px;")
+        ),
+        
+        # Info display
+        card(
+          card_header("Data Summary"),
+          div(
+            style = "font-family: Arial, sans-serif;",
+            verbatimTextOutput("data_info")
+          )
+        ),
+        card(
+          style = "background-color: #F0F0F0;",
+          card_header("Data Distribution Plots"),
+          tags$small(
+            style = "font-style: italic;",
+            "Explore the distribution of climate variable values."
+          ),
+          plotlyOutput("histogram_plot"),
+          plotlyOutput("boxplot_plot")
+        ), 
+        
+        card(
+          card_header("Data Source"),
+          tags$a(
+            href = "https://interactive-atlas.ipcc.ch/",
+            "Climate Risk Data Source",
+            target = "_blank"
+          ),
+          tags$small(
+            style = "font-style: italic;",
+            "Description to be added soon..."
+          )
+        ),
+        
+        # ✅ Moved Click Info card INSIDE this conditional
+        card(
+          card_header("Click Info"),
+          verbatimTextOutput("click_info")
+        )      
+        )
     ),
     
     tags$div(

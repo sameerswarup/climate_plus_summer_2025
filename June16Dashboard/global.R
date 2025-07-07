@@ -1,14 +1,18 @@
 # global.R - Simplified version
 library(shiny)
 library(leaflet)
+library(terra)
+library(bslib)
+library(shiny)
+library(leaflet)
 library(dplyr)
 library(sf)
 library(viridis)
 library(tidyverse)
 library(qs)
+library(pryr)
 library(rnaturalearth)
 library(shinyjs)
-library(ggplot2)
 library(ggthemes)
 library(plotly)
 
@@ -119,14 +123,14 @@ climate_data_options <- list(
   
   "Ocean pH" = list(
     "Change (pH)" = list(
-      "Near Term (2021–2040)" = "../IPCC_data/pH_change_near_term.tif",
-      "Medium Term (2041–2060)" = "../IPCC_data/pH_change_medium_term.tif",
-      "Long Term (2081–2100)" = "../IPCC_data/pH_change_long_term.tif"
+      "Near Term (2021–2040)" = "data/IPCC_data/pH_change_near_term.tif",
+      "Medium Term (2041–2060)" = "data/IPCC_data/pH_change_medium_term.tif",
+      "Long Term (2081–2100)" = "data/IPCC_data/pH_change_long_term.tif"
     ),
     "Value (pH)" = list(
-      "Near Term (2021–2040)" = "../IPCC_data/pH_value_near_term.tif",
-      "Medium Term (2041–2060)" = "../IPCC_data/pH_value_medium_term.tif",
-      "Long Term (2081–2100)" = "../IPCC_data/pH_value_long_term.tif"
+      "Near Term (2021–2040)" = "data/IPCC_data/pH_value_near_term.tif",
+      "Medium Term (2041–2060)" = "data/IPCC_data/pH_value_medium_term.tif",
+      "Long Term (2081–2100)" = "data/IPCC_data/pH_value_long_term.tif"
     )
   ),
   

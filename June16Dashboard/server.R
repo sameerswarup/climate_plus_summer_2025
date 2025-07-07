@@ -24,8 +24,9 @@ server <- function(input, output, session) {
   
   source("modules/countryAnalysisModule.R", local = TRUE)
   source("modules/countryComparison.R", local = TRUE)
-  # source("modules/ndGain.R", local = TRUE)
-  # source("modules/ipcc.R", local = TRUE)
+  source("modules/ipcc.R", local = TRUE)
+  
+  source("modules/ndGain.R", local = TRUE)
   should_show_points <- function(var) {
     # Show points for Socio-Ecological Vulnerability individual indicators when a country is selected
     socio_ecological_vars <- c("mean.count.grav.V2.log.sc", "povmap.grdi.v1.sc", 
@@ -187,13 +188,55 @@ server <- function(input, output, session) {
     }
   }
   
-  # Update dropdown choices based on indicator category
-  observeEvent({input$indicator_category
-    input$composite_choice}, {
-    if (input$indicator_category == "Social Inequality" || input$indicator_category == "Weak Governance") {
-      updateSelectInput(session, "variable_choice", choices = indicator_choice_list[[input$indicator_category]])
+  # # Update dropdown choices based on indicator category
+  # observeEvent({input$indicator_category}, {
+  #   if (input$indicator_category == "Social Inequality" || input$indicator_category == "Weak Governance") {
+  #     updateSelectInput(session, "variable_choice", choices = indicator_choice_list[[input$indicator_category]])
+  #   } else {
+  #     updateSelectInput(session, "composite_choice", choices = names(composite_data_options))
+  #   }
+  # })
+  # 
+  # observeEvent({input$composite_choice}, {
+  #   if (input$indicator_category == "Social Inequality" || input$indicator_category == "Weak Governance") {
+  #     updateSelectInput(session, "variable_choice", choices = indicator_choice_list[[input$indicator_category]])
+  # 
+  #   } else {
+  #     updateSelectInput(session, "variable_choice", choices = composite_data_options[[input$composite_choice]])
+  #   
+  #   }
+  #   
+  # })
+  # 
+  # When category changes
+  observeEvent(input$indicator_category, {
+    if (input$indicator_category %in% c("Social Inequality", "Weak Governance")) {
+      # Hide composite_choice UI if needed
+      updateSelectInput(session, "variable_choice", 
+                        choices = indicator_choice_list[[input$indicator_category]],
+                        selected = indicator_choice_list[[input$indicator_category]][[1]])
     } else {
-      updateSelectInput(session, "variable_choice", choices = composite_data_options[[input$composite_choice]])
+      updateSelectInput(session, "composite_choice", 
+                        choices = names(composite_data_options),
+                        selected = names(composite_data_options)[1])
+      
+      # Preload variable choices for first composite (e.g., ND Gain)
+      first_composite <- names(composite_data_options)[1]
+      updateSelectInput(session, "variable_choice", 
+                        choices = composite_data_options[[first_composite]],
+                        selected = composite_data_options[[first_composite]][[1]])
+    }
+  })
+  
+  # When composite changes
+  observeEvent(input$composite_choice, {
+    req(input$indicator_category)  # just in case
+    
+    if (!(input$indicator_category %in% c("Social Inequality", "Weak Governance"))) {
+      # Update variable_choice based on selected composite
+      updateSelectInput(session, "variable_choice", 
+                        choices = composite_data_options[[input$composite_choice]],
+                        selected = composite_data_options[[input$composite_choice]][[1]])
     }
   })
   
