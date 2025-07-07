@@ -1,4 +1,3 @@
-
 observeEvent(input$country_nd, {
   req(input$country_nd)
   country <- input$country_nd
