@@ -14,8 +14,8 @@ create_scatter_plot <- function(data, x_col, y_col, choices, title) {
          y = names(choices)[choices == y_col]) +
     theme_hc() +
     theme(
-      plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
-      plot.subtitle = element_text(size = 12, hjust = 0.5),
+      plot.title = element_text(face = "bold", size = 12, hjust = 0.5),
+      plot.subtitle = element_text(size = 10, hjust = 0.5),
       axis.title.x = element_text(face = "bold", size = 12, margin = margin(t = 10, b = 10)),
       axis.title.y = element_text(face = "bold", size = 12, margin = margin(r = 10, l = 10))
     )
@@ -115,8 +115,8 @@ REArenderHistogram <- reactive({
          x = label, y = "Frequency") +
     theme_hc() + 
     theme(
-      plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
-      plot.subtitle = element_text(size = 12, hjust = 0.5),
+      plot.title = element_text(face = "bold", size = 12, hjust = 0.5),
+      plot.subtitle = element_text(size = 10, hjust = 0.5),
       axis.title.x = element_text(face = "bold", size = 12, margin = margin(t = 10)),
       axis.title.y = element_text(face = "bold", size = 12, margin = margin(r = 10))
     ) 
@@ -165,7 +165,9 @@ observeEvent(input$scatter_zoom, {
     tags$div(style = "text-align: center;",
              downloadButton("downloadCustomScatter", "Download Plot")
              
-    ),      verbatimTextOutput("correlation"),
+    ),      
+    tags$br(),
+    verbatimTextOutput("correlation"),
     footer = modalButton("Close")
   ))
 })
@@ -181,6 +183,8 @@ observeEvent(input$histogram_zoom, {
              downloadButton("downloadHistogram", "Download Plot")
              
     ),
+    tags$br(),
+    textOutput("country_histogram_description_zoom"),
     footer = modalButton("Close")
   ))
 })
@@ -188,7 +192,7 @@ observeEvent(input$histogram_zoom, {
 # Download handlers
 output$downloadCustomScatter <- downloadHandler(
   filename = function() {
-    paste('plot-', Sys.Date(), '.png', sep='')
+    paste('plot-', Sys.time(), '.png', sep='')
   },
   content = function(con) {
     ggsave(
@@ -204,7 +208,7 @@ output$downloadCustomScatter <- downloadHandler(
 
 output$downloadGlobalCustomScatter <- downloadHandler(
   filename = function() {
-    paste('plot-', Sys.Date(), '.png', sep='')
+    paste('plot-', Sys.time(), '.png', sep='')
   },
   content = function(con) {
     ggsave(
@@ -279,6 +283,8 @@ output$second_indicator_country_description <- description_output(clicked_scores
 output$first_indicator_global_description <- description_output(clicked_scores$first_global)
 output$second_indicator_global_description <- description_output(clicked_scores$second_global)
 output$country_histogram_description <- description_output(clicked_score_country_histogram)
+output$country_histogram_description_zoom <- description_output(clicked_score_country_histogram)
+
 
 observeEvent(input$country_histogram_indicator, {
   clicked_score_country_histogram(input$country_histogram_indicator)

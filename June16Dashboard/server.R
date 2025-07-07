@@ -1,15 +1,31 @@
 # server.R - Streamlined version with global default
 server <- function(input, output, session) {
   
-  source("modules/countryAnalysisModule.R", local = TRUE)
-  source("modules/countryComparison.R", local = TRUE)
-  source("modules/ndGain.R", local = TRUE)
-  source("modules/ipcc.R", local = TRUE)
   
   selected_country <- reactiveVal(NULL)  # Start with global view
   country_dataset <- reactiveVal(NULL)
   map_initialized <- reactiveVal(FALSE)
+  select_country <- function(country) {
+    if (is.null(country) || country == "" || country == "Global (Default)") {
+      selected_country(NULL)
+      country_dataset(NULL)
+      updateTextInput(session, "country_search", value = "")
+      updateTextInput(session, "country_search_graphs", value = "")
+      zoom_to_country("map", NULL)
+    } else {
+      selected_country(country)
+      country_dataset(filter(df, COUNTRY == country))
+      updateTextInput(session, "country_search", value = country)
+      updateTextInput(session, "country_search_graphs", value = country)
+      zoom_to_country("map", country)
+    }
+    update_map_layers_only()
+  }
   
+  source("modules/countryAnalysisModule.R", local = TRUE)
+  source("modules/countryComparison.R", local = TRUE)
+  # source("modules/ndGain.R", local = TRUE)
+  # source("modules/ipcc.R", local = TRUE)
   should_show_points <- function(var) {
     # Show points for Socio-Ecological Vulnerability individual indicators when a country is selected
     socio_ecological_vars <- c("mean.count.grav.V2.log.sc", "povmap.grdi.v1.sc", 
@@ -53,22 +69,7 @@ server <- function(input, output, session) {
     }
   }
   
-  select_country <- function(country) {
-    if (is.null(country) || country == "" || country == "Global (Default)") {
-      selected_country(NULL)
-      country_dataset(NULL)
-      updateTextInput(session, "country_search", value = "")
-      updateTextInput(session, "country_search_graphs", value = "")
-      zoom_to_country("map", NULL)
-    } else {
-      selected_country(country)
-      country_dataset(filter(df, COUNTRY == country))
-      updateTextInput(session, "country_search", value = country)
-      updateTextInput(session, "country_search_graphs", value = country)
-      zoom_to_country("map", country)
-    }
-    update_map_layers_only()
-  }
+  
   
   update_map_layers_only <- function() {
     if (!map_initialized() || is.null(input$variable_choice) || is.null(input$indicator_category)) return()
