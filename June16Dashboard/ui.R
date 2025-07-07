@@ -708,7 +708,7 @@ ui <- fluidPage(
                tags$i(class = "fas fa-balance-scale"), "Country Comparison"),
       
       tags$div(
-        class = "control-group",
+        class = "control-group",style="margin:0",
         checkboxInput("use_comparison_country_scale", "Country-specific scale", value = FALSE)
       ),
       
@@ -718,17 +718,27 @@ ui <- fluidPage(
         selectizeInput("comparison_country_search", "Search Country:",
                        choices = NULL, selected = NULL,
                        options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
+        selectInput("indicator_category", "Theme:", 
+                    choices = composite_choices, selected = "Weak Governance"),
         selectInput("map_1_indicator_category", "Composite Score:", 
                     choices = composite_choices, selected = "Social Inequality"),
         selectInput("map_1_variable_choice", "Variable:", choices = NULL)
       ),
       
       tags$div(
+        tags$style(HTML("
+         #map_2_variable_choice + .selectize-control .selectize-dropdown {
+          bottom: 100% !important;
+          top: auto !important;
+        }
+      ")),
         class = "control-group",
         tags$div(class = "control-title", "Map 2 Controls"), 
         selectizeInput("map_2_country_search", "Search Country:",
                        choices = NULL, selected = NULL,
                        options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
+        selectInput("indicator_category", "Theme:", 
+                    choices = composite_choices, selected = "Weak Governance"),
         selectInput("map_2_indicator_category", "Composite Score:",
                     choices = composite_choices, selected = "Social Inequality"),
         selectInput("map_2_variable_choice", "Variable:", choices = NULL)
@@ -758,28 +768,31 @@ ui <- fluidPage(
   
   tags$script(HTML("
     $(document).ready(function() {
+    
       $('#hamburger-menu').click(function(e) {
         e.stopPropagation();
         $('#menu-dropdown').toggleClass('show');
       });
-      
+
       $(document).click(function(e) {
         if (!$(e.target).closest('#hamburger-menu').length) {
           $('#menu-dropdown').removeClass('show');
         }
       });
-      
+
       $('.menu-item').click(function(e) {
         e.preventDefault();
-        
+
         $('.menu-item').removeClass('active');
         $('.panel-section').removeClass('active');
-        
+
         $(this).addClass('active');
-        
+
         var section = $(this).data('section');
         $('#' + section + '-section').addClass('active');
-        
+
+        $('#menu-dropdown').removeClass('show');
+
         if (section === 'comparison') {
           $('#map').hide();
           $('#comparison-maps').show();
@@ -796,9 +809,8 @@ ui <- fluidPage(
             window.dispatchEvent(new Event('resize'));
           }, 100);
         }
-        
         $('#menu-dropdown').removeClass('show');
-        
+
         // Re-initialize search functionality when switching to graphs section
         if (section === 'graphs') {
           setTimeout(function() {
