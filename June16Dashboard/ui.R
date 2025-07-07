@@ -403,8 +403,12 @@ ui <- fluidPage(
       tags$div(
         class = "control-group",
         tags$div(class = "control-title", "Map Controls"),
-        selectInput("indicator_category", "Composite Score:", 
+        selectInput("indicator_category", "Theme:", 
                     choices = composite_choices, selected = "Weak Governance"),
+        conditionalPanel(condition = "input.indicator_category == 'Socio-Ecological Vulnerability'",
+                         selectInput("composite_choice", "Composite Score:",
+                                     choices = names(composite_data_options), selected = "Climate Risk")
+                         ),
         selectInput("variable_choice", "Variable:", choices = NULL),
         tags$div(
           class = "form-check",
