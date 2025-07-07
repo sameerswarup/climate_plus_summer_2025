@@ -132,7 +132,7 @@ output$nd_graph <- renderPlot({
          subtitle = "Data Sourced from the University of Notre Dame Global Adaptation Initiative",
          x = "Date",
          y = label) +
-    theme_fivethirtyeight() +
+    theme_hc() +
     theme( # modifies any visual things
       
       axis.title.x = element_text(
