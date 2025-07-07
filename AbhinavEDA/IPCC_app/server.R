@@ -419,6 +419,95 @@ server <- function(input, output, session) {
     updateSliderInput(session, "value_range", value = value_range)
   })
   
+  
+  output$histogram_plot <- renderPlotly({
+    req(current_raster(), input$climate_variable)
+    r <- current_raster()
+    vals <- as.vector(values(r, na.rm = TRUE))
+    vals <- vals[!is.na(vals)]
+    req(length(vals) > 0)
+    
+    df <- data.frame(Value = vals)
+    
+    p <- ggplot(df, aes(x = Value)) +
+      geom_histogram(fill = "steelblue", color = "white", bins = 30, alpha = 0.8) +
+      labs(
+        title = paste("Histogram of", input$climate_variable),
+        x = "Value",
+        y = "Count"
+      ) +
+      theme_fivethirtyeight() +
+      theme(
+        axis.title.x = element_text(
+          margin = margin(t = 15),
+          face = "bold",
+          family = "Arial"
+        ),
+        axis.title.y = element_text(
+          margin = margin(r = 15),
+          face = "bold",
+          family = "Arial"
+        ),
+        plot.title = element_text(
+          size = 11,
+          hjust = 0.5,
+          family = "Arial"
+        ),
+        text = element_text(
+          family = "Arial"
+        )
+      )
+    
+    ggplotly(p)
+  })
+  
+  output$boxplot_plot <- renderPlotly({
+    req(current_raster(), input$climate_variable)
+    r <- current_raster()
+    vals <- as.vector(values(r, na.rm = TRUE))
+    vals <- vals[!is.na(vals)]
+    req(length(vals) > 0)
+    
+    df <- data.frame(Value = vals)
+    
+    p <- ggplot(df, aes(y = Value)) +
+      geom_boxplot(fill = "steelblue", color = "black", alpha = 0.8) +
+      labs(
+        title = paste("Boxplot of", input$climate_variable),
+        y = "Value"
+      ) +
+      theme_fivethirtyeight() +
+      theme(
+        axis.title.y = element_text(
+          margin = margin(r = 15),
+          face = "bold",
+          family = "Arial"
+        ),
+        plot.title = element_text(
+          size = 11,
+          hjust = 0.5,
+          family = "Arial"
+        ),
+        text = element_text(
+          family = "Arial"
+        )
+      )
+    
+    ggplotly(p)
+  })
+  
+  output$data_summary_vb <- renderUI({
+    var <- varND()
+    varName <- gainVarsNames[gainVars == var]
+    iconName <- ndGainIcons[[varName]]
+    
+    value_box(
+      title = textOutput("variableNameAndYearOutput"),
+      showcase = icon(iconName),
+      value = textOutput("nd_year_score")
+    )
+  })
+  
   observeEvent(input$country_nd, {
     req(input$country_nd)
     country <- input$country_nd
@@ -600,92 +689,5 @@ server <- function(input, output, session) {
     return(nd_year_score())
   })
   
-  output$histogram_plot <- renderPlotly({
-    req(current_raster(), input$climate_variable)
-    r <- current_raster()
-    vals <- as.vector(values(r, na.rm = TRUE))
-    vals <- vals[!is.na(vals)]
-    req(length(vals) > 0)
-    
-    df <- data.frame(Value = vals)
-    
-    p <- ggplot(df, aes(x = Value)) +
-      geom_histogram(fill = "steelblue", color = "white", bins = 30, alpha = 0.8) +
-      labs(
-        title = paste("Histogram of", input$climate_variable),
-        x = "Value",
-        y = "Count"
-      ) +
-      theme_fivethirtyeight() +
-      theme(
-        axis.title.x = element_text(
-          margin = margin(t = 15),
-          face = "bold",
-          family = "Arial"
-        ),
-        axis.title.y = element_text(
-          margin = margin(r = 15),
-          face = "bold",
-          family = "Arial"
-        ),
-        plot.title = element_text(
-          size = 11,
-          hjust = 0.5,
-          family = "Arial"
-        ),
-        text = element_text(
-          family = "Arial"
-        )
-      )
-    
-    ggplotly(p)
-  })
-  
-  output$boxplot_plot <- renderPlotly({
-    req(current_raster(), input$climate_variable)
-    r <- current_raster()
-    vals <- as.vector(values(r, na.rm = TRUE))
-    vals <- vals[!is.na(vals)]
-    req(length(vals) > 0)
-    
-    df <- data.frame(Value = vals)
-    
-    p <- ggplot(df, aes(y = Value)) +
-      geom_boxplot(fill = "steelblue", color = "black", alpha = 0.8) +
-      labs(
-        title = paste("Boxplot of", input$climate_variable),
-        y = "Value"
-      ) +
-      theme_fivethirtyeight() +
-      theme(
-        axis.title.y = element_text(
-          margin = margin(r = 15),
-          face = "bold",
-          family = "Arial"
-        ),
-        plot.title = element_text(
-          size = 11,
-          hjust = 0.5,
-          family = "Arial"
-        ),
-        text = element_text(
-          family = "Arial"
-        )
-      )
-    
-    ggplotly(p)
-  })
-  
-  output$data_summary_vb <- renderUI({
-    var <- varND()
-    varName <- gainVarsNames[gainVars == var]
-    iconName <- ndGainIcons[[varName]]
-    
-    value_box(
-      title = textOutput("variableNameAndYearOutput"),
-      showcase = icon(iconName),
-      value = textOutput("nd_year_score")
-    )
-  })
   
 }
