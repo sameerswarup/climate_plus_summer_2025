@@ -544,15 +544,15 @@ ui <- fluidPage(
       
       tags$div(
         class = "control-group",
-        selectizeInput("comparison_country_search", "Search Country:",
-                       choices = NULL, selected = NULL,
-                       options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
         checkboxInput("use_comparison_country_scale", "Country-specific scale", value = FALSE)
       ),
       
       tags$div(
         class = "control-group",
         tags$div(class = "control-title", "Map 1 Controls"),
+        selectizeInput("comparison_country_search", "Search Country:",
+                       choices = NULL, selected = NULL,
+                       options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
         selectInput("map_1_indicator_category", "Composite Score:", 
                     choices = composite_choices, selected = "Social Inequality"),
         selectInput("map_1_variable_choice", "Variable:", choices = NULL)
@@ -561,16 +561,19 @@ ui <- fluidPage(
       tags$div(
         class = "control-group",
         tags$div(class = "control-title", "Map 2 Controls"), 
+        selectizeInput("map_2_country_search", "Search Country:",
+                       choices = NULL, selected = NULL,
+                       options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
         selectInput("map_2_indicator_category", "Composite Score:",
                     choices = composite_choices, selected = "Social Inequality"),
         selectInput("map_2_variable_choice", "Variable:", choices = NULL)
       ),
-      
-      tags$div(
-        class = "control-group",
-        tags$p("Note: Comparison maps will appear as overlays when this mode is active.", 
-               style = "font-size: 12px; color: #6c757d; font-style: italic;")
-      )
+      # 
+      # tags$div(
+      #   class = "control-group",
+      #   tags$p("Note: Comparison maps will appear as overlays when this mode is active.", 
+      #          style = "font-size: 12px; color: #6c757d; font-style: italic;")
+      # )
     ),
     
     tags$div(
