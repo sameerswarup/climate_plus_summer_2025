@@ -312,13 +312,13 @@ ui <- fluidPage(
     
     # ND Gain map
     conditionalPanel(
-      condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND Gain'",
+      condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND Gain' && input.active_panel == 'map'",
       leafletOutput("nd_gain_map", width = "100%", height = "100vh")
     ),
     
     # Climate Risk map
     conditionalPanel(
-      condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Climate Risk'",
+      condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Climate Risk' && input.active_panel == 'map'",
       leafletOutput("climate_map", width = "100%", height = "100vh")
     ),
   
@@ -507,7 +507,7 @@ ui <- fluidPage(
           uiOutput("data_summary_vb")
         ),
         
-        plotOutput("nd_graph"),
+        plotOutput("nd_graph", width = "95%", height = "330px"),
         
         card(
           card_header("Data Source"),
@@ -805,6 +805,9 @@ ui <- fluidPage(
             setupCountrySearch('country_search_graphs', 'country_suggestions_graphs');
           }, 100);
         }
+        
+        Shiny.setInputValue('active_panel', section, {priority: 'event'});
+
       });
       
       var countries = [];
