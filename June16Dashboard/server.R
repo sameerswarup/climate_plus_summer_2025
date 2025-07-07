@@ -188,8 +188,13 @@ server <- function(input, output, session) {
   }
   
   # Update dropdown choices based on indicator category
-  observeEvent(input$indicator_category, {
-    updateSelectInput(session, "variable_choice", choices = indicator_choice_list[[input$indicator_category]])
+  observeEvent({input$indicator_category
+    input$composite_choice}, {
+    if (input$indicator_category == "Social Inequality" || input$indicator_category == "Weak Governance") {
+      updateSelectInput(session, "variable_choice", choices = indicator_choice_list[[input$indicator_category]])
+    } else {
+      updateSelectInput(session, "variable_choice", choices = composite_data_options[[input$composite_choice]])
+    }
   })
   
   # Sync map variable with histogram variable selection

@@ -194,7 +194,7 @@ composite_data_options <- list(
                  "Relative Deprivation Index" = "povmap.grdi.v1.sc",
                  "Coastal Climate Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc",
                  "Nutritional Dependence" = "Nutritional.dependence.sc"),
-  "Climate Risk" = climate_data_options,
+  "Climate Risk" = names(climate_data_options),
   "ND Gain" = gainVars
 )
 
