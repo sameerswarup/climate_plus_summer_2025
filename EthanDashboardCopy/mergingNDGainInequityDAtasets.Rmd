@@ -1,0 +1,95 @@
+---
+title: "mergingNDGainInequityDAtasets"
+output: html_document
+date: "2025-07-08"
+---
+
+```{r setup, include=FALSE}
+
+library(shiny)
+library(leaflet)
+library(terra)
+library(bslib)
+library(shiny)
+library(leaflet)
+library(dplyr)
+library(sf)
+library(viridis)
+library(tidyverse)
+library(qs)
+library(pryr)
+library(rnaturalearth)
+library(shinyjs)
+library(ggthemes)
+library(plotly)
+
+gain <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/gain_coastal_filtered.rds")
+ineq <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/inequity_filtered5k.rds")
+wide <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/wide_global_temp_anomaly_1990_2025 copy 2.rds")
+```
+
+Let's try making a regions version
+
+```{r}
+
+ineq_no_geo <- ineq %>%
+  st_drop_geometry()
+
+reg <- ineq %>%
+  group_by(NAME_2) %>%
+  summarize(
+    ID = first(ID),
+    name_en = first(name_en),
+    iso_a3.x = first(iso_a3.x),
+    NAME_1 = first(NAME_1),
+    across(mean.count.grav.V2.log.sc:hierachical.score.rank.ineq, mean, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+```
+Save this RDS file.
+
+
+```{r}
+filepath = "/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/regional_scores_of_inequity_filtered_5k.rds"
+reg %>%
+  st_drop_geometry()
+
+saveRDS(reg, filepath)
+
+```
+
+Create new wide version of gain
+
+```{r}
+
+gain_wide <- gain %>%
+  pivot_wider(
+    id_cols = c(ISO3, Name),
+    names_from = Year,
+    values_from = -c(ISO3, Name, Year),
+    names_sep = "__"
+  )
+
+
+```
+
+Combine with inequity
+
+```{r}
+
+joined <- full_join(ineq, gain_wide, by = join_by(iso_a3.x == ISO3))
+
+```
+
+Save it to data folder
+
+
+```{r}
+
+filepath = "/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/joined_ineq_gain.rds"
+
+saveRDS(joined, filepath)
+
+```
+
