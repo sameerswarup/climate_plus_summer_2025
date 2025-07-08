@@ -178,3 +178,7 @@ output$indDescOutput <- renderText({
 output$nd_year_score <- renderText({
   return(nd_year_score())
 })
+
+# Extracting point data
+
+
