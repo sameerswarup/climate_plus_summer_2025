@@ -312,13 +312,13 @@ ui <- fluidPage(
     
     # ND Gain map
     conditionalPanel(
-      condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND Gain' && input.active_panel == 'map'",
+      condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND Gain'",
       leafletOutput("nd_gain_map", width = "100%", height = "100vh")
     ),
     
     # Climate Risk map
     conditionalPanel(
-      condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Climate Risk' && input.active_panel == 'map'",
+      condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Climate Risk'",
       leafletOutput("climate_map", width = "100%", height = "100vh")
     ),
   
