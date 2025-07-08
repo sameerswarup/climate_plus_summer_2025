@@ -71,6 +71,9 @@ gain_wide <- gain %>%
     names_sep = "__"
   )
 
+filepath = "/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/gain_wide.rds"
+
+saveRDS(gain_wide, filepath)
 
 ```
 
@@ -79,7 +82,8 @@ Combine with inequity
 ```{r}
 
 joined <- full_join(ineq, gain_wide, by = join_by(iso_a3.x == ISO3))
-
+joined <- joined %>%
+  select(-c(4:40))
 ```
 
 Save it to data folder
@@ -87,7 +91,7 @@ Save it to data folder
 
 ```{r}
 
-filepath = "/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/joined_ineq_gain.rds"
+filepath = "/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/gain_wide_points.rds"
 
 saveRDS(joined, filepath)
 

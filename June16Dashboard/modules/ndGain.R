@@ -19,9 +19,16 @@ observeEvent(c(input$nd_year,
                    filter(Name == country) %>%
                    pull(input$variable_nd)
                  
+                 # add it here
+                 year <- as.character(input$nd_year)
+                 pointData <- gain_wide_points %>%
+                   filter(Name == country) %>%
+                   select(name_en, iso_a3.x, matches(year))
+                 
                  nd_year_score(score)
                  nd_year_data(data)
                  year(input$nd_year)
+                 point_data(pointData)
                }
 )
 
@@ -180,5 +187,4 @@ output$nd_year_score <- renderText({
 })
 
 # Extracting point data
-
 

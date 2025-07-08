@@ -17,7 +17,7 @@ library(ggthemes)
 library(plotly)
 
 # Load the main datasets
-df <- readRDS("data/joined_ineq_gain.rds") %>%
+df <- readRDS("data/inequity_filtered5k.rds") %>%
   st_transform(4326)
 
 country_polygons_with_data <- readRDS("data/country_polygons_with_data.rds")
@@ -271,3 +271,4 @@ ndGainIcons <- list(
   "Infrastructure Vulnerability" = "building-circle-exclamation"
 )
 
+gain_wide_points <- readRDS("data/gain_wide_points.rds")

@@ -27,6 +27,8 @@ filtered_world_polygons <- reactive({
   world_polygons() %>%
     filter(continent != "Antarctica")
 })
+point_data <- reactiveVal(NULL)
+
 
 # Data type selector (second level dropdown)
 output$data_type_selector <- renderUI({

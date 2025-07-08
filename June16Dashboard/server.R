@@ -346,7 +346,4 @@ server <- function(input, output, session) {
       paste("Currently analyzing:", country, "- Map automatically zoomed to this country")
     }
   })
-  
-  
-  
 }
