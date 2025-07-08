@@ -39,6 +39,8 @@ indicator_map <- list(
 composite_choices <- names(indicator_map)
 composite_arith_list <- c("vulnerab.score.rank", "ineq.score.rank", "gov.score.rank")
 
+
+
 # Indicator descriptions
 indicator_descriptions <- list(
   "Socio-Ecological Vulnerability" = "Measures coastal communities' exposure to damaged marine environments, including threats to sea life, reliance on ocean-based food and jobs, and vulnerability to rising sea levels.",
