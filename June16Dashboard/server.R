@@ -1,10 +1,36 @@
 # server.R - Streamlined version with global default
 server <- function(input, output, session) {
   
+  #COMPARISON MAP OUTPUTS
+  output$map1 <- renderLeaflet({
+    tiles <- providers$Esri.WorldStreetMap
+    leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+      addProviderTiles(tiles) %>%
+      htmlwidgets::onRender("
+      function(el, x) {
+        this.attributionControl.setPosition('topright');
+        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
+      }
+    ") 
+  })
+  
+  output$map2 <- renderLeaflet({
+    tiles <- providers$Esri.WorldStreetMap
+    leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+      addProviderTiles(tiles) %>%
+      htmlwidgets::onRender("
+      function(el, x) {
+        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
+      }
+    ") 
+  })
+  
   
   selected_country <- reactiveVal(NULL)  # Start with global view
   country_dataset <- reactiveVal(NULL)
   map_initialized <- reactiveVal(FALSE)
+  
+  
   select_country <- function(country) {
     if (is.null(country) || country == "" || country == "Global (Default)") {
       selected_country(NULL)
@@ -21,6 +47,8 @@ server <- function(input, output, session) {
     }
     update_map_layers_only()
   }
+  
+
   
   source("modules/countryAnalysisModule.R", local = TRUE)
   source("modules/countryComparison.R", local = TRUE)

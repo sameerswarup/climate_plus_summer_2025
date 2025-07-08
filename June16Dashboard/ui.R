@@ -303,29 +303,10 @@ ui <- fluidPage(
     "))
   ),
   
-  
-    # Main map (for Social Inequality, Weak Governance, and Socio-Ecological Vulnerability with Inequity)
-    conditionalPanel(
-      condition = "input.indicator_category == 'Social Inequality' || input.indicator_category == 'Weak Governance' || (input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Inequity')",
-      leafletOutput("map", width = "100%", height = "100vh")
-    ),
-    
-    # ND Gain map
-    conditionalPanel(
-      condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND Gain'",
-      leafletOutput("nd_gain_map", width = "100%", height = "100vh")
-    ),
-    
-    # Climate Risk map
-    conditionalPanel(
-      condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Climate Risk'",
-      leafletOutput("climate_map", width = "100%", height = "100vh")
-    ),
-  
-  
   tags$div(
     id = "comparison-maps",
     # style = "display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1;",
+    
     tags$div(
       style = "display: flex; flex-direction: column; height: 100vh;",
       tags$div(
@@ -347,6 +328,23 @@ ui <- fluidPage(
     )
   ),
   
+  # Main map (for Social Inequality, Weak Governance, and Socio-Ecological Vulnerability with Inequity)
+  conditionalPanel(
+    condition = "input.indicator_category == 'Social Inequality' || input.indicator_category == 'Weak Governance' || (input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Inequity')",
+    leafletOutput("map", width = "100%", height = "100vh")
+  ),
+  
+  # ND Gain map
+  conditionalPanel(
+    condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND Gain'",
+    leafletOutput("nd_gain_map", width = "100%", height = "100vh")
+  ),
+  
+  # Climate Risk map
+  conditionalPanel(
+    condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Climate Risk'",
+    leafletOutput("climate_map", width = "100%", height = "100vh")
+  ),
   tags$div(
     class = "controls-panel",
     

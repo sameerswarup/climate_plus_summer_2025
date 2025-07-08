@@ -56,10 +56,10 @@ output$time_period_selector <- renderUI({
 output$variable_info <- renderUI({
   req(input$climate_variable)
   
-  if (!is.null(variable_metadata[[input$climate_variable]][[input$data_type]])) {
-    metadata <- variable_metadata[[input$climate_variable]][[input$data_type]]
+  if (!is.null(variable_metadata[[paste0("'",input$climate_variable,"'")]][[paste0("'",input$data_type,"'")]])) {
+    metadata <- variable_metadata[[paste0("'",input$climate_variable,"'")]][[paste0("'",input$data_type,"'")]]
   } else {
-    metadata <- variable_metadata[[input$climate_variable]]
+    metadata <- variable_metadata[[paste0("'",input$climate_variable,"'")]]
   }
   
   tags$div(
@@ -501,8 +501,8 @@ output$boxplot_plot <- renderPlotly({
 output$data_summary_vb <- renderUI({
   var <- varND()
   varName <- gainVarsNames[gainVars == var]
-  iconName <- ndGainIcons[[varName]]
-  
+  iconName <- ndGainIcons[[paste0("'", varName, "'")]]
+
   value_box(
     title = textOutput("variableNameAndYearOutput"),
     showcase = icon(iconName),

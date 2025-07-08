@@ -1,9 +1,14 @@
 #COMPARISON MAPS
 update_comparison_map_1_layers_only <- function() {
   
-  if (!map_initialized()) return()
+  #if (!map_initialized()) return()
   
-  if (is.null(input$map_1_variable_choice) || is.null(input$map_1_indicator_category)) return()
+  #if (is.null(input$map_1_variable_choice) || is.null(input$map_1_indicator_category)) return()
+  # 
+  # req(input$map_1_indicator_category)
+  # req(input$map_1_variable_choice)
+  # req(map_initialized())
+  
   
   var <- input$map_1_variable_choice
   
@@ -18,7 +23,7 @@ update_comparison_map_1_layers_only <- function() {
   }
   
   # Check if variable exists and has valid data
-  if (!(var %in% names(global_data)) || all(is.na(global_data[[var]]))) return()
+  #if (!(var %in% names(global_data)) || all(is.na(global_data[[var]]))) return()
   
   # Create legend title based on whether composite score is selected
   legend_title <- if (var %in% composite_arith_list) {
@@ -121,9 +126,12 @@ update_comparison_map_1_layers_only <- function() {
 
 
 update_comparison_map_2_layers_only <- function() {
-  if (!map_initialized()) return()
+  #if (!map_initialized()) return()
+  # req(input$map_2_indicator_category)
+  # req(input$map_2_variable_choice)
+  # req(map_initialized())
   
-  if (is.null(input$map_2_variable_choice) || is.null(input$map_2_indicator_category)) return()
+  #if (is.null(input$map_2_variable_choice) || is.null(input$map_2_indicator_category)) return()
   
   var <- input$map_2_variable_choice
   country <- selected_country()
@@ -137,7 +145,7 @@ update_comparison_map_2_layers_only <- function() {
   }
   
   # Check if variable exists and has valid data
-  if (!(var %in% names(global_data)) || all(is.na(global_data[[var]]))) return()
+  #if (!(var %in% names(global_data)) || all(is.na(global_data[[var]]))) return()
   
   # Create legend title based on whether composite score is selected
   legend_title <- if (var %in% composite_arith_list) {
@@ -249,29 +257,7 @@ observeEvent(input$map_2_indicator_category, {
 })
 
 
-#COMPARISON MAP OUTPUTS
-output$map1 <- renderLeaflet({
-  tiles <- providers$Esri.WorldStreetMap
-  leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-    addProviderTiles(tiles) %>%
-    htmlwidgets::onRender("
-      function(el, x) {
-        this.attributionControl.setPosition('topright');
-        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
-      }
-    ") 
-})
 
-output$map2 <- renderLeaflet({
-  tiles <- providers$Esri.WorldStreetMap
-  leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-    addProviderTiles(tiles) %>%
-    htmlwidgets::onRender("
-      function(el, x) {
-        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
-      }
-    ") 
-})
 
 #COMPARISON OBSERVER
 observeEvent({
@@ -282,7 +268,6 @@ observeEvent({
   req(map_initialized())
   
   selected_country(input$comparison_country_search)
-  
   update_comparison_map_1_layers_only()
 })
 
