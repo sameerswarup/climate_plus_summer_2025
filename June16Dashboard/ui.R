@@ -576,7 +576,7 @@ ui <- fluidPage(
             "Explore the distribution of climate variable values."
           ),
           
-          plotlyOutput("boxplot_plot")
+          plotlyOutput("histogram_plot")
         ), 
         
         tags$div(
