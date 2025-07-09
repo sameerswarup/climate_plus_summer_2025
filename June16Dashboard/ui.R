@@ -451,21 +451,11 @@ ui <- fluidPage(
         )
       ),
       
-      tags$div(
-        class = "control-group",
-        tags$div(class = "control-title", "About Composite Scores"),
-        tags$div(
-          style = "font-size: 12px; line-height: 1.4; color: #6c757d;",
-          tags$p(tags$strong("Weak Governance:"), "Government effectiveness, regulatory quality, rule of law, corruption control."),
-          tags$p(tags$strong("Social Inequality:"), "Gender gaps, income distribution, health outcome disparities."),
-          tags$p(tags$strong("Socio-Ecological Vulnerability:"), "Environmental degradation, coastal risks, nutritional dependencies.")
-        )
-      ),
-      
       conditionalPanel(
         condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND Gain'",
-        card(
-          tags$h3("What is ND Gain?"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "What is ND Gain?"),
           tags$small(
             style = "font-style: italic;",
             "The Notre Dame Global Adaptation Initiative’s (ND-GAIN) Country Index is a free, open
@@ -477,8 +467,9 @@ ui <- fluidPage(
           )
         ),
         
-        card(
-          card_header("Map Controls"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Map Controls"),
           selectInput(inputId = "country_nd",
                       label = "Choose a country:",
                       choices = country_names,
@@ -500,15 +491,17 @@ ui <- fluidPage(
                       animate = TRUE)
         ),
         
-        card(
-          card_header("Data Summary"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Data Summary"),
           uiOutput("data_summary_vb")
         ),
         
         plotOutput("nd_graph", width = "95%", height = "330px"),
         
-        card(
-          card_header("Data Source"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Data Source"),
           tags$a(
             href = "https://gain.nd.edu/our-work/country-index/download-data/",
             "Notre Dame Global Adaptation Initiative",
@@ -523,66 +516,83 @@ ui <- fluidPage(
       
       conditionalPanel(
         condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Climate Risk'",
-        card(
-          card_header("Climate Variable Controls"),
-          # Climate variable selector (top level)
-          selectInput("climate_variable", 
-                      "Select Climate Variable:", 
-                      choices = names(climate_data_options)),
-          # Data type selector (second level)
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Climate Variable Controls"),
+          
+          selectInput(
+            "climate_variable", 
+            "Select Climate Variable:", 
+            choices = names(climate_data_options)
+          ),
+          
           uiOutput("data_type_selector"),
-          # Time period selector (third level)
           uiOutput("time_period_selector"),
-          # Variable info display
           uiOutput("variable_info")
         ),
         
         # Filter controls card
-        card(
-          card_header("Data Filters"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Data Filters"),
+          
           uiOutput("value_range_slider"),
           uiOutput("manual_min_input"),
           uiOutput("manual_max_input"),
-          radioButtons("filter_mode", "Filter Mode:",
-                       choices = list(
-                         "Show All Data" = "none",
-                         "Show Values in Range" = "range",
-                         "Show Above Threshold" = "above", 
-                         "Show Below Threshold" = "below"
-                       ),
-                       selected = "none"
+          
+          radioButtons(
+            "filter_mode", 
+            "Filter Mode:",
+            choices = list(
+              "Show All Data" = "none",
+              "Show Values in Range" = "range",
+              "Show Above Threshold" = "above", 
+              "Show Below Threshold" = "below"
+            ),
+            selected = "none"
           ),
-          actionButton("reset_filters", "Reset Filters", 
-                       class = "btn-outline-secondary btn-sm",
-                       style = "margin-top: 10px;")
+          
+          actionButton(
+            "reset_filters", 
+            "Reset Filters", 
+            class = "btn-outline-secondary btn-sm",
+            style = "margin-top: 10px;"
+          )
         ),
         
         # Info display
-        card(
-          card_header("Data Summary"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Data Summary"),
+          
           div(
             style = "font-family: Arial, sans-serif;",
             verbatimTextOutput("data_info")
           )
         ),
-        card(
-          style = "background-color: #F0F0F0;",
-          card_header("Data Distribution Plots"),
+        
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Data Distribution Plots"),
+          
           tags$small(
             style = "font-style: italic;",
             "Explore the distribution of climate variable values."
           ),
-          plotlyOutput("histogram_plot"),
+          
           plotlyOutput("boxplot_plot")
         ), 
         
-        card(
-          card_header("Data Source"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Data Source"),
+          
           tags$a(
             href = "https://interactive-atlas.ipcc.ch/",
             "Climate Risk Data Source",
             target = "_blank"
           ),
+          
           tags$small(
             style = "font-style: italic;",
             "Description to be added soon..."
@@ -590,11 +600,24 @@ ui <- fluidPage(
         ),
         
         # ✅ Moved Click Info card INSIDE this conditional
-        card(
-          card_header("Click Info"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Click Info"),
+          
           verbatimTextOutput("click_info")
-        )      
         )
+      ),
+      
+      tags$div(
+        class = "control-group",
+        tags$div(class = "control-title", "About Composite Scores"),
+        tags$div(
+          style = "font-size: 12px; line-height: 1.4; color: #6c757d;",
+          tags$p(tags$strong("Weak Governance:"), "Government effectiveness, regulatory quality, rule of law, corruption control."),
+          tags$p(tags$strong("Social Inequality:"), "Gender gaps, income distribution, health outcome disparities."),
+          tags$p(tags$strong("Socio-Ecological Vulnerability:"), "Environmental degradation, coastal risks, nutritional dependencies.")
+        )
+      ),
     ),
     
     tags$div(
