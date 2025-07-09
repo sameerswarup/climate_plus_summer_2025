@@ -6,7 +6,7 @@ source("modules/countryComparison.R", local = TRUE)
 source("modules/ipcc.R", local = TRUE)
 source("modules/ndGain.R", local = TRUE)
 
-countryND <- reactiveVal(NULL)
+#countryND <- reactiveVal(NULL)
   
   #COMPARISON MAP OUTPUTS
   output$map1 <- renderLeaflet({
