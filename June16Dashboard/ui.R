@@ -628,7 +628,9 @@ ui <- fluidPage(
           ),
           style = "width: 100%; margin-bottom: 15px;",
           class = "btn btn-secondary"
-        )
+        ),
+        tags$small("View global scale scatter plot: each point represents a country's average score for both chosen indicators.",
+                   style = "font-style: italic")
       ),
       
       tags$div(

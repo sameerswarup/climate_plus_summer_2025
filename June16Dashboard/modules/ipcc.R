@@ -28,6 +28,8 @@ filtered_world_polygons <- reactive({
     filter(continent != "Antarctica")
 })
 point_data <- reactiveVal(NULL)
+ca_nd_year_data1 <- reactiveVal(NULL)
+ca_nd_year_data2 <- reactiveVal(NULL)
 
 
 # Data type selector (second level dropdown)

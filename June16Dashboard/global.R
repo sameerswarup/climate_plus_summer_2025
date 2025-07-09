@@ -49,7 +49,41 @@ indicator_descriptions <- list(
 )
 
 # Global level choices for analysis
-global_level_choices <- c(
+global_level_choices <- list(
+  "Inequity" = list(
+    "Nutritional Dependence" = "Nutritional.dependence.sc",
+    "Economic Dependence" = "Economic.dependence.sc",
+    "Low Voice and Accountability" = "Voice_account.sc", 
+    "Political Instability" = "Political_stab.sc",
+    "Government Ineffectiveness" = "Gov_effect.sc",
+    "Poor Regulatory Quality" = "Reg_quality.sc",
+    "Weak Rule of Law" = "Rule_law.sc",
+    "Weak Control of Corruption" = "control_corr.sc",
+    "Gender Inequality" = "gender.ineq.sc",
+    "Income Inequality" = "income.ineq.sc",
+    "Inequality Adjusted Life Expectancy" = "le.ineq.log.sc"
+  ),
+  "ND Gain" = gainVars
+  
+)
+
+global_level_name_key_value <- c(
+  "Projected Change of Biome Distribution" = "Value..ecos_01_score",
+  "Projected Change of Marine Biodiversity" = "Value..ecos_02_score",
+  "Projected Change of Warm Periods" = "Value..habi_01_score",
+  "Projected Change of Deaths from Climate Change Induced Diseases" = "Value..heal_01_score",
+  "Projected Change in Vector-Borne Diseases" = "Value..heal_02_score",
+  "Dependency on External Resource for Health Services" = "Value..heal_03_score",
+  "Medical Staff" = "Value..heal_05_score",
+  "Projected Change of Sea Level Rise Impacts" = "Value..infr_02_score",
+  "Population Living Under 5m Above Sea Level" = "Value..infr_04_score",
+  "Economic Readiness" = "Value..economic",
+  "Ecosystem Vulnerability" = "Value..ecosystems",
+  "Food Vulnerability" = "Value..food",
+  "Governance Readiness" = "Value..governance",
+  "GAIN" = "Value..gain",
+  "Health Vulnerability" = "Value..health",
+  "Infrastructure Vulnerability" = "Value..infrastructure",
   "Nutritional Dependence" = "Nutritional.dependence.sc",
   "Economic Dependence" = "Economic.dependence.sc",
   "Low Voice and Accountability" = "Voice_account.sc", 
