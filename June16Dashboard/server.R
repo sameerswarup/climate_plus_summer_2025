@@ -284,8 +284,8 @@ source("modules/ndGain.R", local = TRUE)
   # Initialize country choices including comparison dropdowns
   observe({
     countries_list <- c("Global (Default)", sort(unique(average_country_nogeo$COUNTRY)))
-    updateSelectizeInput(session, "comparison_country_search", choices = countries_list, server = TRUE)
-    updateSelectizeInput(session, "map_2_country_search", choices = countries_list, server = TRUE)
+    updateSelectizeInput(session, "comparison_country_search", choices = countries_list, selected = "Global (Default)", server = TRUE)
+    updateSelectizeInput(session, "map_2_country_search", choices = countries_list, selected = "Global (Default)", server = TRUE)
     session$sendCustomMessage("updateCountriesList", countries_list)
   })
   

@@ -470,10 +470,6 @@ ui <- fluidPage(
         tags$div(
           class = "control-group",
           tags$div(class = "control-title", "Map Controls"),
-          selectInput(inputId = "country_nd",
-                      label = "Choose a country:",
-                      choices = country_names,
-                      selected = "Afghanistan"),
           selectInput(inputId = "variable_nd",
                       label = "Choose a variable/indicator:",
                       choices = gainVars,

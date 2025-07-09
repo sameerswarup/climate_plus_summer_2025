@@ -1,34 +1,33 @@
 zoom_to_country_nd <- function(map_id, country, zoom_val = 5) {
   coords <- if (is.null(country) || country == "" || country == "Global (Default)") {
-    list(X = 0, Y = 20, zoom = 2)
+    list(X = 0, Y = 0, zoom = 1)
   } else {
     zoom_coords <- country_centroids %>%
       filter(COUNTRY == country) %>%
       select(X, Y) %>%
       as.list()
     
-    if (length(zoom_coords$X) > 0) c(zoom_coords, zoom = zoom_val) else list(X = 0, Y = 20, zoom = 2)
+    if (length(zoom_coords$X) > 0) c(zoom_coords, zoom = zoom_val) else list(X = 0, Y = 0, zoom = 1)
   }
   
   leafletProxy(map_id) %>% setView(lng = coords$X, lat = coords$Y, zoom = coords$zoom)
 }
 
-
-
-observeEvent(input$country_nd, {
-  req(input$country_nd)
-  country <- input$country_nd
+observeEvent(input$country_search, {
+  req(input$country_search)
+  country <- input$country_search
   countryND(country)
   zoom_to_country_nd("nd_gain_map", country)
 })
 
 observeEvent(c(input$nd_year,
                input$variable_nd,
-               input$country_nd), {
+               input$country_search), {
                  req(input$nd_year)
                  req(input$variable_nd)
-                 req(countryND())
-                 country<-countryND()
+                 req(input$country_search)
+                 country <- input$country_search
+                 countryND(country)
                  data <- gain %>%
                    select(ISO3, Name, Year, input$variable_nd) %>%
                    filter(Year == input$nd_year)
