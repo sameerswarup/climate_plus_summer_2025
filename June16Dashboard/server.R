@@ -1,6 +1,13 @@
 # server.R - Streamlined version with global default
 server <- function(input, output, session) {
   
+source("modules/countryAnalysisModule.R", local = TRUE)
+source("modules/countryComparison.R", local = TRUE)
+source("modules/ipcc.R", local = TRUE)
+source("modules/ndGain.R", local = TRUE)
+
+countryND <- reactiveVal(NULL)
+  
   #COMPARISON MAP OUTPUTS
   output$map1 <- renderLeaflet({
     tiles <- providers$Esri.WorldStreetMap
@@ -48,13 +55,6 @@ server <- function(input, output, session) {
     update_map_layers_only()
   }
   
-
-  
-  source("modules/countryAnalysisModule.R", local = TRUE)
-  source("modules/countryComparison.R", local = TRUE)
-  source("modules/ipcc.R", local = TRUE)
-  
-  source("modules/ndGain.R", local = TRUE)
   should_show_points <- function(var) {
     # Show points for Socio-Ecological Vulnerability individual indicators when a country is selected
     socio_ecological_vars <- c("mean.count.grav.V2.log.sc", "povmap.grdi.v1.sc", 

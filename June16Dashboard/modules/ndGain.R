@@ -1,7 +1,25 @@
+zoom_to_country_nd <- function(map_id, country, zoom_val = 5) {
+  coords <- if (is.null(country) || country == "" || country == "Global (Default)") {
+    list(X = 0, Y = 20, zoom = 2)
+  } else {
+    zoom_coords <- country_centroids %>%
+      filter(COUNTRY == country) %>%
+      select(X, Y) %>%
+      as.list()
+    
+    if (length(zoom_coords$X) > 0) c(zoom_coords, zoom = zoom_val) else list(X = 0, Y = 20, zoom = 2)
+  }
+  
+  leafletProxy(map_id) %>% setView(lng = coords$X, lat = coords$Y, zoom = coords$zoom)
+}
+
+
+
 observeEvent(input$country_nd, {
   req(input$country_nd)
   country <- input$country_nd
   countryND(country)
+  zoom_to_country_nd("nd_gain_map", country)
 })
 
 observeEvent(c(input$nd_year,
@@ -76,7 +94,10 @@ output$nd_gain_map <- renderLeaflet({
 
 observe({
   req(input$nd_year)
-  data <- left_join(world_sf, nd_year_data(), by = c("iso_a3" = "ISO3"))
+  nd_data <- nd_year_data()
+  req(!is.null(nd_data), nrow(nd_data) > 0)
+  
+  data <- left_join(world_sf, nd_data, by = c("iso_a3" = "ISO3"))
   
   valid_vals <- na.omit(data[[input$variable_nd]])
   req(length(valid_vals) > 0)  # Make sure there's data
@@ -122,6 +143,8 @@ observeEvent(input$variable_nd, {
 
 
 output$nd_graph <- renderPlot({
+  req(countryND(), nzchar(countryND()))
+  
   filtered <- gain %>%
     filter(Name == countryND())
   
