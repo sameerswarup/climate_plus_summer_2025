@@ -477,12 +477,18 @@ ui <- fluidPage(
           )
         ),
         
+<<<<<<< HEAD
         card(
           card_header("Map Controls"),
           selectInput(inputId = "country_nd",
                       label = "Choose a country:",
                       choices = country_names,
                       selected = "Afghanistan"),
+=======
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Map Controls"),
+>>>>>>> d47a94febe5af947954ce1b2f4d2540bc9707417
           selectInput(inputId = "variable_nd",
                       label = "Choose a variable/indicator:",
                       choices = gainVars,
@@ -572,8 +578,13 @@ ui <- fluidPage(
             style = "font-style: italic;",
             "Explore the distribution of climate variable values."
           ),
+<<<<<<< HEAD
           plotlyOutput("histogram_plot"),
           plotlyOutput("boxplot_plot")
+=======
+          
+          plotlyOutput("histogram_plot")
+>>>>>>> d47a94febe5af947954ce1b2f4d2540bc9707417
         ), 
         
         card(
