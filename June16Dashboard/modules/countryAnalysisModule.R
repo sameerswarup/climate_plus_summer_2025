@@ -1,27 +1,77 @@
 # COUNTRY ANALYSIS MODULE
 
+CA_country_search <- reactiveVal(NULL)
+
+observeEvent(input$country_search_graphs, {
+  CA_country_search(input$country_search_graphs)
+})
+
 # Plotting functions
 create_scatter_plot <- function(data, x_col, y_col, choices, title) {
   if (is.null(data) || !(x_col %in% names(data)) || !(y_col %in% names(data))) return()
   if (all(is.na(data[[x_col]])) || all(is.na(data[[y_col]]))) return()
   
+
   subtitle <- paste0(names(choices)[choices == x_col], " vs. ", names(choices)[choices == y_col])
   
-  ggplot(data, aes(x = .data[[x_col]], y = .data[[y_col]])) +
-    geom_point() +
-    labs(title = title, subtitle = subtitle,
-         x = names(choices)[choices == x_col],
-         y = names(choices)[choices == y_col]) +
-    theme_hc() +
-    theme(
-      plot.title = element_text(face = "bold", size = 12, hjust = 0.5),
-      plot.subtitle = element_text(size = 10, hjust = 0.5),
-      axis.title.x = element_text(face = "bold", size = 12, margin = margin(t = 10, b = 10)),
-      axis.title.y = element_text(face = "bold", size = 12, margin = margin(r = 10, l = 10))
-    )
+  if (title == "Global") {
+    data$Highlight <- ifelse(data$COUNTRY == CA_country_search(), "Target Country", "Other")
+    
+    ggplot(data, aes(x = .data[[x_col]], y = .data[[y_col]], color = Highlight, size = Highlight)) +
+      geom_point() +
+      scale_color_manual(values = c("Target Country" = "black", "Other" = "#A9A9A9")) +
+      scale_size_manual(values = c("Target Country" = 2, "Other" = 2)) +
+      labs(title = title, subtitle = subtitle,
+           x = names(choices)[choices == x_col],
+           y = names(choices)[choices == y_col]) +
+      theme_hc() +
+      theme(
+        plot.title = element_text(face = "bold", size = 12, hjust = 0.5),
+        plot.subtitle = element_text(size = 10, hjust = 0.5),
+        axis.title.x = element_text(face = "bold", size = 12, margin = margin(t = 10, b = 10)),
+        axis.title.y = element_text(face = "bold", size = 12, margin = margin(r = 10, l = 10))
+      )
+  } else {
+    ggplot(data, aes(x = .data[[x_col]], y = .data[[y_col]])) +
+      geom_point() +
+      labs(title = title, subtitle = subtitle,
+           x = names(choices)[choices == x_col],
+           y = names(choices)[choices == y_col]) +
+      theme_hc() +
+      theme(
+        plot.title = element_text(face = "bold", size = 12, hjust = 0.5),
+        plot.subtitle = element_text(size = 10, hjust = 0.5),
+        axis.title.x = element_text(face = "bold", size = 12, margin = margin(t = 10, b = 10)),
+        axis.title.y = element_text(face = "bold", size = 12, margin = margin(r = 10, l = 10))
+      )
+  }
+
+  
 }
 
 calculate_correlation <- function(data, x_col, y_col) {
+  
+  
+  gainVars_values <- unlist(gainVars, use.names = FALSE)
+  
+  first_is_gain <- input$first_indicator_global %in% gainVars_values
+  second_is_gain <- input$second_indicator_global %in% gainVars_values
+  
+  # If either indicator is ND Gain, join in corresponding data (if available)
+  if (first_is_gain) {
+    gain_data1 <- ca_nd_year_data1()
+    if (!is.null(gain_data1)) {
+      data <- left_join(data, gain_data1, by = c("iso_a3" = "ISO3"))
+    }
+  }
+  
+  if (second_is_gain) {
+    gain_data2 <- ca_nd_year_data2()
+    if (!is.null(gain_data2)) {
+      data <- left_join(data, gain_data2, by = c("iso_a3" = "ISO3"))
+    }
+  }
+  
   if (is.null(data) || nrow(data) == 0) return("No data available")
   if (!(x_col %in% names(data)) || !(y_col %in% names(data))) return("Selected variables not available")
   
@@ -47,13 +97,34 @@ observeEvent(input$global_scale_button, {
     size = "l",
     fluidRow(
       column(6, selectInput("first_indicator_global", "First indicator:",
-                            choices = global_level_choices, selected = "Gov_effect.sc")),
+                            choices = global_level_choices, selected = "Gov_effect.sc"),
+             sliderInput(inputId = "ca_nd_year1",
+                         label = "Choose a year:",
+                         min = 1995,
+                         max = 2022,
+                         value = 1995,
+                         sep = "",
+                         animate = TRUE),),
       column(6, selectInput("second_indicator_global", "Second indicator:",
-                            choices = global_level_choices, selected = "le.ineq.log.sc"))
+                            choices = global_level_choices, selected = "le.ineq.log.sc"),
+             sliderInput(inputId = "ca_nd_year2",
+                         label = "Choose a year:",
+                         min = 1995,
+                         max = 2022,
+                         value = 1995,
+                         sep = "",
+                         animate = TRUE),)
     ),
+    
     plotOutput("global_custom_scatter", height = "400px"),
     verbatimTextOutput("global_correlation"),
-    downloadButton("downloadGlobalCustomScatter", "Download Plot"),
+    tags$div(
+      style = "text-align: center;",
+      downloadButton("downloadGlobalCustomScatter", "Download Plot")
+    ),
+    tags$br(),
+    tags$small(style = "font-style: italic",
+               "Here will go some analysis of like where the selected country lies ykyk"),
     footer = modalButton("Close")
   ))
 })
@@ -70,7 +141,40 @@ REAcustom_scatter <- reactive({
 })
 
 REAglobal_custom_scatter <- reactive({
-  create_scatter_plot(average_country_nogeo, input$first_indicator_global, input$second_indicator_global, global_level_choices, "Global")
+  req(input$first_indicator_global, input$second_indicator_global)
+  
+  gainVars_values <- unlist(gainVars, use.names = FALSE)
+  
+  first_is_gain <- input$first_indicator_global %in% gainVars_values
+  second_is_gain <- input$second_indicator_global %in% gainVars_values
+  
+  # Start from a base dataset
+  data <- average_country_nogeo
+  
+  # If either indicator is ND Gain, join in corresponding data (if available)
+  if (first_is_gain) {
+    gain_data1 <- ca_nd_year_data1()
+    if (!is.null(gain_data1)) {
+      data <- left_join(data, gain_data1, by = c("iso_a3" = "ISO3"))
+    }
+  }
+  
+  if (second_is_gain) {
+    gain_data2 <- ca_nd_year_data2()
+    if (!is.null(gain_data2)) {
+      data <- left_join(data, gain_data2, by = c("iso_a3" = "ISO3"))
+    }
+  }
+  
+  # If neither is ND Gain, data remains just average_country_nogeo
+  # Then create the plot with selected indicators
+  create_scatter_plot(
+    data,
+    input$first_indicator_global,
+    input$second_indicator_global,
+    global_level_name_key_value,
+    "Global"
+  )
 })
 
 output$global_custom_scatter <- renderPlot({
@@ -295,3 +399,43 @@ outputOptions(output, "custom_scatter", suspendWhenHidden = FALSE)
 outputOptions(output, "first_indicator_country_description", suspendWhenHidden = FALSE)
 outputOptions(output, "second_indicator_country_description", suspendWhenHidden = FALSE)
 outputOptions(output, "country_histogram_description", suspendWhenHidden = FALSE)
+
+output$ca_nd_gain_slider <- renderUI({
+  
+  first <- input$first_indicator_global
+  second <- input$second_indicator_global
+  
+  
+})
+
+observeEvent(c(input$first_indicator_global,
+               input$second_indicator_global,
+               input$ca_nd_year2,
+               input$ca_nd_year1), {
+                 
+                 req(input$ca_nd_year1)
+                 req(input$ca_nd_year2)
+                 
+                 gainVars_values <- unlist(gainVars, use.names = FALSE)
+                 
+                 if (input$first_indicator_global %in% gainVars_values) {
+                   data1 <- gain %>%
+                     select(ISO3, Name, Year, input$first_indicator_global) %>%
+                     filter(Year == input$ca_nd_year1)
+                   
+                   ca_nd_year_data1(data1)
+                 } else {
+                   ca_nd_year_data1(NULL)
+                 }
+                 
+                 if (input$second_indicator_global %in% gainVars_values) {
+                   data2 <- gain %>%
+                     select(ISO3, Name, Year, input$second_indicator_global) %>%
+                     filter(Year == input$ca_nd_year2)
+                   
+                   ca_nd_year_data2(data2)
+                 } else {
+                   ca_nd_year_data2(NULL)
+                 }
+               })
+
