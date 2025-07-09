@@ -6,6 +6,12 @@ observeEvent(input$country_search_graphs, {
   CA_country_search(input$country_search_graphs)
 })
 
+output$CA_country <- renderText({
+  text <- CA_country_search()
+  return(paste0("Target Country: ", text)
+)
+})
+
 # Plotting functions
 create_scatter_plot <- function(data, x_col, y_col, choices, title) {
   if (is.null(data) || !(x_col %in% names(data)) || !(y_col %in% names(data))) return()
@@ -20,7 +26,7 @@ create_scatter_plot <- function(data, x_col, y_col, choices, title) {
     ggplot(data, aes(x = .data[[x_col]], y = .data[[y_col]], color = Highlight, size = Highlight)) +
       geom_point() +
       scale_color_manual(values = c("Target Country" = "black", "Other" = "#A9A9A9")) +
-      scale_size_manual(values = c("Target Country" = 2, "Other" = 2)) +
+      scale_size_manual(values = c("Target Country" = 3, "Other" = 2)) +
       labs(title = title, subtitle = subtitle,
            x = names(choices)[choices == x_col],
            y = names(choices)[choices == y_col]) +
@@ -51,24 +57,25 @@ create_scatter_plot <- function(data, x_col, y_col, choices, title) {
 
 calculate_correlation <- function(data, x_col, y_col) {
   
-  
-  gainVars_values <- unlist(gainVars, use.names = FALSE)
-  
-  first_is_gain <- input$first_indicator_global %in% gainVars_values
-  second_is_gain <- input$second_indicator_global %in% gainVars_values
-  
-  # If either indicator is ND Gain, join in corresponding data (if available)
-  if (first_is_gain) {
-    gain_data1 <- ca_nd_year_data1()
-    if (!is.null(gain_data1)) {
-      data <- left_join(data, gain_data1, by = c("iso_a3" = "ISO3"))
+  if (identical(data, average_country_nogeo)) {
+    gainVars_values <- unlist(gainVars, use.names = FALSE)
+    
+    first_is_gain <- input$first_indicator_global %in% gainVars_values
+    second_is_gain <- input$second_indicator_global %in% gainVars_values
+    
+    # If either indicator is ND Gain, join in corresponding data (if available)
+    if (first_is_gain) {
+      gain_data1 <- ca_nd_year_data1()
+      if (!is.null(gain_data1)) {
+        data <- left_join(data, gain_data1, by = c("iso_a3" = "ISO3"))
+      }
     }
-  }
-  
-  if (second_is_gain) {
-    gain_data2 <- ca_nd_year_data2()
-    if (!is.null(gain_data2)) {
-      data <- left_join(data, gain_data2, by = c("iso_a3" = "ISO3"))
+    
+    if (second_is_gain) {
+      gain_data2 <- ca_nd_year_data2()
+      if (!is.null(gain_data2)) {
+        data <- left_join(data, gain_data2, by = c("iso_a3" = "ISO3"))
+      }
     }
   }
   
@@ -95,6 +102,12 @@ observeEvent(input$global_scale_button, {
   showModal(modalDialog(
     title = "Global Scale Analysis",
     size = "l",
+    tags$div(
+      style = "text-align: center",
+      tags$h4(
+        textOutput("CA_country")
+      )
+    ),
     fluidRow(
       column(6, selectInput("first_indicator_global", "First indicator:",
                             choices = global_level_choices, selected = "Gov_effect.sc"),
