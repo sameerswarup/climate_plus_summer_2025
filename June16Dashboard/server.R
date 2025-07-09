@@ -96,7 +96,7 @@ server <- function(input, output, session) {
       names(indicator_choice_list[[input$indicator_category]])[indicator_choice_list[[input$indicator_category]] == var]
     }
     
-    pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent", reverse = FALSE)
+    pal <- colorNumeric("Purples", domain = NULL, na.color = "#FFFFFF", reverse = FALSE)
     
     leafletProxy("map") %>%
       clearMarkers() %>% clearShapes() %>% clearControls()
@@ -146,28 +146,35 @@ server <- function(input, output, session) {
       } else {
         country_data <- df %>% filter(COUNTRY == country)
         if (nrow(country_data) > 0 && var %in% names(country_data)) {
-          use_local <- isTRUE(input$use_country_specific_scale)
-          domain_data <- if (use_local) country_data[[var]] else average_country_nogeo[[var]]
+          country_data <- country_data %>% filter(!is.na(.data[[var]]))
           
-          pal_country <- colorNumeric("Purples", domain = domain_data, na.color = "transparent", reverse = FALSE)
-          border_pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent", reverse = FALSE)
-          
-          leafletProxy("map") %>%
-            addPolygons(
-              data = polygon_data,
-              fillColor = "transparent", fillOpacity = 0, color = ~border_pal(get(var)),
-              weight = 1, opacity = 0.4,
-              highlightOptions = highlightOptions(color = "#FFFFFF", weight = 3, bringToFront = TRUE, opacity = 1),
-              layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
-            ) %>%
-            addCircleMarkers(
-              data = country_data, radius = 6, fillColor = ~pal_country(get(var)), fillOpacity = 0.9,
-              stroke = FALSE,
-              label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
-            ) %>%
-            addLegend(pal = pal_country, values = domain_data, opacity = 0.9,
-                      title = paste0("<b>", country, "</b><br>", legend_title, "<br><i>(", if (use_local) "Local" else "Global", ")</i>"),
-                      position = "bottomright")
+          if (nrow(country_data) > 0) {
+            use_local <- isTRUE(input$use_country_specific_scale)
+            domain_data <- if (use_local) country_data[[var]] else average_country_nogeo[[var]]
+            
+            # Sort data by variable value so darker points (higher values) are drawn last (on top)
+            country_data <- country_data %>% arrange(.data[[var]])
+            
+            pal_country <- colorNumeric("Purples", domain = NULL, na.color = "#FFFFFF", reverse = FALSE)
+            border_pal <- colorNumeric("Purples", domain = NULL, na.color = "#FFFFFF", reverse = FALSE)
+            
+            leafletProxy("map") %>%
+              addPolygons(
+                data = polygon_data,
+                fillColor = "transparent", fillOpacity = 0, color = ~border_pal(get(var)),
+                weight = 1, opacity = 0.4,
+                highlightOptions = highlightOptions(color = "#FFFFFF", weight = 3, bringToFront = TRUE, opacity = 1),
+                layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
+              ) %>%
+              addCircleMarkers(
+                data = country_data, radius = 6, fillColor = ~pal_country(get(var)), fillOpacity = 0.9,
+                stroke = FALSE,
+                label = ~paste0(COUNTRY, ": ", round(get(var), 3))
+              ) %>%
+              addLegend(pal = pal_country, values = country_data[[var]], opacity = 0.9,
+                        title = paste0("<b>", country, "</b><br>", legend_title, "<br><i>(", if (use_local) "Local" else "Global", ")</i>"),
+                        position = "bottomright")
+          }
         } else {
           selected_country_data <- polygon_data %>% filter(COUNTRY == country)
           other_countries_data <- polygon_data %>% filter(COUNTRY != country)
@@ -284,7 +291,7 @@ server <- function(input, output, session) {
       return(create_base_map(FALSE))
     }
     
-    pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent", reverse = FALSE)
+    pal <- colorNumeric("Purples", domain = NULL, na.color = "#FFFFFF", reverse = FALSE)
     
     result <- create_base_map(FALSE) %>%
       addPolygons(
