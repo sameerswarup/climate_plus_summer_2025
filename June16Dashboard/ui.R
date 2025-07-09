@@ -718,6 +718,10 @@ ui <- fluidPage(
       )
     ),
     
+    
+    
+    
+    
     #COMPARISON
     tags$div(
       class = "panel-section",
@@ -737,12 +741,137 @@ ui <- fluidPage(
         selectizeInput("comparison_country_search", "Search Country:",
                        choices = NULL, selected = NULL,
                        options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
-        selectInput("indicator_category", "Theme:", 
-                    choices = composite_choices, selected = "Weak Governance"),
-        selectInput("map_1_indicator_category", "Composite Score:", 
+        #selectInput("indicator_category", "Theme:", 
+        #            choices = composite_choices, selected = "Weak Governance"),
+        selectInput("map_1_indicator_category", "Theme:", #Composite Score:
                     choices = composite_choices, selected = "Social Inequality"),
-        selectInput("map_1_variable_choice", "Variable:", choices = NULL)
+        conditionalPanel(
+          condition = "input.map_1_indicator_category == 'Socio-Ecological Vulnerability'",
+          selectInput("composite_choice", "Composite Score:",
+                      choices = names(composite_data_options), selected = "Inequity")
+        ),        
+        conditionalPanel(
+          condition = "input.map_1_indicator_category == 'Social Inequality' || input.map_1_indicator_category == 'Weak Governance' || (input.map_1_indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Inequity')",
+          selectInput("map_1_variable_choice", "Variable:", choices = NULL),
+        ),   
+        # Optional: hide composite_choice unless relevant
+
+        # conditionalPanel(
+        #   condition = "input.map_1_indicator_category == 'Social Inequality' || input.map_1_indicator_category == 'Weak Governance' || (input.map_1_indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Inequity')",
+        #   selectInput("variable_choice", "Variable:", choices = NULL),
+        #   
+        # ),
+        # tags$div(
+        #   class = "form-check",
+        #   checkboxInput(
+        #     inputId = "use_country_specific_scale",
+        #     label = "Country-specific scale",
+        #     value = FALSE
+        #   )
+        # ),
+        # tags$div(
+        #   class = "form-check",
+        #   checkboxInput(
+        #     "satellite_view", 
+        #     label = "Satellite view", 
+        #     value = FALSE
+        #   )
+        # )
+
+      
+      conditionalPanel(
+        condition = "input.map_1_indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND Gain'",
+        
+        # tags$div(
+        #   class = "control-group",
+          selectInput(inputId = "variable_nd",
+                      label = "Choose a variable/indicator:",
+                      choices = gainVars,
+                      selected = "Value..gain"),
+
+          sliderInput(inputId = "nd_year",
+                      label = "Choose a year:",
+                      min = 1995,
+                      max = 2022,
+                      value = 1995,
+                      sep = "",
+                      animate = TRUE)
+        # ),
+
       ),
+      
+      conditionalPanel(
+        condition = "input.map_1_indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Climate Risk'",
+        # tags$div(
+        #   class = "control-group",
+          selectInput(
+            "climate_variable", 
+            "Select Climate Variable:", 
+            choices = names(climate_data_options)
+          ),
+          
+          # uiOutput("data_type_selector"),
+          # uiOutput("time_period_selector"),
+          # uiOutput("variable_info")
+        #),
+        
+        # Filter controls card
+        # tags$div(
+        #   class = "control-group",
+          tags$div(class = "control-title", "Data Filters"),
+          
+          uiOutput("value_range_slider"),
+          uiOutput("manual_min_input"),
+          uiOutput("manual_max_input"),
+          
+          radioButtons(
+            "filter_mode", 
+            "Filter Mode:",
+            choices = list(
+              "Show All Data" = "none",
+              "Show Values in Range" = "range",
+              "Show Above Threshold" = "above", 
+              "Show Below Threshold" = "below"
+            ),
+            selected = "none"
+          ),
+          
+          actionButton(
+            "reset_filters", 
+            "Reset Filters", 
+            class = "btn-outline-secondary btn-sm",
+            style = "margin-top: 10px;"
+          ),
+        # ),
+        
+        # Info display
+        # tags$div(
+        #   class = "control-group",
+          tags$div(class = "control-title", "Data Summary"),
+          
+          div(
+            style = "font-family: Arial, sans-serif;",
+            verbatimTextOutput("data_info")
+          ),
+        #),
+        
+        
+        # ✅ Moved Click Info card INSIDE this conditional
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Click Info"),
+          
+          verbatimTextOutput("click_info")
+        )
+      
+      ),      
+      ),
+
+      
+      
+      
+      
+      
       
       tags$div(
         tags$style(HTML("
