@@ -75,9 +75,11 @@ server <- function(input, output, session) {
   }
   
   update_map_layers_only <- function() {
-    if (!map_initialized() || is.null(input$variable_choice) || is.null(input$indicator_category)) return()
+    if (!map_initialized()) return()
     
-    var <- input$variable_choice
+    var <- if(is.null(input$variable_choice)) "gov.score.rank" else input$variable_choice
+    category <- if(is.null(input$indicator_category)) "Weak Governance" else input$indicator_category
+    
     country <- selected_country()
     
     if (var %in% composite_arith_list) {
@@ -91,9 +93,13 @@ server <- function(input, output, session) {
     if (!(var %in% names(global_data)) || all(is.na(global_data[[var]]))) return()
     
     legend_title <- if (var %in% composite_arith_list) {
-      paste(input$indicator_category)
+      category
     } else {
-      names(indicator_choice_list[[input$indicator_category]])[indicator_choice_list[[input$indicator_category]] == var]
+      if (!is.null(indicator_choice_list[[category]]) && var %in% indicator_choice_list[[category]]) {
+        names(indicator_choice_list[[category]])[indicator_choice_list[[category]] == var]
+      } else {
+        "Weak Governance" # fallback
+      }
     }
     
     pal <- colorNumeric("Purples", domain = NULL, na.color = "#FFFFFF", reverse = FALSE)
@@ -110,7 +116,7 @@ server <- function(input, output, session) {
           highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
           layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
         ) %>%
-        addLegend(pal = pal, values = global_data[[var]], opacity = 0.8, title = legend_title, position = "bottomright")
+        addLegend(pal = pal, values = global_data[[var]][!is.na(global_data[[var]])], opacity = 0.8, title = legend_title, position = "bottomright")
     } else {
       nd_gain_vars <- unlist(gainVars, use.names = FALSE)
       climate_vars <- unlist(climate_data_options, recursive = TRUE, use.names = FALSE)
@@ -141,11 +147,12 @@ server <- function(input, output, session) {
         }
         
         leafletProxy("map") %>%
-          addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
+          addLegend(pal = pal, values = global_data[[var]][!is.na(global_data[[var]])], opacity = 0.8,
                     title = paste0("<b>", country, "</b><br>", legend_title), position = "bottomright")
       } else {
         country_data <- df %>% filter(COUNTRY == country)
         if (nrow(country_data) > 0 && var %in% names(country_data)) {
+          # Filter out rows with NA values for the variable
           country_data <- country_data %>% filter(!is.na(.data[[var]]))
           
           if (nrow(country_data) > 0) {
@@ -200,7 +207,7 @@ server <- function(input, output, session) {
           }
           
           leafletProxy("map") %>%
-            addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
+            addLegend(pal = pal, values = global_data[[var]][!is.na(global_data[[var]])], opacity = 0.8,
                       title = paste0("<b>", country, "</b><br>", legend_title), position = "bottomright")
         }
       }
@@ -301,7 +308,7 @@ server <- function(input, output, session) {
         highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
         layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
       ) %>%
-      addLegend(pal = pal, values = global_data[[var]], opacity = 0.8, title = "Weak Governance", position = "bottomright")
+      addLegend(pal = pal, values = global_data[[var]][!is.na(global_data[[var]])], opacity = 0.8, title = "Weak Governance", position = "bottomright")
     
     map_initialized(TRUE)
     shinyjs::hide("comparison-maps")
