@@ -206,7 +206,14 @@ observe({
   
   tiff_path <- NULL
   tryCatch({
+    # Get the normal (default) raster path
     tiff_path <- climate_data_options[[input$climate_variable]][[input$data_type]][[input$time_period]]
+    
+    # If user selected masked version, adjust path
+    if (!is.null(tiff_path) && input$use_masked_raster) {
+      tiff_path <- sub("\\.tif$", "_masked.tif", tiff_path)
+    }
+    
     cat("File path:", tiff_path, "\n")
     
     if (is.null(tiff_path) || is.na(tiff_path) || !file.exists(tiff_path)) {
@@ -220,7 +227,7 @@ observe({
     showNotification("⚠️ Error resolving file path.", type = "error")
     return()
   })
-  
+
   tryCatch({
     showNotification(
       paste("Loading raster file:", basename(tiff_path)),

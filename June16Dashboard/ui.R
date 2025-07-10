@@ -524,7 +524,13 @@ ui <- fluidPage(
           
           uiOutput("data_type_selector"),
           uiOutput("time_period_selector"),
-          uiOutput("variable_info")
+          uiOutput("variable_info"),
+          
+          checkboxInput(
+            "use_masked_raster",
+            label = "Show only Exclusive Economic Zones (EEZs)",
+            value = FALSE
+          )
         ),
         
         # Filter controls card
