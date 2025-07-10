@@ -302,7 +302,7 @@ ui <- fluidPage(
       }
     "))
   ),
-  
+  # COMPARISON
   tags$div(
     id = "comparison-maps",
     # style = "display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1;",
@@ -328,6 +328,10 @@ ui <- fluidPage(
     )
   ),
   
+  
+  
+  
+  # MAIN MAP
   # Main map (for Social Inequality, Weak Governance, and Socio-Ecological Vulnerability with Inequity)
   conditionalPanel(
     condition = "input.indicator_category == 'Social Inequality' || input.indicator_category == 'Weak Governance' || (input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Inequity')",
@@ -770,6 +774,8 @@ ui <- fluidPage(
     ),
     
     
+
+    
     #COMPARISON
     tags$div(
       class = "panel-section",
@@ -783,36 +789,126 @@ ui <- fluidPage(
         checkboxInput("use_comparison_country_scale", "Country-specific scale", value = FALSE)
       ),
       
+      # MAP 1 CONTROLS
       tags$div(
         class = "control-group",
         tags$div(class = "control-title", "Map 1 Controls"),
-        selectizeInput("comparison_country_search", "Search Country:",
+        selectizeInput("comparison_country_search_map_1", "Search Country:",
                        choices = NULL, selected = NULL,
                        options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
-        selectInput("indicator_category", "Theme:", 
-                    choices = composite_choices, selected = "Weak Governance"),
-        selectInput("map_1_indicator_category", "Composite Score:", 
+        #selectInput("indicator_category", "Theme:", 
+        #            choices = composite_choices, selected = "Weak Governance"),
+        selectInput("indicator_category_map_1", "Theme:", #Composite Score:
                     choices = composite_choices, selected = "Social Inequality"),
-        selectInput("map_1_variable_choice", "Variable:", choices = NULL)
+        conditionalPanel(
+          condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability'",
+          selectInput("composite_choice_map_1", "Composite Score:",
+                      choices = names(composite_data_options), selected = "Inequity")
+        ),        
+        conditionalPanel(
+          condition = "input.indicator_category_map_1 == 'Social Inequality' || input.indicator_category_map_1 == 'Weak Governance' || (input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'Inequity')",
+          selectInput("variable_choice_map_1", "Variable:", choices = NULL),
+        ),   
+
+      
+      conditionalPanel(
+        condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'ND Gain'",
+        
+        # tags$div(
+        #   class = "control-group",
+          selectInput(inputId = "variable_nd_map_1",
+                      label = "Choose a variable/indicator:",
+                      choices = gainVars,
+                      selected = "Value..gain"),
+
+          sliderInput(inputId = "nd_year_map_1",
+                      label = "Choose a year:",
+                      min = 1995,
+                      max = 2022,
+                      value = 1995,
+                      sep = "",
+                      animate = TRUE)
       ),
+      
+      conditionalPanel(
+        condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'Climate Risk'",
+
+          selectInput(
+            "climate_variable_map_1", 
+            "Select Climate Variable:", 
+            choices = names(climate_data_options)
+          ),
+          
+          uiOutput("data_type_selector_map_1"),
+          uiOutput("time_period_selector_map_1"),
+
+          tags$div(class = "control-title", "Data Filters"),
+          
+          uiOutput("value_range_slider_map_1"),
+          uiOutput("manual_min_input_map_1"),
+          uiOutput("manual_max_input_map_1"),
+          
+          radioButtons(
+            "filter_mode_map_1", 
+            "Filter Mode:",
+            choices = list(
+              "Show All Data" = "none",
+              "Show Values in Range" = "range",
+              "Show Above Threshold" = "above", 
+              "Show Below Threshold" = "below"
+            ),
+            selected = "none"
+          ),
+          
+          actionButton(
+            "reset_filters_map_1", 
+            "Reset Filters", 
+            class = "btn-outline-secondary btn-sm",
+            style = "margin-top: 10px;"
+          ),
+
+          tags$div(class = "control-title", "Data Summary"),
+          
+          div(
+            style = "font-family: Arial, sans-serif;",
+            verbatimTextOutput("data_info")
+          ),
+
+        
+        # ✅ Moved Click Info card INSIDE this conditional
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Click Info"),
+          
+          verbatimTextOutput("click_info")
+        )
+      
+      ),      
+      ),
+
+      
+      
+      
+      
+      
       
       tags$div(
         tags$style(HTML("
-         #map_2_variable_choice + .selectize-control .selectize-dropdown {
+         #variable_choice_map_2 + .selectize-control .selectize-dropdown {
           bottom: 100% !important;
           top: auto !important;
         }
       ")),
         class = "control-group",
         tags$div(class = "control-title", "Map 2 Controls"), 
-        selectizeInput("map_2_country_search", "Search Country:",
+        selectizeInput("country_search_map_2", "Search Country:",
                        choices = NULL, selected = NULL,
                        options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
         selectInput("indicator_category", "Theme:", 
                     choices = composite_choices, selected = "Weak Governance"),
-        selectInput("map_2_indicator_category", "Composite Score:",
+        selectInput("indicator_category_map_2", "Composite Score:",
                     choices = composite_choices, selected = "Social Inequality"),
-        selectInput("map_2_variable_choice", "Variable:", choices = NULL)
+        selectInput("variable_choice_map_2", "Variable:", choices = NULL)
       ),
       # 
       # tags$div(
