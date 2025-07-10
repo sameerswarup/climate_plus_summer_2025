@@ -119,18 +119,11 @@ server <- function(input, output, session) {
         ) %>%
         addLegend(pal = pal, values = global_data[[var]][!is.na(global_data[[var]])], opacity = 0.8, title = legend_title, position = "bottomright")
     } else {
-# <<<<<<< HEAD
-#       # Country is not null
-#       # Country-specific view
-#       if (!should_show_points(var)) {
-# 
-# =======
       nd_gain_vars <- unlist(gainVars, use.names = FALSE)
       climate_vars <- unlist(climate_data_options, recursive = TRUE, use.names = FALSE)
       is_special_module_var <- (var %in% nd_gain_vars) || (var %in% climate_vars)
       
       if (is_special_module_var) {
-#>>>>>>> cb14442a935faec594f37b69a1eb3ad4f1b04543
         selected_country_data <- polygon_data %>% filter(COUNTRY == country)
         other_countries_data <- polygon_data %>% filter(COUNTRY != country)
         
