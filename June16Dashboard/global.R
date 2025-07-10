@@ -23,6 +23,8 @@ df <- readRDS("data/inequity_filtered5k.rds") %>%
 country_polygons_with_data <- readRDS("data/country_polygons_with_data.rds")
 country_centroids_with_data <- readRDS("data/country_centroids_with_data.rds")
 
+df_regional <- readRDS("data/regional_scores_of_inequity_filtered_5k.rds")
+
 # Set up the main datasets for the app
 combined_scores_global <- country_centroids_with_data
 combined_scores_global_polygons <- country_polygons_with_data

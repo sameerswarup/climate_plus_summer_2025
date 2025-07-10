@@ -421,13 +421,13 @@ ui <- fluidPage(
         tags$div(class = "control-title", "Map Controls"),
         selectInput("indicator_category", "Theme:", 
                     choices = composite_choices, selected = "Weak Governance"),
-
+        
         # Optional: hide composite_choice unless relevant
         conditionalPanel(
           condition = "input.indicator_category == 'Socio-Ecological Vulnerability'",
           selectInput("composite_choice", "Composite Score:",
                       choices = names(composite_data_options), selected = "Inequity")
-          ),
+        ),
         conditionalPanel(
           condition = "input.indicator_category == 'Social Inequality' || input.indicator_category == 'Weak Governance' || (input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Inequity')",
           selectInput("variable_choice", "Variable:", choices = NULL),
@@ -451,21 +451,11 @@ ui <- fluidPage(
         )
       ),
       
-      tags$div(
-        class = "control-group",
-        tags$div(class = "control-title", "About Composite Scores"),
-        tags$div(
-          style = "font-size: 12px; line-height: 1.4; color: #6c757d;",
-          tags$p(tags$strong("Weak Governance:"), "Government effectiveness, regulatory quality, rule of law, corruption control."),
-          tags$p(tags$strong("Social Inequality:"), "Gender gaps, income distribution, health outcome disparities."),
-          tags$p(tags$strong("Socio-Ecological Vulnerability:"), "Environmental degradation, coastal risks, nutritional dependencies.")
-        )
-      ),
-      
       conditionalPanel(
         condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND Gain'",
-        card(
-          tags$h3("What is ND Gain?"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "What is ND Gain?"),
           tags$small(
             style = "font-style: italic;",
             "The Notre Dame Global Adaptation Initiative’s (ND-GAIN) Country Index is a free, open
@@ -477,18 +467,9 @@ ui <- fluidPage(
           )
         ),
         
-<<<<<<< HEAD
-        card(
-          card_header("Map Controls"),
-          selectInput(inputId = "country_nd",
-                      label = "Choose a country:",
-                      choices = country_names,
-                      selected = "Afghanistan"),
-=======
         tags$div(
           class = "control-group",
           tags$div(class = "control-title", "Map Controls"),
->>>>>>> d47a94febe5af947954ce1b2f4d2540bc9707417
           selectInput(inputId = "variable_nd",
                       label = "Choose a variable/indicator:",
                       choices = gainVars,
@@ -506,15 +487,17 @@ ui <- fluidPage(
                       animate = TRUE)
         ),
         
-        card(
-          card_header("Data Summary"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Data Summary"),
           uiOutput("data_summary_vb")
         ),
         
         plotOutput("nd_graph", width = "95%", height = "330px"),
         
-        card(
-          card_header("Data Source"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Data Source"),
           tags$a(
             href = "https://gain.nd.edu/our-work/country-index/download-data/",
             "Notre Dame Global Adaptation Initiative",
@@ -525,75 +508,87 @@ ui <- fluidPage(
             style = "font-style: italic"
           )
         )
-        ),
+      ),
       
       conditionalPanel(
         condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Climate Risk'",
-        card(
-          card_header("Climate Variable Controls"),
-          # Climate variable selector (top level)
-          selectInput("climate_variable", 
-                      "Select Climate Variable:", 
-                      choices = names(climate_data_options)),
-          # Data type selector (second level)
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Climate Variable Controls"),
+          
+          selectInput(
+            "climate_variable", 
+            "Select Climate Variable:", 
+            choices = names(climate_data_options)
+          ),
+          
           uiOutput("data_type_selector"),
-          # Time period selector (third level)
           uiOutput("time_period_selector"),
-          # Variable info display
           uiOutput("variable_info")
         ),
         
         # Filter controls card
-        card(
-          card_header("Data Filters"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Data Filters"),
+          
           uiOutput("value_range_slider"),
           uiOutput("manual_min_input"),
           uiOutput("manual_max_input"),
-          radioButtons("filter_mode", "Filter Mode:",
-                       choices = list(
-                         "Show All Data" = "none",
-                         "Show Values in Range" = "range",
-                         "Show Above Threshold" = "above", 
-                         "Show Below Threshold" = "below"
-                       ),
-                       selected = "none"
+          
+          radioButtons(
+            "filter_mode", 
+            "Filter Mode:",
+            choices = list(
+              "Show All Data" = "none",
+              "Show Values in Range" = "range",
+              "Show Above Threshold" = "above", 
+              "Show Below Threshold" = "below"
+            ),
+            selected = "none"
           ),
-          actionButton("reset_filters", "Reset Filters", 
-                       class = "btn-outline-secondary btn-sm",
-                       style = "margin-top: 10px;")
+          
+          actionButton(
+            "reset_filters", 
+            "Reset Filters", 
+            class = "btn-outline-secondary btn-sm",
+            style = "margin-top: 10px;"
+          )
         ),
         
         # Info display
-        card(
-          card_header("Data Summary"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Data Summary"),
+          
           div(
             style = "font-family: Arial, sans-serif;",
             verbatimTextOutput("data_info")
           )
         ),
-        card(
-          style = "background-color: #F0F0F0;",
-          card_header("Data Distribution Plots"),
+        
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Data Distribution Plots"),
+          
           tags$small(
             style = "font-style: italic;",
             "Explore the distribution of climate variable values."
           ),
-<<<<<<< HEAD
-          plotlyOutput("histogram_plot"),
-          plotlyOutput("boxplot_plot")
-=======
           
           plotlyOutput("histogram_plot")
->>>>>>> d47a94febe5af947954ce1b2f4d2540bc9707417
         ), 
         
-        card(
-          card_header("Data Source"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Data Source"),
+          
           tags$a(
             href = "https://interactive-atlas.ipcc.ch/",
             "Climate Risk Data Source",
             target = "_blank"
           ),
+          
           tags$small(
             style = "font-style: italic;",
             "Description to be added soon..."
@@ -601,11 +596,24 @@ ui <- fluidPage(
         ),
         
         # ✅ Moved Click Info card INSIDE this conditional
-        card(
-          card_header("Click Info"),
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Click Info"),
+          
           verbatimTextOutput("click_info")
-        )      
         )
+      ),
+      
+      tags$div(
+        class = "control-group",
+        tags$div(class = "control-title", "About Composite Scores"),
+        tags$div(
+          style = "font-size: 12px; line-height: 1.4; color: #6c757d;",
+          tags$p(tags$strong("Weak Governance:"), "Government effectiveness, regulatory quality, rule of law, corruption control."),
+          tags$p(tags$strong("Social Inequality:"), "Gender gaps, income distribution, health outcome disparities."),
+          tags$p(tags$strong("Socio-Ecological Vulnerability:"), "Environmental degradation, coastal risks, nutritional dependencies.")
+        )
+      ),
     ),
     
     tags$div(
@@ -646,6 +654,8 @@ ui <- fluidPage(
       
       tags$div(
         class = "control-group",
+        textOutput("countryDisplay"),
+        
         tags$div(class = "control-title", "Analysis Variables"),
         selectInput("country_histogram_indicator", "Histogram Variable:", 
                     choices = c("Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
@@ -655,27 +665,6 @@ ui <- fluidPage(
         tags$small(textOutput("country_histogram_description"),
                    style = "font-style: italic"),
         tags$br(),
-        selectInput("first_indicator", "First Indicator:", 
-                    choices = c("Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
-                                "Relative Deprivation Index" = "povmap.grdi.v1.sc",
-                                "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"), 
-                    selected = "povmap.grdi.v1.sc"),
-        tags$small(textOutput("first_indicator_country_description"),
-                   style = "font-style: italic"),
-        tags$br(),
-        selectInput("second_indicator", "Second Indicator:", 
-                    choices = c("Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
-                                "Relative Deprivation Index" = "povmap.grdi.v1.sc",
-                                "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"), 
-                    selected = "perc.pop.world.coastal.merit.10m.log.sc"),
-        tags$small(textOutput("second_indicator_country_description"),
-                   style = "font-style: italic")
-        
-      ),
-      
-      tags$div(
-        class = "control-group",
-        textOutput("countryDisplay"),
         tags$div(class = "plot-container",
                  style = "overflow-x: auto;",
                  plotOutput("country_histogram", height = "120px",
@@ -689,12 +678,35 @@ ui <- fluidPage(
           ),
           style = "width: 100%;",
           class = "btn btn-secondary"
-        ),
+        )
+        
+      ),
+      
+      tags$div(
+        class = "control-group",
+
+        selectInput("first_indicator", "First Scatter Plot Indicator:", 
+                    choices = c("Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                                "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                                "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"), 
+                    selected = "povmap.grdi.v1.sc"),
+        tags$small(textOutput("first_indicator_country_description"),
+                   style = "font-style: italic"),
+        tags$br(),
+        selectInput("second_indicator", "Second Scatter Plot Indicator:", 
+                    choices = c("Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                                "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                                "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"), 
+                    selected = "perc.pop.world.coastal.merit.10m.log.sc"),
+        tags$small(textOutput("second_indicator_country_description"),
+                   style = "font-style: italic"),
+        tags$br(),
+        
         tags$div(class = "plot-container",
                  style = "overflow-x: auto;",
                  plotOutput("custom_scatter", height = "170px",
                             width = "100%")),
-
+        
         verbatimTextOutput("correlation"),
         actionButton(
           "scatter_zoom",
@@ -706,9 +718,51 @@ ui <- fluidPage(
           style = "width: 100%;",
           class = "btn btn-secondary"
         )
+        ),
+      
+      tags$div(
+        class = "control-group",
+        tags$div(class = "control-title", "Regional Analysis"),
+        selectInput("ca_region_chooser", textOutput("region_country_text"), 
+                    choices = NULL),
         
+        tags$small("Here will go like average score of that region, what it's like compared to other regions
+                   in the same country, etc."),
+        tags$br(),
+        
+        selectInput("regional_first_indicator", "First Regional Scatter Plot Indicator:", 
+                    choices = c("Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                                "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                                "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"), 
+                    selected = "povmap.grdi.v1.sc"),
+        # tags$small(textOutput("first_indicator_country_description"),
+        #            style = "font-style: italic"),
+        tags$br(),
+        selectInput("regional_second_indicator", "Second Regional Scatter Plot Indicator:", 
+                    choices = c("Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                                "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                                "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"), 
+                    selected = "perc.pop.world.coastal.merit.10m.log.sc"),
+        # tags$small(textOutput("second_indicator_country_description"),
+        #            style = "font-style: italic"),
+        tags$br(),
+        tags$div(class = "plot-container",
+                 style = "overflow-x: auto;",
+                 plotOutput("regional_scatter", height = "170px",
+                            width = "100%")),
+        actionButton(
+          "regional_scatter_zoom",
+          tags$div(
+            style = "display: flex; align-items: center; gap: 6px; justify-content: center;",
+            tags$i(class = "fas fa-search-plus", style = "font-size: 12px;"),
+            "Display Full Graph"
+          ),
+          style = "width: 100%;",
+          class = "btn btn-secondary"
+        )
       )
     ),
+    
     
     #COMPARISON
     tags$div(
