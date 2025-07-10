@@ -133,6 +133,7 @@ source("modules/ndGain.R", local = TRUE)
     leafletProxy("map") %>%
       clearMarkers() %>% clearShapes() %>% clearControls()
     
+    
     if (is.null(country)) {
       # Global view
       leafletProxy("map") %>%
@@ -154,8 +155,10 @@ source("modules/ndGain.R", local = TRUE)
         addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
                   title = legend_title, position = "bottomright")
     } else {
+      # Country is not null
       # Country-specific view
       if (!should_show_points(var)) {
+
         selected_country_data <- polygon_data %>% filter(COUNTRY == country)
         other_countries_data <- polygon_data %>% filter(COUNTRY != country)
         
@@ -284,8 +287,8 @@ source("modules/ndGain.R", local = TRUE)
   # Initialize country choices including comparison dropdowns
   observe({
     countries_list <- c("Global (Default)", sort(unique(average_country_nogeo$COUNTRY)))
-    updateSelectizeInput(session, "comparison_country_search", choices = countries_list, selected = "Global (Default)", server = TRUE)
-    updateSelectizeInput(session, "map_2_country_search", choices = countries_list, selected = "Global (Default)", server = TRUE)
+    updateSelectizeInput(session, "comparison_country_search_map_1", choices = countries_list, selected = "Global (Default)", server = TRUE)
+    updateSelectizeInput(session, "country_search_map_2", choices = countries_list, selected = "Global (Default)", server = TRUE)
     session$sendCustomMessage("updateCountriesList", countries_list)
   })
   
