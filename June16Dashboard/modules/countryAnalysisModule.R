@@ -1,9 +1,53 @@
 # COUNTRY ANALYSIS MODULE
 
 CA_country_search <- reactiveVal(NULL)
+CA_region_names <- reactiveVal(NULL)
 
 observeEvent(input$country_search_graphs, {
   CA_country_search(input$country_search_graphs)
+})
+
+output$CA_country <- renderText({
+  text <- CA_country_search()
+  return(paste0("Target Country: ", text)
+)
+})
+
+observeEvent(input$country_search_graphs, {
+  req(CA_country_search())
+  country <- CA_country_search()
+  
+  unique_name2_list <- df_regional %>%
+    filter(name_en == country) %>%  
+    distinct(NAME_2) %>%                    
+    pull(NAME_2) 
+  
+  CA_region_names(unique_name2_list)
+  updateSelectInput(session, "ca_region_chooser", choices = CA_region_names(), selected = CA_region_names()[1])
+})
+
+output$region_country_text <- renderText({
+  req(CA_country_search())
+  country <- CA_country_search()
+  paste0("Choose a Coastal Region In ", country, ":")
+})
+
+# Get regional dataset from df by filter NAME2
+
+currentRegion <- reactiveVal(NULL)
+regional_dataset <- reactiveVal(NULL)
+
+observeEvent(input$ca_region_chooser, {
+  req(input$ca_region_chooser)
+  currentRegion(input$ca_region_chooser)
+  
+  req(country_dataset())
+  reg <- input$ca_region_chooser
+  count <- country_dataset()
+  
+  filtered <- count %>% filter(NAME_2 == reg)
+  regional_dataset(filtered)
+  print(filtered)
 })
 
 # Plotting functions
@@ -20,7 +64,7 @@ create_scatter_plot <- function(data, x_col, y_col, choices, title) {
     ggplot(data, aes(x = .data[[x_col]], y = .data[[y_col]], color = Highlight, size = Highlight)) +
       geom_point() +
       scale_color_manual(values = c("Target Country" = "black", "Other" = "#A9A9A9")) +
-      scale_size_manual(values = c("Target Country" = 2, "Other" = 2)) +
+      scale_size_manual(values = c("Target Country" = 3, "Other" = 2)) +
       labs(title = title, subtitle = subtitle,
            x = names(choices)[choices == x_col],
            y = names(choices)[choices == y_col]) +
@@ -51,24 +95,25 @@ create_scatter_plot <- function(data, x_col, y_col, choices, title) {
 
 calculate_correlation <- function(data, x_col, y_col) {
   
-  
-  gainVars_values <- unlist(gainVars, use.names = FALSE)
-  
-  first_is_gain <- input$first_indicator_global %in% gainVars_values
-  second_is_gain <- input$second_indicator_global %in% gainVars_values
-  
-  # If either indicator is ND Gain, join in corresponding data (if available)
-  if (first_is_gain) {
-    gain_data1 <- ca_nd_year_data1()
-    if (!is.null(gain_data1)) {
-      data <- left_join(data, gain_data1, by = c("iso_a3" = "ISO3"))
+  if (identical(data, average_country_nogeo)) {
+    gainVars_values <- unlist(gainVars, use.names = FALSE)
+    
+    first_is_gain <- input$first_indicator_global %in% gainVars_values
+    second_is_gain <- input$second_indicator_global %in% gainVars_values
+    
+    # If either indicator is ND Gain, join in corresponding data (if available)
+    if (first_is_gain) {
+      gain_data1 <- ca_nd_year_data1()
+      if (!is.null(gain_data1)) {
+        data <- left_join(data, gain_data1, by = c("iso_a3" = "ISO3"))
+      }
     }
-  }
-  
-  if (second_is_gain) {
-    gain_data2 <- ca_nd_year_data2()
-    if (!is.null(gain_data2)) {
-      data <- left_join(data, gain_data2, by = c("iso_a3" = "ISO3"))
+    
+    if (second_is_gain) {
+      gain_data2 <- ca_nd_year_data2()
+      if (!is.null(gain_data2)) {
+        data <- left_join(data, gain_data2, by = c("iso_a3" = "ISO3"))
+      }
     }
   }
   
@@ -95,6 +140,13 @@ observeEvent(input$global_scale_button, {
   showModal(modalDialog(
     title = "Global Scale Analysis",
     size = "l",
+    tags$div(
+      style = "text-align: center",
+      tags$h4(
+        textOutput("CA_country")
+      )
+    ),
+    tags$br(),
     fluidRow(
       column(6, selectInput("first_indicator_global", "First indicator:",
                             choices = global_level_choices, selected = "Gov_effect.sc"),
@@ -138,6 +190,16 @@ REAcustom_scatter <- reactive({
                        "Relative Deprivation Index" = "povmap.grdi.v1.sc",
                        "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
   create_scatter_plot(country_dataset(), input$first_indicator, input$second_indicator, country_choices, selected_country())
+})
+
+REAregional_scatter <- reactive({
+  if(is.null(currentRegion())) {
+    return(NULL)
+  }
+  country_choices <- c("Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
+                       "Relative Deprivation Index" = "povmap.grdi.v1.sc",
+                       "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
+  create_scatter_plot(regional_dataset(), input$regional_first_indicator, input$regional_second_indicator, country_choices, currentRegion())
 })
 
 REAglobal_custom_scatter <- reactive({
@@ -232,6 +294,16 @@ output$custom_scatter <- renderPlot({
   REAcustom_scatter()
 })
 
+output$regional_scatter <- renderPlot({
+  req(REAregional_scatter())
+  REAregional_scatter()
+})
+
+output$regional_scatter_zoom <- renderPlot({
+  req(REAregional_scatter())
+  REAregional_scatter()
+})
+
 output$custom_scatter_zoom <- renderPlot({
   req(REAcustom_scatter())
   REAcustom_scatter()
@@ -289,6 +361,23 @@ observeEvent(input$histogram_zoom, {
     ),
     tags$br(),
     textOutput("country_histogram_description_zoom"),
+    footer = modalButton("Close")
+  ))
+})
+
+observeEvent(input$regional_scatter_zoom, {
+  showModal(modalDialog(
+    title = "Region Scale Scatterplot",
+    size = "l",
+    plotOutput("regional_scatter_zoom", height = "400px"),
+    tags$br(),
+    
+    tags$div(style = "text-align: center;",
+             downloadButton("downloadRegionalScatter", "Download Plot")
+             
+    ),      
+    tags$br(),
+    verbatimTextOutput("correlation"),
     footer = modalButton("Close")
   ))
 })
@@ -399,6 +488,8 @@ outputOptions(output, "custom_scatter", suspendWhenHidden = FALSE)
 outputOptions(output, "first_indicator_country_description", suspendWhenHidden = FALSE)
 outputOptions(output, "second_indicator_country_description", suspendWhenHidden = FALSE)
 outputOptions(output, "country_histogram_description", suspendWhenHidden = FALSE)
+outputOptions(output, "regional_scatter", suspendWhenHidden = FALSE)
+
 
 output$ca_nd_gain_slider <- renderUI({
   

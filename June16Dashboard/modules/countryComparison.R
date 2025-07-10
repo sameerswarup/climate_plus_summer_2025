@@ -94,6 +94,7 @@ update_comparison_map_1_layers_only <- function() {
   
   var <- input$variable_choice_map_1
   
+
   country <- selected_country()
   
   if (var %in% composite_arith_list) {
@@ -103,9 +104,6 @@ update_comparison_map_1_layers_only <- function() {
     global_data <- average_country_nogeo
     polygon_data <- average_country_polygons
   }
-  
-  # Check if variable exists and has valid data
-  #if (!(var %in% names(global_data)) || all(is.na(global_data[[var]]))) return()
   
   # Create legend title based on whether composite score is selected
   legend_title <- if (var %in% composite_arith_list) {
@@ -118,12 +116,13 @@ update_comparison_map_1_layers_only <- function() {
     var_display_name
   }
   
-  pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
+  pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent", reverse = FALSE)
   
   leafletProxy("map1") %>%
     clearMarkers() %>% clearShapes() %>% clearControls()
   
   if (is.null(country)) {
+    # Global view - always show polygons
     leafletProxy("map1") %>%
       addPolygons(
         data = polygon_data,
@@ -132,18 +131,16 @@ update_comparison_map_1_layers_only <- function() {
         highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
         layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3))), group = "polygons"
       ) %>%
-      {if (should_show_points(var)) {
-        addCircleMarkers(.,
-                         data = global_data, radius = 6, fillColor = ~pal(get(var)), fillOpacity = 0.9,
-                         stroke = TRUE, color = "white", weight = 1,
-                         label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3))),
-                         layerId = ~paste0("marker_", COUNTRY), group = "markers"
-        )
-      } else . } %>%
       addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
                 title = legend_title, position = "bottomright")
   } else {
-    if (!should_show_points(var)) {
+    # Country-specific view
+    nd_gain_vars <- unlist(gainVars, use.names = FALSE)
+    climate_vars <- unlist(climate_data_options, recursive = TRUE, use.names = FALSE)
+    is_special_module_var <- (var %in% nd_gain_vars) || (var %in% climate_vars)
+    
+    if (is_special_module_var) {
+      # Special module variables - use polygon rendering
       selected_country_data <- polygon_data %>% filter(COUNTRY == country)
       other_countries_data <- polygon_data %>% filter(COUNTRY != country)
       
@@ -174,15 +171,18 @@ update_comparison_map_1_layers_only <- function() {
                   title = paste0("<b>", country, "</b><br>", legend_title),
                   position = "bottomright")
     } else {
+      # Check if variable exists in country-level data (df) - if so, show points
       country_data <- df %>% filter(COUNTRY == country)
-      if (nrow(country_data) > 0) {
+      if (nrow(country_data) > 0 && var %in% names(country_data)) {
+        # Show points for variables that exist in df
         use_local <- isTRUE(input$use_country_specific_scale)
         domain_data <- if (use_local) country_data[[var]] else average_country_nogeo[[var]]
         
-        pal_country <- colorNumeric("Purples", domain = domain_data, na.color = "transparent")
-        border_pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
+        pal_country <- colorNumeric("Purples", domain = domain_data, na.color = "transparent", reverse = FALSE)
+        border_pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent", reverse = FALSE)
         
         leafletProxy("map1") %>%
+          # Add background polygons for all countries (for clicking)
           addPolygons(
             data = polygon_data,
             fillColor = "transparent", fillOpacity = 0, color = ~border_pal(get(var)),
@@ -190,13 +190,45 @@ update_comparison_map_1_layers_only <- function() {
             highlightOptions = highlightOptions(color = "#FFFFFF", weight = 3, bringToFront = TRUE, opacity = 1),
             layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
           ) %>%
+          # Add points on top
           addCircleMarkers(
             data = country_data, radius = 6, fillColor = ~pal_country(get(var)), fillOpacity = 0.9,
-            stroke = TRUE, color = "black", weight = 0.7,
+            stroke = FALSE,
             label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
           ) %>%
           addLegend(pal = pal_country, values = domain_data, opacity = 0.9,
                     title = paste0("<b>", country, "</b><br>", legend_title, "<br><i>(", if (use_local) "Local" else "Global", ")</i>"),
+                    position = "bottomright")
+      } else {
+        # Show highlighted country polygon for other variables
+        selected_country_data <- polygon_data %>% filter(COUNTRY == country)
+        other_countries_data <- polygon_data %>% filter(COUNTRY != country)
+        
+        if (nrow(other_countries_data) > 0) {
+          leafletProxy("map1") %>%
+            addPolygons(
+              data = other_countries_data,
+              fillColor = "transparent", fillOpacity = 0, 
+              color = ~pal(get(var)), weight = 2, opacity = 0.5,
+              highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1),
+              layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
+            )
+        }
+        
+        if (nrow(selected_country_data) > 0) {
+          leafletProxy("map1") %>%
+            addPolygons(
+              data = selected_country_data,
+              fillColor = ~pal(get(var)), fillOpacity = 0.8,
+              color = ~pal(get(var)), weight = 3, opacity = 1,
+              highlightOptions = highlightOptions(color = "#FFFFFF", weight = 5, bringToFront = TRUE, opacity = 1, fillOpacity = 0.9),
+              layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
+            )
+        }
+        
+        leafletProxy("map1") %>%
+          addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
+                    title = paste0("<b>", country, "</b><br>", legend_title),
                     position = "bottomright")
       }
     }
@@ -205,15 +237,7 @@ update_comparison_map_1_layers_only <- function() {
   zoom_to_country("map1", selected_country(), 5)
 }
 
-
-
 update_comparison_map_2_layers_only <- function() {
-  #if (!map_initialized()) return()
-  # req(input$indicator_category_map_2)
-  # req(input$variable_choice_map_2)
-  # req(map_initialized())
-  
-  #if (is.null(input$variable_choice_map_2) || is.null(input$indicator_category_map_2)) return()
   
   var <- input$variable_choice_map_2
   country <- selected_country()
@@ -226,9 +250,6 @@ update_comparison_map_2_layers_only <- function() {
     polygon_data <- average_country_polygons
   }
   
-  # Check if variable exists and has valid data
-  #if (!(var %in% names(global_data)) || all(is.na(global_data[[var]]))) return()
-  
   # Create legend title based on whether composite score is selected
   legend_title <- if (var %in% composite_arith_list) {
     paste(input$indicator_category_map_2)
@@ -240,12 +261,13 @@ update_comparison_map_2_layers_only <- function() {
     var_display_name
   }
   
-  pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
+  pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent", reverse = FALSE)
   
   leafletProxy("map2") %>%
     clearMarkers() %>% clearShapes() %>% clearControls()
   
   if (is.null(country)) {
+    # Global view - always show polygons
     leafletProxy("map2") %>%
       addPolygons(
         data = polygon_data,
@@ -254,18 +276,16 @@ update_comparison_map_2_layers_only <- function() {
         highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
         layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3))), group = "polygons"
       ) %>%
-      {if (should_show_points(var)) {
-        addCircleMarkers(.,
-                         data = global_data, radius = 6, fillColor = ~pal(get(var)), fillOpacity = 0.9,
-                         stroke = TRUE, color = "white", weight = 1,
-                         label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3))),
-                         layerId = ~paste0("marker_", COUNTRY), group = "markers"
-        )
-      } else . } %>%
       addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
                 title = legend_title, position = "bottomright")
   } else {
-    if (!should_show_points(var)) {
+    # Country-specific view
+    nd_gain_vars <- unlist(gainVars, use.names = FALSE)
+    climate_vars <- unlist(climate_data_options, recursive = TRUE, use.names = FALSE)
+    is_special_module_var <- (var %in% nd_gain_vars) || (var %in% climate_vars)
+    
+    if (is_special_module_var) {
+      # Special module variables - use polygon rendering
       selected_country_data <- polygon_data %>% filter(COUNTRY == country)
       other_countries_data <- polygon_data %>% filter(COUNTRY != country)
       
@@ -296,15 +316,18 @@ update_comparison_map_2_layers_only <- function() {
                   title = paste0("<b>", country, "</b><br>", legend_title),
                   position = "bottomright")
     } else {
+      # Check if variable exists in country-level data (df) - if so, show points
       country_data <- df %>% filter(COUNTRY == country)
-      if (nrow(country_data) > 0) {
+      if (nrow(country_data) > 0 && var %in% names(country_data)) {
+        # Show points for variables that exist in df
         use_local <- isTRUE(input$use_country_specific_scale)
         domain_data <- if (use_local) country_data[[var]] else average_country_nogeo[[var]]
         
-        pal_country <- colorNumeric("Purples", domain = domain_data, na.color = "transparent")
-        border_pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent")
+        pal_country <- colorNumeric("Purples", domain = domain_data, na.color = "transparent", reverse = FALSE)
+        border_pal <- colorNumeric("Purples", domain = global_data[[var]], na.color = "transparent", reverse = FALSE)
         
         leafletProxy("map2") %>%
+          # Add background polygons for all countries (for clicking)
           addPolygons(
             data = polygon_data,
             fillColor = "transparent", fillOpacity = 0, color = ~border_pal(get(var)),
@@ -312,22 +335,52 @@ update_comparison_map_2_layers_only <- function() {
             highlightOptions = highlightOptions(color = "#FFFFFF", weight = 3, bringToFront = TRUE, opacity = 1),
             layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
           ) %>%
+          # Add points on top
           addCircleMarkers(
             data = country_data, radius = 6, fillColor = ~pal_country(get(var)), fillOpacity = 0.9,
-            stroke = TRUE, color = "black", weight = 0.7,
+            stroke = FALSE,
             label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
           ) %>%
           addLegend(pal = pal_country, values = domain_data, opacity = 0.9,
                     title = paste0("<b>", country, "</b><br>", legend_title, "<br><i>(", if (use_local) "Local" else "Global", ")</i>"),
+                    position = "bottomright")
+      } else {
+        # Show highlighted country polygon for other variables
+        selected_country_data <- polygon_data %>% filter(COUNTRY == country)
+        other_countries_data <- polygon_data %>% filter(COUNTRY != country)
+        
+        if (nrow(other_countries_data) > 0) {
+          leafletProxy("map2") %>%
+            addPolygons(
+              data = other_countries_data,
+              fillColor = "transparent", fillOpacity = 0, 
+              color = ~pal(get(var)), weight = 2, opacity = 0.5,
+              highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1),
+              layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
+            )
+        }
+        
+        if (nrow(selected_country_data) > 0) {
+          leafletProxy("map2") %>%
+            addPolygons(
+              data = selected_country_data,
+              fillColor = ~pal(get(var)), fillOpacity = 0.8,
+              color = ~pal(get(var)), weight = 3, opacity = 1,
+              highlightOptions = highlightOptions(color = "#FFFFFF", weight = 5, bringToFront = TRUE, opacity = 1, fillOpacity = 0.9),
+              layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
+            )
+        }
+        
+        leafletProxy("map2") %>%
+          addLegend(pal = pal, values = global_data[[var]], opacity = 0.8,
+                    title = paste0("<b>", country, "</b><br>", legend_title),
                     position = "bottomright")
       }
     }
   }
   
   zoom_to_country("map2", selected_country(), 5)
-  
 }
-
 
 #COMPARISON VARIABLE SELECTION
 observeEvent(input$indicator_category_map_1, {
@@ -337,9 +390,6 @@ observeEvent(input$indicator_category_map_1, {
 observeEvent(input$indicator_category_map_2, {
   updateSelectInput(session, "variable_choice_map_2", choices = indicator_choice_list[[input$indicator_category_map_2]])
 })
-
-
-
 
 #COMPARISON OBSERVER
 observeEvent({
@@ -353,7 +403,6 @@ observeEvent({
   update_comparison_map_1_layers_only()
 })
 
-
 observeEvent({
   input$country_search_map_2; input$indicator_category_map_2; input$variable_choice_map_2
 }, {
@@ -366,9 +415,6 @@ observeEvent({
   update_comparison_map_2_layers_only()
 })
 
-
-
-
 observeEvent(input$map1_shape_click, {
   select_country(input$map1_shape_click$id)
   update_comparison_map_1_layers_only()
@@ -379,7 +425,6 @@ observeEvent(input$map1_marker_click, {
   select_country(clicked_country)
   update_comparison_map_1_layers_only()
 })
-
 
 observeEvent(input$map2_shape_click, {
   select_country(input$map2_shape_click$id)
@@ -528,6 +573,4 @@ observeEvent(input$variable_nd, {
 
 
 ## IPCC
-
-
 
