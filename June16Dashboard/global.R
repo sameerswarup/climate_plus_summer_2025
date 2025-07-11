@@ -341,3 +341,8 @@ gain_wide_points <- readRDS("data/gain_wide_points.rds")
 
 world_average <- average_country_nogeo %>%
   summarise(across(where(is.numeric), mean, na.rm = TRUE))
+
+gain_wide_points <- gain_wide_points %>%
+  left_join(acn_country_iso, by = c("iso_a3.x" = "iso_a3")) %>%
+  mutate(Name = COUNTRY) %>%
+  select(-COUNTRY)
