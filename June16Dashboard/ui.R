@@ -10,12 +10,18 @@ ui <- fluidPage(
   
   tags$head(
     tags$link(rel = "stylesheet", href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"),
+    tags$link(rel = "preconnect", href = "https://fonts.googleapis.com"),
+    tags$link(rel = "preconnect", href = "https://fonts.gstatic.com", crossorigin = TRUE),
+    tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"),
     tags$style(HTML("
       body, html {
         margin: 0;
         padding: 0;
         height: 100%;
         overflow: hidden;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-weight: 400;
+        letter-spacing: -0.01em;
       }
       
       .container-fluid {
@@ -39,49 +45,87 @@ ui <- fluidPage(
         width: 340px;
         max-height: calc(100vh - 40px);
         background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.08);
         z-index: 1000;
         overflow-y: auto;
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      .controls-panel:hover {
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.15), 0 12px 20px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
       }
       
       .hamburger-menu {
         position: absolute;
-        top: 15px;
-        right: 15px;
+        top: 18px;
+        right: 18px;
         cursor: pointer;
         z-index: 1001;
-        background: rgba(255, 255, 255, 0.9);
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        border-radius: 6px;
-        padding: 8px 10px;
-        transition: all 0.2s ease;
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 10px;
+        padding: 12px 14px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
       }
       
       .hamburger-menu:hover {
         background: rgba(255, 255, 255, 1);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        transform: translateY(-1px) scale(1.02);
+        border-color: rgba(13, 110, 253, 0.2);
+      }
+      
+      .hamburger-menu:active {
+        transform: translateY(0) scale(0.98);
+        transition: all 0.1s ease;
       }
       
       .hamburger-menu i {
         font-size: 16px;
         color: #495057;
+        transition: all 0.3s ease;
+      }
+      
+      .hamburger-menu:hover i {
+        color: #0d6efd;
+        transform: rotate(90deg);
       }
       
       .menu-dropdown {
         position: absolute;
         top: 100%;
         right: 0;
-        background: white;
-        border: 1px solid rgba(0, 0, 0, 0.1);
-        border-radius: 6px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        min-width: 160px;
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 12px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+        min-width: 180px;
         display: none;
         z-index: 1002;
-        margin-top: 5px;
+        margin-top: 8px;
+        overflow: hidden;
+        animation: dropdownSlide 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      @keyframes dropdownSlide {
+        from {
+          opacity: 0;
+          transform: translateY(-8px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
       }
       
       .menu-dropdown.show {
@@ -89,24 +133,52 @@ ui <- fluidPage(
       }
       
       .menu-item {
-        padding: 10px 15px;
+        padding: 14px 18px;
         cursor: pointer;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-        transition: background-color 0.2s ease;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         font-size: 14px;
+        font-weight: 500;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 12px;
+        position: relative;
+        background: transparent;
+      }
+      
+      .menu-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: #0d6efd;
+        transform: scaleY(0);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 0 2px 2px 0;
       }
       
       .menu-item:hover {
-        background-color: rgba(13, 110, 253, 0.05);
+        background: rgba(13, 110, 253, 0.06);
+        padding-left: 22px;
+        color: #0d6efd;
+        transform: translateX(2px);
+      }
+      
+      .menu-item:hover::before {
+        transform: scaleY(1);
       }
       
       .menu-item.active {
-        background-color: rgba(13, 110, 253, 0.1);
+        background: rgba(13, 110, 253, 0.1);
         color: #0d6efd;
-        font-weight: 500;
+        font-weight: 600;
+        padding-left: 22px;
+      }
+      
+      .menu-item.active::before {
+        transform: scaleY(1);
       }
       
       .menu-item:last-child {
@@ -115,11 +187,28 @@ ui <- fluidPage(
       
       .menu-item i {
         font-size: 14px;
-        width: 16px;
+        width: 18px;
+        transition: all 0.3s ease;
+      }
+      
+      .menu-item:hover i {
+        transform: scale(1.1);
       }
       
       .panel-section {
         display: none;
+        animation: panelFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      @keyframes panelFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
       
       .panel-section.active {
@@ -127,8 +216,13 @@ ui <- fluidPage(
       }
       
       .control-group {
-        padding: 15px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
+      }
+      
+      .control-group:hover {
+        background: rgba(248, 249, 250, 0.5);
       }
       
       .control-group:last-child {
@@ -138,57 +232,73 @@ ui <- fluidPage(
       .control-title {
         font-weight: 600;
         color: #2c3e50;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
         font-size: 14px;
+        letter-spacing: -0.02em;
       }
       
       .section-header {
-        font-weight: 600;
-        color: #2c3e50;
-        margin-bottom: 15px;
-        font-size: 16px;
-        padding: 15px 15px 0 15px;
+        font-weight: 700;
+        color: #1a1f36;
+        margin-bottom: 18px;
+        font-size: 18px;
+        padding: 20px 20px 0 20px;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
+        letter-spacing: -0.03em;
       }
       
       .section-header i {
-        font-size: 18px;
+        font-size: 20px;
         color: #0d6efd;
+        transition: all 0.3s ease;
+      }
+      
+      .section-header:hover i {
+        transform: scale(1.05);
       }
       
       .search-container {
         position: relative;
-        margin-bottom: 15px;
+        margin-bottom: 16px;
         width: 100%;
       }
       
       .search-icon {
         position: absolute;
-        left: 12px;
+        left: 14px;
         top: 50%;
         transform: translateY(-50%);
         color: #6c757d;
         z-index: 10;
+        transition: all 0.3s ease;
+      }
+      
+      .search-container:hover .search-icon {
+        color: #0d6efd;
+        transform: translateY(-50%) scale(1.05);
       }
       
       #country_search, #country_search_graphs {
-        padding-left: 35px !important;
+        padding-left: 42px !important;
         border: 2px solid #e9ecef;
-        border-radius: 8px;
+        border-radius: 10px;
         font-size: 14px;
+        font-weight: 500;
         background: #fff;
-        transition: all 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         width: 100% !important;
         box-sizing: border-box;
         margin: 0;
+        height: 44px;
       }
       
       #country_search:focus, #country_search_graphs:focus {
         border-color: #0d6efd;
-        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
         outline: none;
+        transform: translateY(-1px);
       }
       
       #country_suggestions, #country_suggestions_graphs {
@@ -196,11 +306,13 @@ ui <- fluidPage(
         top: 100%;
         left: 0;
         right: 0;
-        background: white;
-        border: 1px solid #dee2e6;
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(0, 0, 0, 0.08);
         border-top: none;
-        border-radius: 0 0 8px 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 0 0 10px 10px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
         z-index: 1000;
         display: none;
         max-height: 200px;
@@ -208,16 +320,19 @@ ui <- fluidPage(
       }
       
       .country-suggestion {
-        padding: 10px 12px;
-        border-bottom: 1px solid #f0f0f0;
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.04);
         cursor: pointer;
         font-size: 14px;
-        transition: background-color 0.2s ease;
+        font-weight: 500;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       }
       
       .country-suggestion:hover,
       .country-suggestion.highlighted {
-        background-color: #f8f9fa;
+        background: rgba(13, 110, 253, 0.08);
+        color: #0d6efd;
+        transform: translateX(4px);
       }
       
       .country-suggestion:last-child {
@@ -226,72 +341,160 @@ ui <- fluidPage(
       
       .form-select, .form-control {
         border: 2px solid #e9ecef;
-        border-radius: 6px;
-        font-size: 13px;
-        transition: all 0.2s ease;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-family: 'Inter', sans-serif;
       }
       
       .form-select:focus, .form-control:focus {
         border-color: #0d6efd;
-        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        transform: translateY(-1px);
       }
       
       .btn-primary {
         background: linear-gradient(135deg, #0d6efd, #0b5ed7);
         border: none;
-        border-radius: 6px;
-        font-weight: 500;
-        transition: all 0.2s ease;
+        border-radius: 8px;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
       }
       
       .btn-primary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(13, 110, 253, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(13, 110, 253, 0.3);
+        background: linear-gradient(135deg, #0b5ed7, #0a58ca);
+      }
+      
+      .btn-primary:active {
+        transform: translateY(0);
+        transition: all 0.1s ease;
       }
       
       .btn-secondary {
         background: linear-gradient(135deg, #6c757d, #5a6268);
         border: none;
-        border-radius: 6px;
-        font-weight: 500;
-        transition: all 0.2s ease;
+        border-radius: 8px;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
       }
       
       .btn-secondary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3);
+        background: linear-gradient(135deg, #5a6268, #495057);
+      }
+      
+      .btn-secondary:active {
+        transform: translateY(0);
+        transition: all 0.1s ease;
       }
       
       .form-check {
-        margin: 8px 0;
+        margin: 10px 0;
       }
       
       .form-check-label {
-        font-size: 13px;
+        font-size: 14px;
         color: #495057;
         font-weight: 500;
+        font-family: 'Inter', sans-serif;
       }
       
       .plot-container {
-        margin: 15px 0;
+        margin: 16px 0;
         background: rgba(248, 249, 250, 0.8);
-        border-radius: 8px;
-        padding: 10px;
-        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+        padding: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+        transition: all 0.3s ease;
+      }
+      
+      .plot-container:hover {
+        background: rgba(248, 249, 250, 1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-1px);
       }
       
       .controls-panel::-webkit-scrollbar {
-        width: 6px;
+        width: 8px;
       }
       
       .controls-panel::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.1);
-        border-radius: 3px;
+        background: rgba(0, 0, 0, 0.04);
+        border-radius: 4px;
       }
       
       .controls-panel::-webkit-scrollbar-thumb {
-        background: rgba(0, 0, 0, 0.3);
-        border-radius: 3px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+        transition: all 0.3s ease;
+      }
+      
+      .controls-panel::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.4);
+      }
+      
+      .header-section {
+        text-align: center; 
+        padding: 24px 20px 20px 20px; 
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        background: linear-gradient(135deg, rgba(13, 110, 253, 0.02), rgba(255, 255, 255, 0.8));
+      }
+      
+      .app-title {
+        font-size: 24px; 
+        font-weight: 800; 
+        color: #1e3a8a; 
+        letter-spacing: -0.5px; 
+        line-height: 1.2; 
+        margin-bottom: 6px; 
+        text-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        font-family: 'Inter', sans-serif;
+      }
+      
+      .team-member {
+        display: flex; 
+        align-items: center; 
+        gap: 12px; 
+        padding: 12px; 
+        background: rgba(248, 249, 250, 0.8); 
+        border-radius: 10px; 
+        border: 1px solid rgba(0, 0, 0, 0.04); 
+        margin-bottom: 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      .team-member:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        background: rgba(13, 110, 253, 0.04);
+      }
+      
+      /* Custom styles for select dropdowns */
+      .selectize-input {
+        border: 2px solid #e9ecef !important;
+        border-radius: 8px !important;
+        font-family: 'Inter', sans-serif !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+      }
+      
+      .selectize-input.focus {
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15) !important;
+      }
+      
+      /* Code/monospace elements */
+      code, pre, .verbatim {
+        font-family: 'JetBrains Mono', 'Monaco', 'Menlo', monospace;
+        font-weight: 500;
       }
       
       @media (max-width: 768px) {
@@ -372,7 +575,6 @@ ui <- fluidPage(
     
     tags$div(
       class = "header-section",
-      style = "text-align: center; padding: 20px 15px 15px 15px; border-bottom: 1px solid rgba(0, 0, 0, 0.1);",
       tags$img(
         src = "dukelogo.jpg",
         alt = "Duke University",
@@ -380,11 +582,10 @@ ui <- fluidPage(
       ),
       tags$div(
         class = "app-title",
-        style = "font-size: 22px; font-weight: 700; color: #1e3a8a; letter-spacing: -0.5px; line-height: 1.2; margin-bottom: 5px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);",
         "High-Stakes Coastal Mapper"
       ),
       tags$div(
-        style = "font-size: 12px; color: #64748b; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;",
+        style = "font-size: 12px; color: #64748b; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; font-family: 'Inter', sans-serif;",
         "Socio-Economic Analysis Platform"
       )
     ),
@@ -462,9 +663,9 @@ ui <- fluidPage(
           tags$div(class = "control-title", "What is ND Gain?"),
           tags$small(
             style = "font-style: italic;",
-            "The Notre Dame Global Adaptation Initiative’s (ND-GAIN) Country Index is a free, open
-          source index that shows a country’s current vulnerability to climate disruptions. It also
-          assesses a country’s readiness to leverage private and public sector investment for
+            "The Notre Dame Global Adaptation Initiative's (ND-GAIN) Country Index is a free, open
+          source index that shows a country's current vulnerability to climate disruptions. It also
+          assesses a country's readiness to leverage private and public sector investment for
           adaptive actions. The ND-GAIN Country Index brings together more than 40 core
           indicators to measure vulnerability and readiness of 182 UN countries from 1995 to the
           present (10 countries only have readiness scores)."
@@ -694,7 +895,7 @@ ui <- fluidPage(
       
       tags$div(
         class = "control-group",
-
+        
         selectInput("first_indicator", "First Scatter Plot Indicator:", 
                     choices = c("Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
                                 "Relative Deprivation Index" = "povmap.grdi.v1.sc",
@@ -728,7 +929,7 @@ ui <- fluidPage(
           style = "width: 100%;",
           class = "btn btn-secondary"
         )
-        ),
+      ),
       
       tags$div(
         class = "control-group",
@@ -749,12 +950,12 @@ ui <- fluidPage(
         tags$small("Here will go like average score of that region, what it's like compared to other regions
                    in the same country, etc."),
         tags$br()
-      
+        
       )
     ),
     
     
-
+    
     
     #COMPARISON
     tags$div(
@@ -789,18 +990,18 @@ ui <- fluidPage(
           condition = "input.indicator_category_map_1 == 'Social Inequality' || input.indicator_category_map_1 == 'Weak Governance' || (input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'Inequity')",
           selectInput("variable_choice_map_1", "Variable:", choices = NULL),
         ),   
-
-      
-      conditionalPanel(
-        condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'ND Gain'",
         
-        # tags$div(
-        #   class = "control-group",
+        
+        conditionalPanel(
+          condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'ND Gain'",
+          
+          # tags$div(
+          #   class = "control-group",
           selectInput(inputId = "variable_nd_map_1",
                       label = "Choose a variable/indicator:",
                       choices = gainVars,
                       selected = "Value..gain"),
-
+          
           sliderInput(inputId = "nd_year_map_1",
                       label = "Choose a year:",
                       min = 1995,
@@ -808,11 +1009,11 @@ ui <- fluidPage(
                       value = 1995,
                       sep = "",
                       animate = TRUE)
-      ),
-      
-      conditionalPanel(
-        condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'Climate Risk'",
-
+        ),
+        
+        conditionalPanel(
+          condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'Climate Risk'",
+          
           selectInput(
             "climate_variable_map_1", 
             "Select Climate Variable:", 
@@ -821,7 +1022,7 @@ ui <- fluidPage(
           
           uiOutput("data_type_selector_map_1"),
           uiOutput("time_period_selector_map_1"),
-
+          
           tags$div(class = "control-title", "Data Filters"),
           
           uiOutput("value_range_slider_map_1"),
@@ -846,26 +1047,26 @@ ui <- fluidPage(
             class = "btn-outline-secondary btn-sm",
             style = "margin-top: 10px;"
           ),
-
+          
           tags$div(class = "control-title", "Data Summary"),
           
           div(
             style = "font-family: Arial, sans-serif;",
             verbatimTextOutput("data_info")
           ),
-
-        
-        # ✅ Moved Click Info card INSIDE this conditional
-        tags$div(
-          class = "control-group",
-          tags$div(class = "control-title", "Click Info"),
           
-          verbatimTextOutput("click_info")
-        )
-      
-      ),      
+          
+          # ✅ Moved Click Info card INSIDE this conditional
+          tags$div(
+            class = "control-group",
+            tags$div(class = "control-title", "Click Info"),
+            
+            verbatimTextOutput("click_info")
+          )
+          
+        ),      
       ),
-
+      
       tags$div(
         tags$style(HTML("
          #variable_choice_map_2 + .selectize-control .selectize-dropdown {
@@ -928,7 +1129,6 @@ ui <- fluidPage(
             tags$h6("Faculty & Mentors", style = "font-weight: 600; margin-bottom: 10px; color: #2c3e50;"),
             tags$div(
               class = "team-member",
-              style = "display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(248, 249, 250, 0.8); border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.05); margin-bottom: 10px;",
               tags$img(
                 src = "davidgill.png",
                 alt = "David Gill",
@@ -943,7 +1143,6 @@ ui <- fluidPage(
             ),
             tags$div(
               class = "team-member",
-              style = "display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(248, 249, 250, 0.8); border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.05);",
               tags$img(
                 src = "sameerswarup.png",
                 alt = "Sameer Swarup",
