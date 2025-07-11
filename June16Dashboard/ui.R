@@ -302,7 +302,7 @@ ui <- fluidPage(
       }
     "))
   ),
-  
+  # COMPARISON
   tags$div(
     id = "comparison-maps",
     # style = "display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1;",
@@ -328,6 +328,10 @@ ui <- fluidPage(
     )
   ),
   
+  
+  
+  
+  # MAIN MAP
   # Main map (for Social Inequality, Weak Governance, and Socio-Ecological Vulnerability with Inequity)
   conditionalPanel(
     condition = "input.indicator_category == 'Social Inequality' || input.indicator_category == 'Weak Governance' || (input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Inequity')",
@@ -524,7 +528,13 @@ ui <- fluidPage(
           
           uiOutput("data_type_selector"),
           uiOutput("time_period_selector"),
-          uiOutput("variable_info")
+          uiOutput("variable_info"),
+          
+          checkboxInput(
+            "use_masked_raster",
+            label = "Show only Exclusive Economic Zones (EEZs)",
+            value = FALSE
+          )
         ),
         
         # Filter controls card
@@ -744,6 +754,8 @@ ui <- fluidPage(
     ),
     
     
+
+    
     #COMPARISON
     tags$div(
       class = "panel-section",
@@ -757,36 +769,120 @@ ui <- fluidPage(
         checkboxInput("use_comparison_country_scale", "Country-specific scale", value = FALSE)
       ),
       
+      # MAP 1 CONTROLS
       tags$div(
         class = "control-group",
         tags$div(class = "control-title", "Map 1 Controls"),
-        selectizeInput("comparison_country_search", "Search Country:",
+        selectizeInput("comparison_country_search_map_1", "Search Country:",
                        choices = NULL, selected = NULL,
                        options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
-        selectInput("indicator_category", "Theme:", 
-                    choices = composite_choices, selected = "Weak Governance"),
-        selectInput("map_1_indicator_category", "Composite Score:", 
+        #selectInput("indicator_category", "Theme:", 
+        #            choices = composite_choices, selected = "Weak Governance"),
+        selectInput("indicator_category_map_1", "Theme:", #Composite Score:
                     choices = composite_choices, selected = "Social Inequality"),
-        selectInput("map_1_variable_choice", "Variable:", choices = NULL)
+        conditionalPanel(
+          condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability'",
+          selectInput("composite_choice_map_1", "Composite Score:",
+                      choices = names(composite_data_options), selected = "Inequity")
+        ),        
+        conditionalPanel(
+          condition = "input.indicator_category_map_1 == 'Social Inequality' || input.indicator_category_map_1 == 'Weak Governance' || (input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'Inequity')",
+          selectInput("variable_choice_map_1", "Variable:", choices = NULL),
+        ),   
+
+      
+      conditionalPanel(
+        condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'ND Gain'",
+        
+        # tags$div(
+        #   class = "control-group",
+          selectInput(inputId = "variable_nd_map_1",
+                      label = "Choose a variable/indicator:",
+                      choices = gainVars,
+                      selected = "Value..gain"),
+
+          sliderInput(inputId = "nd_year_map_1",
+                      label = "Choose a year:",
+                      min = 1995,
+                      max = 2022,
+                      value = 1995,
+                      sep = "",
+                      animate = TRUE)
       ),
       
+      conditionalPanel(
+        condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'Climate Risk'",
+
+          selectInput(
+            "climate_variable_map_1", 
+            "Select Climate Variable:", 
+            choices = names(climate_data_options)
+          ),
+          
+          uiOutput("data_type_selector_map_1"),
+          uiOutput("time_period_selector_map_1"),
+
+          tags$div(class = "control-title", "Data Filters"),
+          
+          uiOutput("value_range_slider_map_1"),
+          uiOutput("manual_min_input_map_1"),
+          uiOutput("manual_max_input_map_1"),
+          
+          radioButtons(
+            "filter_mode_map_1", 
+            "Filter Mode:",
+            choices = list(
+              "Show All Data" = "none",
+              "Show Values in Range" = "range",
+              "Show Above Threshold" = "above", 
+              "Show Below Threshold" = "below"
+            ),
+            selected = "none"
+          ),
+          
+          actionButton(
+            "reset_filters_map_1", 
+            "Reset Filters", 
+            class = "btn-outline-secondary btn-sm",
+            style = "margin-top: 10px;"
+          ),
+
+          tags$div(class = "control-title", "Data Summary"),
+          
+          div(
+            style = "font-family: Arial, sans-serif;",
+            verbatimTextOutput("data_info")
+          ),
+
+        
+        # ✅ Moved Click Info card INSIDE this conditional
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Click Info"),
+          
+          verbatimTextOutput("click_info")
+        )
+      
+      ),      
+      ),
+
       tags$div(
         tags$style(HTML("
-         #map_2_variable_choice + .selectize-control .selectize-dropdown {
+         #variable_choice_map_2 + .selectize-control .selectize-dropdown {
           bottom: 100% !important;
           top: auto !important;
         }
       ")),
         class = "control-group",
         tags$div(class = "control-title", "Map 2 Controls"), 
-        selectizeInput("map_2_country_search", "Search Country:",
+        selectizeInput("country_search_map_2", "Search Country:",
                        choices = NULL, selected = NULL,
                        options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
         selectInput("indicator_category", "Theme:", 
                     choices = composite_choices, selected = "Weak Governance"),
-        selectInput("map_2_indicator_category", "Composite Score:",
+        selectInput("indicator_category_map_2", "Composite Score:",
                     choices = composite_choices, selected = "Social Inequality"),
-        selectInput("map_2_variable_choice", "Variable:", choices = NULL)
+        selectInput("variable_choice_map_2", "Variable:", choices = NULL)
       ),
       # 
       # tags$div(
@@ -805,8 +901,176 @@ ui <- fluidPage(
       
       tags$div(
         class = "control-group",
-        tags$p("Content coming soon...", 
-               style = "font-size: 14px; color: #6c757d; font-style: italic; text-align: center; padding: 40px 20px;")
+        tags$div(class = "control-title", "Project Overview"),
+        tags$p("The High-Stakes Coastal Mapper is a global coastal social-environmental atlas: a high-resolution, interactive data platform that serves as a comprehensive hub of social, economic, demographic, and environmental data relevant to climate and ocean science and policy.", 
+               style = "font-size: 14px; line-height: 1.6; margin-bottom: 15px;"),
+        tags$p("This platform addresses critical knowledge gaps in understanding coastal vulnerabilities by integrating multiple data sources to visualize socio-ecological vulnerability, social inequality, and governance effectiveness across coastal regions worldwide.",
+               style = "font-size: 14px; line-height: 1.6; margin-bottom: 15px;")
+      ),
+      
+      tags$div(
+        class = "control-group",
+        tags$div(class = "control-title", "Data+ Program 2025"),
+        tags$p("This project is part of Duke University's Data+ program for 2025, an intensive 10-week collaborative research experience that brings together faculty, graduate students, and undergraduates to tackle real-world data science challenges.",
+               style = "font-size: 14px; line-height: 1.6; margin-bottom: 10px;"),
+        tags$p("The Data+ program (including Climate+ projects) provides students with hands-on experience in data analysis, visualization, and scientific computing while addressing pressing societal issues through interdisciplinary collaboration.",
+               style = "font-size: 14px; line-height: 1.6; margin-bottom: 15px;")
+      ),
+      
+      tags$div(
+        class = "control-group",
+        tags$div(class = "control-title", "Research Team"),
+        
+        tags$div(
+          style = "margin-bottom: 20px;",
+          tags$div(
+            style = "margin-bottom: 15px;",
+            tags$h6("Faculty & Mentors", style = "font-weight: 600; margin-bottom: 10px; color: #2c3e50;"),
+            tags$div(
+              class = "team-member",
+              style = "display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(248, 249, 250, 0.8); border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.05); margin-bottom: 10px;",
+              tags$img(
+                src = "davidgill.png",
+                alt = "David Gill",
+                style = "width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #0d6efd; flex-shrink: 0;"
+              ),
+              tags$div(
+                style = "flex: 1; min-width: 0;",
+                tags$div(tags$strong("David Gill"), " - Faculty Lead", style = "font-size: 13px; font-weight: 600; color: #2c3e50; margin-bottom: 2px; line-height: 1.2;"),
+                tags$div("Ocean Synthesis Lab", style = "font-size: 11px; line-height: 1.3; color: #6c757d;"),
+                tags$div("david.gill@duke.edu", style = "font-size: 10px; color: #0d6efd; margin-top: 2px; font-style: italic;")
+              )
+            ),
+            tags$div(
+              class = "team-member",
+              style = "display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(248, 249, 250, 0.8); border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.05);",
+              tags$img(
+                src = "sameerswarup.png",
+                alt = "Sameer Swarup",
+                style = "width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #0d6efd; flex-shrink: 0;"
+              ),
+              tags$div(
+                style = "flex: 1; min-width: 0;",
+                tags$div(tags$strong("Sameer Swarup"), " - Mentor", style = "font-size: 13px; font-weight: 600; color: #2c3e50; margin-bottom: 2px; line-height: 1.2;"),
+                tags$div("Ocean Synthesis Lab", style = "font-size: 11px; line-height: 1.3; color: #6c757d;"),
+                tags$div("sameer.swarup@duke.edu", style = "font-size: 10px; color: #0d6efd; margin-top: 2px; font-style: italic;")
+              )
+            )
+          )
+        ),
+        
+        tags$div(
+          style = "margin-bottom: 15px;",
+          tags$h6("Student Researchers", style = "font-weight: 600; margin-bottom: 10px; color: #2c3e50;"),
+          tags$div(
+            style = "display: flex; flex-direction: column; gap: 12px;",
+            
+            tags$a(
+              style = "display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(248, 249, 250, 0.8); border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.3s ease; cursor: pointer; text-decoration: none; color: inherit;",
+              onmouseover = "this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'; this.style.background = 'rgba(13, 110, 253, 0.05)';",
+              onmouseout = "this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; this.style.background = 'rgba(248, 249, 250, 0.8)';",
+              href = "https://github.com/ethanchou",
+              target = "_blank",
+              tags$img(
+                src = "ethancho.png",
+                alt = "Ethan Cho",
+                style = "width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #0d6efd; flex-shrink: 0; transition: all 0.3s ease;",
+                onmouseover = "this.style.transform = 'scale(1.05)'; this.style.borderColor = '#0b5ed7';",
+                onmouseout = "this.style.transform = 'scale(1)'; this.style.borderColor = '#0d6efd';"
+              ),
+              tags$div(
+                style = "flex: 1; min-width: 0;",
+                tags$div(tags$strong("Ethan Cho"), style = "font-size: 13px; font-weight: 600; color: #2c3e50; margin-bottom: 2px; line-height: 1.2;"),
+                tags$div("CS & Environmental Science", style = "font-size: 11px; line-height: 1.3; color: #6c757d;"),
+                tags$div("ethan.cho@duke.edu", style = "font-size: 10px; color: #0d6efd; margin-top: 2px; font-style: italic;")
+              )
+            ),
+            
+            tags$a(
+              style = "display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(248, 249, 250, 0.8); border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.3s ease; cursor: pointer; text-decoration: none; color: inherit;",
+              onmouseover = "this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'; this.style.background = 'rgba(13, 110, 253, 0.05)';",
+              onmouseout = "this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; this.style.background = 'rgba(248, 249, 250, 0.8)';",
+              href = "https://github.com/megankolenski",
+              target = "_blank",
+              tags$img(
+                src = "megankolenski.png",
+                alt = "Megan Kolenski",
+                style = "width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #0d6efd; flex-shrink: 0; transition: all 0.3s ease;",
+                onmouseover = "this.style.transform = 'scale(1.05)'; this.style.borderColor = '#0b5ed7';",
+                onmouseout = "this.style.transform = 'scale(1)'; this.style.borderColor = '#0d6efd';"
+              ),
+              tags$div(
+                style = "flex: 1; min-width: 0;",
+                tags$div(tags$strong("Megan Kolenski"), style = "font-size: 13px; font-weight: 600; color: #2c3e50; margin-bottom: 2px; line-height: 1.2;"),
+                tags$div("Statistics", style = "font-size: 11px; line-height: 1.3; color: #6c757d;"),
+                tags$div("megan.kolenski@duke.edu", style = "font-size: 10px; color: #0d6efd; margin-top: 2px; font-style: italic;")
+              )
+            ),
+            
+            tags$a(
+              style = "display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(248, 249, 250, 0.8); border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.3s ease; cursor: pointer; text-decoration: none; color: inherit;",
+              onmouseover = "this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'; this.style.background = 'rgba(13, 110, 253, 0.05)';",
+              onmouseout = "this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; this.style.background = 'rgba(248, 249, 250, 0.8)';",
+              href = "https://github.com/abhinavmeduri",
+              target = "_blank",
+              tags$img(
+                src = "abhinavmeduri.png",
+                alt = "Abhinav Meduri",
+                style = "width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #0d6efd; flex-shrink: 0; transition: all 0.3s ease;",
+                onmouseover = "this.style.transform = 'scale(1.05)'; this.style.borderColor = '#0b5ed7';",
+                onmouseout = "this.style.transform = 'scale(1)'; this.style.borderColor = '#0d6efd';"
+              ),
+              tags$div(
+                style = "flex: 1; min-width: 0;",
+                tags$div(tags$strong("Abhinav Meduri"), style = "font-size: 13px; font-weight: 600; color: #2c3e50; margin-bottom: 2px; line-height: 1.2;"),
+                tags$div("CS & Statistics", style = "font-size: 11px; line-height: 1.3; color: #6c757d;"),
+                tags$div("abhinav.meduri@duke.edu", style = "font-size: 10px; color: #0d6efd; margin-top: 2px; font-style: italic;")
+              )
+            ),
+            
+            tags$a(
+              style = "display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(248, 249, 250, 0.8); border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.3s ease; cursor: pointer; text-decoration: none; color: inherit;",
+              onmouseover = "this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'; this.style.background = 'rgba(13, 110, 253, 0.05)';",
+              onmouseout = "this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; this.style.background = 'rgba(248, 249, 250, 0.8)';",
+              href = "https://github.com/leonardeshun",
+              target = "_blank",
+              tags$img(
+                src = "leonardeshun.jpg",
+                alt = "Leonard Eshun",
+                style = "width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #0d6efd; flex-shrink: 0; transition: all 0.3s ease;",
+                onmouseover = "this.style.transform = 'scale(1.05)'; this.style.borderColor = '#0b5ed7';",
+                onmouseout = "this.style.transform = 'scale(1)'; this.style.borderColor = '#0d6efd';"
+              ),
+              tags$div(
+                style = "flex: 1; min-width: 0;",
+                tags$div(tags$strong("Leonard Eshun"), style = "font-size: 13px; font-weight: 600; color: #2c3e50; margin-bottom: 2px; line-height: 1.2;"),
+                tags$div("Data Science Graduate", style = "font-size: 11px; line-height: 1.3; color: #6c757d;"),
+                tags$div("leonard.eshun@duke.edu", style = "font-size: 10px; color: #0d6efd; margin-top: 2px; font-style: italic;")
+              )
+            )
+          )
+        )
+      ),
+      
+      tags$div(
+        class = "control-group",
+        tags$div(class = "control-title", "Data Sources"),
+        tags$div(
+          style = "font-size: 14px; line-height: 1.6;",
+          tags$p(tags$strong("Climate Data:"), " IPCC Interactive Atlas for ocean pH, sea level rise, and temperature projections"),
+          tags$p(tags$strong("Coral Bleaching:"), " NOAA Coral Reef Watch for real-time thermal stress monitoring"),
+          tags$p(tags$strong("Adaptation Metrics:"), " Notre Dame Global Adaptation Initiative (ND-GAIN) Country Index"),
+          tags$p(tags$strong("Socio-economic Indicators:"), " World Bank, UN agencies, and other authoritative sources for governance, inequality, and development metrics")
+        )
+      ),
+      
+      tags$div(
+        class = "control-group",
+        tags$div(class = "control-title", "Contact & Support"),
+        tags$div(
+          style = "font-size: 12px; line-height: 1.4; color: #6c757d;",
+          tags$p("For questions about this platform or research collaboration opportunities, contact the Ocean Synthesis Lab at Duke University or reach out to any team member directly.")
+        )
       )
     )
   ),

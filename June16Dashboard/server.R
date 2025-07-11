@@ -107,6 +107,7 @@ server <- function(input, output, session) {
     leafletProxy("map") %>%
       clearMarkers() %>% clearShapes() %>% clearControls()
     
+    
     if (is.null(country)) {
       leafletProxy("map") %>%
         addPolygons(
@@ -253,8 +254,8 @@ server <- function(input, output, session) {
   
   observe({
     countries_list <- c("Global (Default)", sort(unique(average_country_nogeo$COUNTRY)))
-    updateSelectizeInput(session, "comparison_country_search", choices = countries_list, selected = "Global (Default)", server = TRUE)
-    updateSelectizeInput(session, "map_2_country_search", choices = countries_list, selected = "Global (Default)", server = TRUE)
+    updateSelectizeInput(session, "comparison_country_search_map_1", choices = countries_list, selected = "Global (Default)", server = TRUE)
+    updateSelectizeInput(session, "country_search_map_2", choices = countries_list, selected = "Global (Default)", server = TRUE)
     session$sendCustomMessage("updateCountriesList", countries_list)
   })
   
