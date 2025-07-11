@@ -726,40 +726,20 @@ ui <- fluidPage(
         selectInput("ca_region_chooser", textOutput("region_country_text"), 
                     choices = NULL),
         
-        tags$small("Here will go like average score of that region, what it's like compared to other regions
-                   in the same country, etc."),
-        tags$br(),
-        
-        selectInput("regional_first_indicator", "First Regional Scatter Plot Indicator:", 
+        selectInput("ra_bar_graph_selector", "Select a Score:",
                     choices = c("Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
                                 "Relative Deprivation Index" = "povmap.grdi.v1.sc",
                                 "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"), 
                     selected = "povmap.grdi.v1.sc"),
-        # tags$small(textOutput("first_indicator_country_description"),
-        #            style = "font-style: italic"),
-        tags$br(),
-        selectInput("regional_second_indicator", "Second Regional Scatter Plot Indicator:", 
-                    choices = c("Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
-                                "Relative Deprivation Index" = "povmap.grdi.v1.sc",
-                                "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc"), 
-                    selected = "perc.pop.world.coastal.merit.10m.log.sc"),
-        # tags$small(textOutput("second_indicator_country_description"),
-        #            style = "font-style: italic"),
-        tags$br(),
         tags$div(class = "plot-container",
                  style = "overflow-x: auto;",
-                 plotOutput("regional_scatter", height = "170px",
+                 plotOutput("ra_bar_graph", height = "300px",
                             width = "100%")),
-        actionButton(
-          "regional_scatter_zoom",
-          tags$div(
-            style = "display: flex; align-items: center; gap: 6px; justify-content: center;",
-            tags$i(class = "fas fa-search-plus", style = "font-size: 12px;"),
-            "Display Full Graph"
-          ),
-          style = "width: 100%;",
-          class = "btn btn-secondary"
-        )
+        
+        tags$small("Here will go like average score of that region, what it's like compared to other regions
+                   in the same country, etc."),
+        tags$br()
+      
       )
     ),
     

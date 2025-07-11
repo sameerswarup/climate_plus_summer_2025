@@ -76,10 +76,9 @@ output$nd_gain_map <- renderLeaflet({
     filter(Year == year)
   ndVar <- input$variable_nd
   pal <- colorNumeric(
-    palette = "YlGn",  
-    domain = c(min_val_nd(), max_val_nd()),
-    reverse = TRUE
-  )
+    palette = "Purples",  
+    domain = c(min_val_nd(), max_val_nd())
+    )
   
   leaflet(options = leafletOptions(
     worldCopyJump = FALSE,
@@ -105,10 +104,9 @@ observe({
   max_val_nd(max(valid_vals))
   
   pal <- colorNumeric(
-    palette = "YlGn",  
-    domain = data$value,
-    reverse = TRUE
-  )
+    palette = "Purples",  
+    domain = data$value
+    )
   
   label <- gainVarsNames[gainVars == input$variable_nd]
   

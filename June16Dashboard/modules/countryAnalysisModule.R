@@ -63,7 +63,7 @@ create_scatter_plot <- function(data, x_col, y_col, choices, title) {
     
     ggplot(data, aes(x = .data[[x_col]], y = .data[[y_col]], color = Highlight, size = Highlight)) +
       geom_point() +
-      scale_color_manual(values = c("Target Country" = "black", "Other" = "#A9A9A9")) +
+      scale_color_manual(values = c("Target Country" = "red", "Other" = "#A9A9A9")) +
       scale_size_manual(values = c("Target Country" = 3, "Other" = 2)) +
       labs(title = title, subtitle = subtitle,
            x = names(choices)[choices == x_col],
@@ -530,3 +530,76 @@ observeEvent(c(input$first_indicator_global,
                  }
                })
 
+# regional average vs country average vs where that point lies
+# regional points to regional average
+
+# it could be a bar chat with three bars: international average, national average, that point
+
+ra_country_average <- reactiveVal(NULL)
+ra_region_average <- reactiveVal(NULL)
+ra_bar_graph_data <- reactiveVal(NULL)
+
+observeEvent(
+  {
+    input$ca_region_chooser
+    input$ra_bar_graph_selector
+  },
+  {
+  req(input$ca_region_chooser)
+  req(selected_country())
+  req(currentRegion())
+  country <- selected_country()
+  region <- currentRegion()
+  indicator <- input$ra_bar_graph_selector
+  
+  world_score <- world_average %>%
+    pull(.data[[indicator]])
+  country_score <- average_country_nogeo %>%
+    filter(COUNTRY == country) %>%
+    pull(.data[[indicator]])
+  region_score <- df_regional %>%
+    filter(NAME_2 == region) %>%
+    pull(.data[[indicator]])
+  
+  print(world_score)
+  print(country_score)
+  print(region_score)
+  
+  summary_df <- data.frame(
+    Level = c("World", "National", "Regional"),
+    Value = c(world_score, country_score, region_score)
+  )
+  
+  summary_df$Level <- factor(summary_df$Level, levels = c("World", "National", "Regional"))
+  
+  ra_bar_graph_data(summary_df)
+  
+})
+
+output$ra_bar_graph <- renderPlot({
+  req(ra_bar_graph_data())
+  data <- ra_bar_graph_data()
+  
+  req(!any(is.nan(data$Value)), cancelOutput = TRUE)
+  country <- selected_country()
+  region <- currentRegion()
+  subtitle = paste0(region, " Region in ", country)
+  
+  ggplot(data, aes(x = Level, y = Value, fill = Level)) +
+    geom_col(width = 0.6) +
+    geom_text(aes(label = round(Value, 2)),  # Label text (rounded to 2 decimals)
+              vjust = -0.5) +
+    labs(title = "Comparison of Averages",
+         subtitle = subtitle,
+         x = NULL, y = "Average Value") +
+    scale_fill_manual(values = c("World" = "#A9A9A9", "National" = "#A9A9A9", "Regional" = "#00539B")) +
+    theme_minimal() +
+    theme(legend.position = "none",
+          plot.title = element_text(hjust = 0.5, face = "bold"),
+          plot.subtitle = element_text(hjust = 0.5),
+          axis.text = element_text(size = 12),
+          axis.title.y = element_text(face = "bold"))
+  
+})
+
+outputOptions(output, "ra_bar_graph", suspendWhenHidden = FALSE)
