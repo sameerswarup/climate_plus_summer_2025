@@ -109,12 +109,13 @@ ui <- fluidPage(
         border: 1px solid rgba(0, 0, 0, 0.08);
         border-radius: 12px;
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
-        min-width: 180px;
+        min-width: 200px;
         display: none;
         z-index: 1002;
         margin-top: 8px;
         overflow: hidden;
         animation: dropdownSlide 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        white-space: nowrap;
       }
       
       @keyframes dropdownSlide {
@@ -186,13 +187,14 @@ ui <- fluidPage(
       }
       
       .menu-item i {
-        font-size: 14px;
-        width: 18px;
+        font-size: 12px;
+        width: 16px;
+        flex-shrink: 0;
         transition: all 0.3s ease;
       }
       
       .menu-item:hover i {
-        transform: scale(1.1);
+        transform: scale(1.08);
       }
       
       .panel-section {
@@ -235,6 +237,20 @@ ui <- fluidPage(
         margin-bottom: 12px;
         font-size: 14px;
         letter-spacing: -0.02em;
+        position: relative;
+        padding-left: 12px;
+      }
+      
+      .control-title::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 3px;
+        height: 16px;
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+        border-radius: 2px;
       }
       
       .section-header {
@@ -245,8 +261,25 @@ ui <- fluidPage(
         padding: 20px 20px 0 20px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         letter-spacing: -0.03em;
+        position: relative;
+      }
+      
+      .section-header.with-line {
+        padding-left: 32px;
+      }
+      
+      .section-header.with-line::before {
+        content: '';
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 24px;
+        background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+        border-radius: 2px;
       }
       
       .section-header i {
@@ -635,7 +668,7 @@ ui <- fluidPage(
         ),
         conditionalPanel(
           condition = "input.indicator_category == 'Social Inequality' || input.indicator_category == 'Weak Governance' || (input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Inequity')",
-          selectInput("variable_choice", "Variable:", choices = NULL)
+          selectInput("variable_choice", "Variable:", choices = NULL),
           
         ),
         tags$div(
@@ -832,7 +865,7 @@ ui <- fluidPage(
       id = "graphs-section",
       
       tags$div(class = "section-header",
-               tags$i(class = "fas fa-chart-line"), "Country Analysis"),
+               "Country Analysis"),
       
       tags$div(
         class = "control-group",
@@ -948,7 +981,7 @@ ui <- fluidPage(
                             width = "100%")),
         
         tags$small("World: Averaged score of selected indicator across 114 countries worldwide."),
-
+        
         tags$div(style = "font-size: smaller;", textOutput("country_average_description")),
         tags$div(style = "font-size: smaller;", textOutput("region_average_description"))
       )
@@ -963,7 +996,7 @@ ui <- fluidPage(
       id = "comparison-section",
       
       tags$div(class = "section-header",
-               tags$i(class = "fas fa-balance-scale"), "Country Comparison"),
+               "Country Comparison"),
       
       tags$div(
         class = "control-group",style="margin:0",
@@ -1052,26 +1085,20 @@ ui <- fluidPage(
           
           div(
             style = "font-family: Arial, sans-serif;",
-            verbatimTextOutput("data_info_map_1")
+            verbatimTextOutput("data_info")
           ),
           
-          verbatimTextOutput("click_info_map_1")
-        )
-      
-      ),      
-
-        #   # ✅ Moved Click Info card INSIDE this conditional
-        #   tags$div(
-        #     class = "control-group",
-        #     tags$div(class = "control-title", "Click Info"),
-        #     
-        #     verbatimTextOutput("click_info")
-        #   )
-        #   
-        # ),      
-
-
-
+          
+          # ✅ Moved Click Info card INSIDE this conditional
+          tags$div(
+            class = "control-group",
+            tags$div(class = "control-title", "Click Info"),
+            
+            verbatimTextOutput("click_info")
+          )
+          
+        ),      
+      ),
       
       tags$div(
         tags$style(HTML("
@@ -1104,7 +1131,7 @@ ui <- fluidPage(
       id = "about-section",
       
       tags$div(class = "section-header",
-               tags$i(class = "fas fa-info-circle"), "About"),
+               "About"),
       
       tags$div(
         class = "control-group",
@@ -1174,7 +1201,7 @@ ui <- fluidPage(
               style = "display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(248, 249, 250, 0.8); border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.3s ease; cursor: pointer; text-decoration: none; color: inherit;",
               onmouseover = "this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'; this.style.background = 'rgba(13, 110, 253, 0.05)';",
               onmouseout = "this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; this.style.background = 'rgba(248, 249, 250, 0.8)';",
-              href = "https://github.com/eddandomcho",
+              href = "https://github.com/ethanchou",
               target = "_blank",
               tags$img(
                 src = "ethancho.png",
@@ -1277,23 +1304,40 @@ ui <- fluidPage(
           tags$p("For questions about this platform or research collaboration opportunities, contact the Ocean Synthesis Lab at Duke University or reach out to any team member directly.")
         )
       )
-    ),
+    )
   ),
   
   tags$script(HTML("
     $(document).ready(function() {
     
+      // Hamburger menu click handler
       $('#hamburger-menu').click(function(e) {
         e.stopPropagation();
         $('#menu-dropdown').toggleClass('show');
       });
 
-      $(document).click(function(e) {
+      // Close menu when clicking outside or when mouse leaves the entire menu area
+      $(document).on('click', function(e) {
         if (!$(e.target).closest('#hamburger-menu').length) {
           $('#menu-dropdown').removeClass('show');
         }
       });
+      
+      // Close menu when mouse leaves the hamburger menu container
+      $('#hamburger-menu').mouseleave(function() {
+        setTimeout(function() {
+          if (!$('#menu-dropdown:hover').length && !$('#hamburger-menu:hover').length) {
+            $('#menu-dropdown').removeClass('show');
+          }
+        }, 200); // Small delay to allow mouse to move to dropdown
+      });
+      
+      // Close menu when mouse leaves the dropdown
+      $('#menu-dropdown').mouseleave(function() {
+        $('#menu-dropdown').removeClass('show');
+      });
 
+      // Menu item click handler
       $('.menu-item').click(function(e) {
         e.preventDefault();
 
@@ -1305,6 +1349,7 @@ ui <- fluidPage(
         var section = $(this).data('section');
         $('#' + section + '-section').addClass('active');
 
+        // Automatically close the menu after selection
         $('#menu-dropdown').removeClass('show');
 
         if (section === 'comparison') {
@@ -1323,7 +1368,6 @@ ui <- fluidPage(
             window.dispatchEvent(new Event('resize'));
           }, 100);
         }
-        $('#menu-dropdown').removeClass('show');
 
         // Re-initialize search functionality when switching to graphs section
         if (section === 'graphs') {
