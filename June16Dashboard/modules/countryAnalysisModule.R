@@ -47,7 +47,6 @@ observeEvent(input$ca_region_chooser, {
   
   filtered <- count %>% filter(NAME_2 == reg)
   regional_dataset(filtered)
-  print(filtered)
 })
 
 # Plotting functions
@@ -175,8 +174,6 @@ observeEvent(input$global_scale_button, {
       downloadButton("downloadGlobalCustomScatter", "Download Plot")
     ),
     tags$br(),
-    tags$small(style = "font-style: italic",
-               "Here will go some analysis of like where the selected country lies ykyk"),
     footer = modalButton("Close")
   ))
 })
@@ -561,6 +558,16 @@ observeEvent(
     filter(NAME_2 == region) %>%
     pull(.data[[indicator]])
   
+  if (length(world_score) != 1 || length(country_score) != 1 || length(region_score) != 1) {
+    ra_bar_graph_data(NULL)
+    return()
+  }
+  
+  if (any(is.na(c(world_score, country_score, region_score)))) {
+    ra_bar_graph_data(NULL)
+    return()
+  }
+  
   print(world_score)
   print(country_score)
   print(region_score)
@@ -580,6 +587,7 @@ output$ra_bar_graph <- renderPlot({
   req(ra_bar_graph_data())
   data <- ra_bar_graph_data()
   
+  req(nrow(data) == 3, !any(is.na(data$Value)), !any(is.nan(data$Value)), cancelOutput = TRUE)
   req(!any(is.nan(data$Value)), cancelOutput = TRUE)
   country <- selected_country()
   region <- currentRegion()
@@ -599,6 +607,34 @@ output$ra_bar_graph <- renderPlot({
           plot.subtitle = element_text(hjust = 0.5),
           axis.text = element_text(size = 12),
           axis.title.y = element_text(face = "bold"))
+  
+})
+
+output$region_average_description <- renderText({
+  req(CA_region_names())
+  req(currentRegion())
+  req(selected_country())
+  number_of_regions <- length(CA_region_names())
+  current_region <- currentRegion()
+  current_country <- selected_country()
+  
+  if (is.na(current_region) || is.na(current_country)) return("")
+  
+  
+  paste0("Regional: Score of selected indicator in ", current_region, " region of ", current_country)
+})
+
+output$country_average_description <- renderText({
+  req(CA_region_names())
+  req(currentRegion())
+  req(selected_country())
+  number_of_regions <- length(CA_region_names())
+  current_region <- currentRegion()
+  current_country <- selected_country()
+  
+  if (is.na(current_country) || is.na(number_of_regions)) return("")
+  
+  paste0("National: Averaged score of ", number_of_regions, " regions in ", current_country)
   
 })
 

@@ -947,10 +947,10 @@ ui <- fluidPage(
                  plotOutput("ra_bar_graph", height = "300px",
                             width = "100%")),
         
-        tags$small("Here will go like average score of that region, what it's like compared to other regions
-                   in the same country, etc."),
-        tags$br()
-        
+        tags$small("World: Averaged score of selected indicator across 114 countries worldwide."),
+
+        tags$div(style = "font-size: smaller;", textOutput("country_average_description")),
+        tags$div(style = "font-size: smaller;", textOutput("region_average_description"))
       )
     ),
     
