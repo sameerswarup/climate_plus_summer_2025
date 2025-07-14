@@ -51,13 +51,14 @@ observeEvent(input$ca_region_chooser, {
 
 # Plotting functions
 create_scatter_plot <- function(data, x_col, y_col, choices, title) {
-  if (is.null(data) || !(x_col %in% names(data)) || !(y_col %in% names(data))) return()
+  if (is.null(data) || is.null(x_col) || is.na(x_col) || is.null(y_col) || is.na(y_col) ||
+      !(x_col %in% names(data)) || !(y_col %in% names(data))) return()
   if (all(is.na(data[[x_col]])) || all(is.na(data[[y_col]]))) return()
   
 
   subtitle <- paste0(names(choices)[choices == x_col], " vs. ", names(choices)[choices == y_col])
   
-  if (title == "Global") {
+  if (!is.null(title) && !is.na(title) && title == "Global") {
     data$Highlight <- ifelse(data$COUNTRY == CA_country_search(), "Target Country", "Other")
     
     ggplot(data, aes(x = .data[[x_col]], y = .data[[y_col]], color = Highlight, size = Highlight)) +
@@ -274,7 +275,7 @@ REArenderHistogram <- reactive({
   ggplot(data, aes(x = .data[[chi]])) +
     geom_histogram(bins = 30, fill = "#00539B", color = "white") +
     labs(title = paste0(label, " for ", selected_country()),
-         subtitle = paste0("Each Point Is a Point Within ", selected_country()),
+         subtitle = paste0("Score Distribution of Points in ", selected_country()),
          x = label, y = "Frequency") +
     theme_hc() + 
     theme(
@@ -611,31 +612,42 @@ output$ra_bar_graph <- renderPlot({
 })
 
 output$region_average_description <- renderText({
-  req(CA_region_names())
-  req(currentRegion())
-  req(selected_country())
-  number_of_regions <- length(CA_region_names())
+  req(currentRegion(), selected_country())
+  
+  
   current_region <- currentRegion()
   current_country <- selected_country()
   
-  if (is.na(current_region) || is.na(current_country)) return("")
+  if (is.null(current_region) || is.na(current_region) ||
+      is.null(current_country) || is.na(current_country)) return("")
   
-  
-  paste0("Regional: Score of selected indicator in ", current_region, " region of ", current_country)
+  paste0("Regional: Score of selected indicator of ", current_region, " coastal region in ", current_country)
 })
 
 output$country_average_description <- renderText({
-  req(CA_region_names())
-  req(currentRegion())
-  req(selected_country())
-  number_of_regions <- length(CA_region_names())
-  current_region <- currentRegion()
-  current_country <- selected_country()
   
-  if (is.na(current_country) || is.na(number_of_regions)) return("")
+  req(selected_country(), CA_region_names())
+  
+  current_country <- selected_country()
+  region_names <- CA_region_names()
+  number_of_regions <- length(region_names)
+  
+  if (is.null(current_country) || is.na(current_country) ||
+      is.null(region_names) || is.na(number_of_regions)) return("")
   
   paste0("National: Averaged score of ", number_of_regions, " regions in ", current_country)
+})
+
+output$number_of_regions_text <- renderText({
+  req(selected_country(), CA_region_names())
+  current_country <- selected_country()
   
+  region_names <- CA_region_names()
+  number_of_regions <- length(region_names)
+  paste0("Displaying ", number_of_regions, " Coastal Regions in ", current_country)
 })
 
 outputOptions(output, "ra_bar_graph", suspendWhenHidden = FALSE)
+outputOptions(output, "region_average_description", suspendWhenHidden = FALSE)
+outputOptions(output, "number_of_regions_text", suspendWhenHidden = FALSE)
+outputOptions(output, "country_average_description", suspendWhenHidden = FALSE)

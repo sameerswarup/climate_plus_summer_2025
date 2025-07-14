@@ -109,10 +109,8 @@ observe({
   proxy <- leafletProxy("nd_gain_map", data = data)
   proxy %>% clearShapes() %>% clearMarkers() %>% clearControls()
   
-  # Add this: Re-zoom to country after clearing if country is selected
-  if (!is.null(countryND()) && countryND() != "" && countryND() != "Global (Default)") {
-    zoom_to_country_nd("nd_gain_map", countryND())
-  }
+  zoom_to_country_nd("nd_gain_map", countryND())
+  
   
   selected_iso <- if (!is.null(countryND())) {
     iso3 <- gain %>%
@@ -123,23 +121,24 @@ observe({
   } else NULL
   
   # Draw polygons — omit selected country
-  polygons_to_draw <- if (!is.null(selected_iso)) {
-    data %>% filter(iso_a3 != selected_iso)
-  } else data
+  polygons_to_draw <- if (!is.null(selected_iso) && countryND() != "Global (Default)"){
+    data %>% filter(iso_a3 == selected_iso)
+  } else {
+    data  # show all countries for Global (Default)
+  }
   
   proxy %>% addPolygons(
-    data = polygons_to_draw,
-    fillColor = ~pal(get(input$variable_nd)),
-    fillOpacity = 0.8,
-    color = "white",
+    data = data,
+    fillColor = "transparent",  # No fill for any country
+    color = "#FFFFFF",             # Border color
     weight = 1,
     smoothFactor = 0.5,
     label = ~paste0(Name, ": ", round(get(input$variable_nd), 4)),
     layerId = ~iso_a3,
     highlightOptions = highlightOptions(
-      weight = 3,
-      color = "#666",
-      fillOpacity = 0.9,
+      weight = 4,
+      color = "#FFFFFF",
+      fillOpacity = 0.3,
       bringToFront = TRUE
     )
   )
@@ -154,7 +153,7 @@ observe({
   )
   
   # --- POINTS ---
-  if (!is.null(countryND())) {
+  if (!is.null(countryND()) && countryND() != "Global (Default)") {
     country <- countryND()
     var <- varND()
     year_str <- as.character(year())

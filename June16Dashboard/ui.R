@@ -934,6 +934,8 @@ ui <- fluidPage(
       tags$div(
         class = "control-group",
         tags$div(class = "control-title", "Regional Analysis"),
+        tags$small(textOutput("number_of_regions_text")),
+        tags$br(),
         selectInput("ca_region_chooser", textOutput("region_country_text"), 
                     choices = NULL),
         
@@ -946,11 +948,10 @@ ui <- fluidPage(
                  style = "overflow-x: auto;",
                  plotOutput("ra_bar_graph", height = "300px",
                             width = "100%")),
-        
         tags$small("World: Averaged score of selected indicator across 114 countries worldwide."),
-
         tags$div(style = "font-size: smaller;", textOutput("country_average_description")),
         tags$div(style = "font-size: smaller;", textOutput("region_average_description"))
+        
       )
     ),
     
