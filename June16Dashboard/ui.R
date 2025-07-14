@@ -998,11 +998,6 @@ ui <- fluidPage(
       tags$div(class = "section-header",
                "Country Comparison"),
       
-      tags$div(
-        class = "control-group",style="margin:0",
-        checkboxInput("use_comparison_country_scale", "Country-specific scale", value = FALSE)
-      ),
-      
       # MAP 1 CONTROLS
       tags$div(
         class = "control-group",
@@ -1124,6 +1119,11 @@ ui <- fluidPage(
       #   tags$p("Note: Comparison maps will appear as overlays when this mode is active.", 
       #          style = "font-size: 12px; color: #6c757d; font-style: italic;")
       # )
+    ),
+    
+    tags$div(
+      class = "control-group",style="margin:0",
+      checkboxInput("use_comparison_country_scale", "Country-specific scale", value = FALSE)
     ),
     
     tags$div(
