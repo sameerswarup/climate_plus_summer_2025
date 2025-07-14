@@ -76,10 +76,9 @@ output$nd_gain_map <- renderLeaflet({
     filter(Year == year)
   ndVar <- input$variable_nd
   pal <- colorNumeric(
-    palette = "YlGn",  
-    domain = c(min_val_nd(), max_val_nd()),
-    reverse = TRUE
-  )
+    palette = "Purples",  
+    domain = c(min_val_nd(), max_val_nd())
+    )
   
   leaflet(options = leafletOptions(
     worldCopyJump = FALSE,
@@ -96,50 +95,104 @@ observe({
   nd_data <- nd_year_data()
   req(!is.null(nd_data), nrow(nd_data) > 0)
   
+  # Join world polygons with ND-GAIN data
   data <- left_join(world_sf, nd_data, by = c("iso_a3" = "ISO3"))
-  
   valid_vals <- na.omit(data[[input$variable_nd]])
-  req(length(valid_vals) > 0)  # Make sure there's data
+  req(length(valid_vals) > 0)
   
   min_val_nd(min(valid_vals))
   max_val_nd(max(valid_vals))
   
-  pal <- colorNumeric(
-    palette = "YlGn",  
-    domain = data$value,
-    reverse = TRUE
-  )
-  
+  pal <- colorNumeric("Purples", domain = data[[input$variable_nd]])
   label <- gainVarsNames[gainVars == input$variable_nd]
   
-  leafletProxy("nd_gain_map", data = data) |>
-    clearMarkers() |>
-    addPolygons(
-      fillColor = ~pal(get(input$variable_nd)),  # use tidy eval
-      fillOpacity = 0.8,
-      color = "white",
-      weight = 1,
-      smoothFactor = 0.5,
-      label = ~paste0(Name, ": ", round(get(input$variable_nd), 4)),
-      layerId = ~iso_a3
-    ) |>
-    addLegend(
-      pal = pal,
-      values = c(min_val_nd(), max_val_nd()),
-      opacity = 0.9,
-      title = ~paste0(label, " Score"),
-      position = "bottomright"
+  proxy <- leafletProxy("nd_gain_map", data = data)
+  proxy %>% clearShapes() %>% clearMarkers() %>% clearControls()
+  
+  # Add this: Re-zoom to country after clearing if country is selected
+  if (!is.null(countryND()) && countryND() != "" && countryND() != "Global (Default)") {
+    zoom_to_country_nd("nd_gain_map", countryND())
+  }
+  
+  selected_iso <- if (!is.null(countryND())) {
+    iso3 <- gain %>%
+      filter(Name == countryND()) %>%
+      pull(ISO3) %>%
+      unique()
+    if (length(iso3) > 0) iso3 else NULL
+  } else NULL
+  
+  # Draw polygons — omit selected country
+  polygons_to_draw <- if (!is.null(selected_iso)) {
+    data %>% filter(iso_a3 != selected_iso)
+  } else data
+  
+  proxy %>% addPolygons(
+    data = polygons_to_draw,
+    fillColor = ~pal(get(input$variable_nd)),
+    fillOpacity = 0.8,
+    color = "white",
+    weight = 1,
+    smoothFactor = 0.5,
+    label = ~paste0(Name, ": ", round(get(input$variable_nd), 4)),
+    layerId = ~iso_a3,
+    highlightOptions = highlightOptions(
+      weight = 3,
+      color = "#666",
+      fillOpacity = 0.9,
+      bringToFront = TRUE
     )
+  )
+  
+  # Add main legend
+  proxy %>% addLegend(
+    pal = pal,
+    values = valid_vals,
+    opacity = 0.9,
+    title = paste0(label, " Score"),
+    position = "bottomright"
+  )
+  
+  # --- POINTS ---
+  if (!is.null(countryND())) {
+    country <- countryND()
+    var <- varND()
+    year_str <- as.character(year())
+    
+    # Filter relevant point data
+    filtered_year_and_country_data <- gain_wide_points %>%
+      filter(Name == country)
+    
+    # Match column like "Value..economic__2009"
+    cols_to_keep <- grep(paste0(var, ".*", year_str), colnames(filtered_year_and_country_data), value = TRUE)
+    if (length(cols_to_keep) == 0) return()
+    
+    value_column <- cols_to_keep[1]
+
+    filtered_year_and_country_data <- filtered_year_and_country_data %>%
+      select(Name, all_of(value_column), geometry) %>%
+      sf::st_as_sf()
+    
+    
+    coords <- sf::st_coordinates(filtered_year_and_country_data)
+    if (!is.numeric(coords[, 1]) || !is.numeric(coords[, 2])) return()
+    
+    filtered_year_and_country_data$val_col <- filtered_year_and_country_data[[value_column]]
+    
+    
+    # Plot circle markers
+    proxy %>% addCircleMarkers(
+      data = filtered_year_and_country_data,
+      lng = coords[, 1],
+      lat = coords[, 2],
+      radius = 6,
+      fillColor = ~pal(val_col), 
+      fillOpacity = 0.8,
+      stroke = FALSE,
+      label = ~paste0(Name, ": ", round(val_col, 3))
+    )
+  }
 })
-
-
-
-observeEvent(input$variable_nd, {
-  req(input$variable_nd)
-  var <- input$variable_nd
-  varND(var)
-})
-
 
 output$nd_graph <- renderPlot({
   req(countryND(), nzchar(countryND()))
@@ -210,3 +263,17 @@ output$nd_year_score <- renderText({
 
 # Extracting point data
 
+observeEvent(input$nd_gain_map_shape_click, {
+  clicked_iso <- input$nd_gain_map_shape_click$id
+  req(clicked_iso)
+  
+  clicked_country <- gain %>%
+    filter(ISO3 == clicked_iso) %>%
+    distinct(Name) %>%
+    pull(Name) %>%
+    first()
+  
+  req(!is.null(clicked_country))
+  
+  updateTextInput(session, "country_search", value = clicked_country)
+})

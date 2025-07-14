@@ -296,6 +296,16 @@ variable_metadata <- list(
 
 # ND Gain Data
 gain <- readRDS("data/gain_coastal_filtered.rds")
+
+acn_country_iso <- average_country_nogeo %>%
+  select(COUNTRY, iso_a3) %>%
+  st_drop_geometry()
+
+gain <- gain %>%
+  left_join(acn_country_iso, by = c("ISO3" = "iso_a3")) %>%
+  mutate(Name = COUNTRY) %>%   # Replace Name with the joined COUNTRY
+  select(-COUNTRY)
+
 country_names <- unique(gain$Name)
 gainVarsNames <- names(gainVars)
 
@@ -328,3 +338,11 @@ ndGainIcons <- list(
 )
 
 gain_wide_points <- readRDS("data/gain_wide_points.rds")
+
+world_average <- average_country_nogeo %>%
+  summarise(across(where(is.numeric), mean, na.rm = TRUE))
+
+gain_wide_points <- gain_wide_points %>%
+  left_join(acn_country_iso, by = c("iso_a3.x" = "iso_a3")) %>%
+  mutate(Name = COUNTRY) %>%
+  select(-COUNTRY)
