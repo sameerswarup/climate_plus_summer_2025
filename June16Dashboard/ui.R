@@ -635,7 +635,7 @@ ui <- fluidPage(
         ),
         conditionalPanel(
           condition = "input.indicator_category == 'Social Inequality' || input.indicator_category == 'Weak Governance' || (input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Inequity')",
-          selectInput("variable_choice", "Variable:", choices = NULL),
+          selectInput("variable_choice", "Variable:", choices = NULL)
           
         ),
         tags$div(
@@ -1071,7 +1071,7 @@ ui <- fluidPage(
         # ),      
 
 
-      ),
+
       
       tags$div(
         tags$style(HTML("
@@ -1277,7 +1277,7 @@ ui <- fluidPage(
           tags$p("For questions about this platform or research collaboration opportunities, contact the Ocean Synthesis Lab at Duke University or reach out to any team member directly.")
         )
       )
-    )
+    ),
   ),
   
   tags$script(HTML("
