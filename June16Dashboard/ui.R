@@ -724,7 +724,7 @@ ui <- fluidPage(
           class = "form-check",
           checkboxInput(
             "satellite_view", 
-            label = "Satellite view", 
+            label = "Street map view", 
             value = FALSE
           )
         )
@@ -1255,6 +1255,19 @@ ui <- fluidPage(
       #   tags$p("Note: Comparison maps will appear as overlays when this mode is active.", 
       #          style = "font-size: 12px; color: #6c757d; font-style: italic;")
       # )
+    ),
+    
+    tags$div(
+      class = "control-group",
+      tags$div(class = "control-title", "Map Display Options"),
+      tags$div(
+        class = "form-check",
+        checkboxInput(
+          "satellite_view_comparison", 
+          label = "Street map view", 
+          value = FALSE  # Unchecked = satellite (default), Checked = street map
+        )
+      )
     ),
     
     tags$div(
