@@ -765,14 +765,17 @@ ui <- fluidPage(
                       sep = "",
                       animate = TRUE)
         ),
-        # 
-        # tags$div(
-        #   class = "control-group",
-        #   tags$div(class = "control-title", "Data Summary"),
-        #   uiOutput("data_summary_vb")
-        # ),
-        # 
-        plotOutput("nd_graph", width = "95%", height = "330px"),
+
+        tags$div(
+          class = "control-group",
+          tags$div(class = "control-title", "Data Summary"),
+          wellPanel(
+            h4(textOutput("summary_title")),
+            p(strong("Score:"), textOutput("summary_score"))
+          )
+        ),
+
+        plotOutput("nd_graph", width = "95%", height = "300px"),
         
         tags$div(
           class = "control-group",

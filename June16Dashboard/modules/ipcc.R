@@ -35,13 +35,6 @@ varND <- reactive({
   input$variable_nd
 })
 
-varND_column <- reactive({
-  req(varND())
-  # Convert display name to column name using gainVars lookup
-  column_name <- gainVars[[varND()]]
-  req(column_name)  # Make sure the lookup succeeded
-  column_name
-})
 
 
 # Data type selector (second level dropdown)

@@ -38,14 +38,20 @@ observeEvent(c(input$nd_year,
                    filter(Name == country) %>%
                    pull(input$variable_nd)
                  
+                 print(score)
+                 
                  # add it here
                  year <- as.character(input$nd_year)
                  pointData <- gain_wide_points %>%
                    filter(Name == country) %>%
                    select(name_en, iso_a3.x, matches(year))
                  
+                 
                  nd_year_score(score)
+                 print(nd_year_score())
+                 print(varND())
                  nd_year_data(data)
+              
                  year(input$nd_year)
                  point_data(pointData)
                }
@@ -213,7 +219,7 @@ output$nd_graph <- renderPlot({
       size = 3
     ) +             # points for each month
     labs(title = paste0(label, " for ", countryND(), " (1995-2022)"),
-         subtitle = "Data Sourced from the University of Notre Dame Global Adaptation Initiative",
+         subtitle = "Data Sourced from the University of Notre Dame",
          x = "Date",
          y = label) +
     theme_hc() +
@@ -260,6 +266,7 @@ output$indDescOutput <- renderText({
 
 
 output$nd_year_score <- renderText({
+  print(nd_year_score())
   return(nd_year_score())
 })
 
@@ -279,15 +286,15 @@ observeEvent(input$nd_gain_map_shape_click, {
   
   updateTextInput(session, "country_search", value = clicked_country)
 })
-
-output$data_summary_vb <- renderUI({
-  req(varND())
+output$summary_title <- renderText({
+  req(varND(), year(), countryND())
+  
   var <- varND()
   varName <- gainVarsNames[gainVars == var]
-  iconName <- ndGainIcons[[varName]]  
-  value_box(
-    title = textOutput("variableNameAndYearOutput"),
-    showcase = icon(iconName),
-    value = textOutput("nd_year_score")
-  )
+  paste(varName, "for", countryND(), "in", year())
+})
+
+output$summary_score <- renderText({
+  req(nd_year_score())
+  round(nd_year_score(), 3)
 })
