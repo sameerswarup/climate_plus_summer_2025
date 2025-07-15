@@ -556,6 +556,24 @@ ui <- fluidPage(
 .leaflet-tooltip::before {
   display: none !important;
 }
+
+/* Simple Legend Styling - Duke Blue Text */
+.leaflet-control {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.leaflet-control .leaflet-control-layers-list,
+.leaflet-control div,
+.leaflet-control span {
+  color: #1e3a8a !important; /* Duke Blue */
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+}
     "))
   ),
   # COMPARISON
