@@ -540,62 +540,22 @@ ui <- fluidPage(
 /* Replace your existing .leaflet-tooltip CSS with this updated version */
 .leaflet-tooltip {
   background: rgba(255, 255, 255, 0.96) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(148, 163, 184, 0.2) !important;
   border-radius: 8px !important;
-  box-shadow: 
-    0 8px 20px rgba(0, 0, 0, 0.12), 
-    0 4px 8px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(148, 163, 184, 0.1) inset !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12) !important;
   
-  /* Professional Typography - Duke Blue */
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  font-family: 'Inter', sans-serif !important;
   font-size: 12px !important;
   font-weight: 600 !important;
-  letter-spacing: -0.01em !important;
-  line-height: 1.3 !important;
   color: #1e3a8a !important;  /* Duke Blue */
   
-  /* Compact Spacing */
   padding: 8px 12px !important;
-  min-width: 120px !important;
-  max-width: 200px !important;
-  text-align: center !important;
   white-space: nowrap !important;
-  
-  /* Animation and Effects */
-  opacity: 1 !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  transform: translateY(-2px) !important;
-  z-index: 10000 !important;
   pointer-events: none !important;
 }
 
-/* Remove the speech bubble arrow */
 .leaflet-tooltip::before {
   display: none !important;
-}
-
-/* Add subtle hover effect */
-.leaflet-tooltip {
-  animation: tooltipFadeIn 0.2s ease-out !important;
-}
-
-@keyframes tooltipFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-1px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(-2px) scale(1);
-  }
-}
-
-/* Make the text more readable with better contrast */
-.leaflet-tooltip {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
 }
     "))
   ),
@@ -1527,18 +1487,10 @@ ui <- fluidPage(
   ),
   
   tags$script(HTML("
-    $(document).ready(function() {
-    
-      // Hamburger menu click handler
-      $('#hamburger-menu').click(function(e) {
-        e.stopPropagation();
-        $('#menu-dropdown').toggleClass('show');
-      });
-      
                    $(document).on('mousemove', function(e) {
                      $('.leaflet-tooltip').css({
-                       'left': e.pageX + 15 + 'px',
-                       'top': e.pageY - 35 + 'px',
+                       'left': e.pageX + 10 + 'px',
+                       'top': e.pageY - 50 + 'px',
                        'position': 'fixed'
                      });
                    });
