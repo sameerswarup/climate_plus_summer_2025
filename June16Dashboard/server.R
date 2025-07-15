@@ -163,7 +163,11 @@ server <- function(input, output, session) {
     if (is.null(country)) {
       leafletProxy("map") %>%
         addPolygons(
-          data = polygon_data,
+          data = polygon_data, labelOptions = labelOptions(
+            noHide = FALSE,
+            direction = "auto",
+            sticky = TRUE
+          ),
           fillColor = ~pal(get(var)), fillOpacity = 0.7, color = ~pal(get(var)),
           weight = 2, opacity = 0.9,
           highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
@@ -182,7 +186,11 @@ server <- function(input, output, session) {
         if (nrow(other_countries_data) > 0) {
           leafletProxy("map") %>%
             addPolygons(
-              data = other_countries_data,
+              data = other_countries_data, labelOptions = labelOptions(
+                noHide = FALSE,
+                direction = "auto",
+                sticky = TRUE
+              ),
               fillColor = "transparent", fillOpacity = 0, color = ~pal(get(var)), weight = 2, opacity = 0.5,
               highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1),
               layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
@@ -192,7 +200,11 @@ server <- function(input, output, session) {
         if (nrow(selected_country_data) > 0) {
           leafletProxy("map") %>%
             addPolygons(
-              data = selected_country_data,
+              data = selected_country_data, labelOptions = labelOptions(
+                noHide = FALSE,
+                direction = "auto",
+                sticky = TRUE
+              ),
               fillColor = ~pal(get(var)), fillOpacity = 0.8, color = ~pal(get(var)), weight = 3, opacity = 1,
               highlightOptions = highlightOptions(color = "#FFFFFF", weight = 5, bringToFront = TRUE, opacity = 1, fillOpacity = 0.9),
               layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
@@ -220,7 +232,11 @@ server <- function(input, output, session) {
             
             leafletProxy("map") %>%
               addPolygons(
-                data = polygon_data,
+                data = polygon_data, labelOptions = labelOptions(
+                  noHide = FALSE,
+                  direction = "auto",
+                  sticky = TRUE
+                ),
                 fillColor = "transparent", fillOpacity = 0, color = ~border_pal(get(var)),
                 weight = 1, opacity = 0.4,
                 highlightOptions = highlightOptions(color = "#FFFFFF", weight = 3, bringToFront = TRUE, opacity = 1),
@@ -242,7 +258,11 @@ server <- function(input, output, session) {
           if (nrow(other_countries_data) > 0) {
             leafletProxy("map") %>%
               addPolygons(
-                data = other_countries_data,
+                data = other_countries_data, labelOptions = labelOptions(
+                  noHide = FALSE,
+                  direction = "auto",
+                  sticky = TRUE
+                ),
                 fillColor = "transparent", fillOpacity = 0, color = ~pal(get(var)), weight = 2, opacity = 0.5,
                 highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1),
                 layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
@@ -252,7 +272,11 @@ server <- function(input, output, session) {
           if (nrow(selected_country_data) > 0) {
             leafletProxy("map") %>%
               addPolygons(
-                data = selected_country_data,
+                data = selected_country_data, labelOptions = labelOptions(
+                  noHide = FALSE,
+                  direction = "auto",
+                  sticky = TRUE
+                ),
                 fillColor = ~pal(get(var)), fillOpacity = 0.8, color = ~pal(get(var)), weight = 3, opacity = 1,
                 highlightOptions = highlightOptions(color = "#FFFFFF", weight = 5, bringToFront = TRUE, opacity = 1, fillOpacity = 0.9),
                 layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
@@ -355,7 +379,11 @@ server <- function(input, output, session) {
     
     result <- create_base_map(TRUE) %>%
       addPolygons(
-        data = polygon_data,
+        data = polygon_data, labelOptions = labelOptions(
+          noHide = FALSE,
+          direction = "auto",
+          sticky = TRUE
+        ),
         fillColor = ~pal(get(var)), fillOpacity = 0.7, color = ~pal(get(var)),
         weight = 2, opacity = 0.9,
         highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
