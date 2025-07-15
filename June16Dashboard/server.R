@@ -5,9 +5,34 @@ server <- function(input, output, session) {
   source("modules/ndGain.R", local = TRUE)
   
   source("modules/ipcc_map_1.R", local = TRUE)
+  source("modules/ndGain_map_1.R", local = TRUE)
+  source("modules/ipcc_map_2.R", local = TRUE)
+  source("modules/ndGain_map_2.R", local = TRUE)
   source("modules/countryComparison.R", local = TRUE)
   
   output$map1 <- renderLeaflet({
+    leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+      addProviderTiles(providers$Esri.WorldStreetMap) %>%
+      htmlwidgets::onRender("
+      function(el, x) {
+        this.attributionControl.setPosition('topright');
+        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
+      }
+    ") 
+  })
+  
+  output$nd_gain_map_1 <- renderLeaflet({
+    leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+      addProviderTiles(providers$Esri.WorldStreetMap) %>%
+      htmlwidgets::onRender("
+      function(el, x) {
+        this.attributionControl.setPosition('topright');
+        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
+      }
+    ") 
+  })
+  
+  output$climate_map_1 <- renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
       addProviderTiles(providers$Esri.WorldStreetMap) %>%
       htmlwidgets::onRender("
@@ -27,6 +52,31 @@ server <- function(input, output, session) {
       }
     ") 
   })
+  
+  output$nd_gain_map_2 <- renderLeaflet({
+    leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+      addProviderTiles(providers$Esri.WorldStreetMap) %>%
+      htmlwidgets::onRender("
+      function(el, x) {
+        this.attributionControl.setPosition('topright');
+        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
+      }
+    ") 
+  })
+  
+  output$climate_map_2 <- renderLeaflet({
+    leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
+      addProviderTiles(providers$Esri.WorldStreetMap) %>%
+      htmlwidgets::onRender("
+      function(el, x) {
+        this.attributionControl.setPosition('topright');
+        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
+      }
+    ") 
+  })
+  
+  
+  
   
   selected_country <- reactiveVal(NULL)
   country_dataset <- reactiveVal(NULL)
@@ -257,7 +307,7 @@ server <- function(input, output, session) {
   observe({
     countries_list <- c("Global (Default)", sort(unique(average_country_nogeo$COUNTRY)))
     updateSelectizeInput(session, "comparison_country_search_map_1", choices = countries_list, selected = "Global (Default)", server = TRUE)
-    updateSelectizeInput(session, "country_search_map_2", choices = countries_list, selected = "Global (Default)", server = TRUE)
+    updateSelectizeInput(session, "comparison_country_search_map_2", choices = countries_list, selected = "Global (Default)", server = TRUE)
     session$sendCustomMessage("updateCountriesList", countries_list)
   })
   

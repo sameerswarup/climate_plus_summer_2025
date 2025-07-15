@@ -17,8 +17,8 @@ varND_map_1 <- reactiveVal(NULL)
 year_map_1 <- reactiveVal(NULL)
 world_polygons_map_1 <- reactiveVal(world_sf)
 filtered_world_polygons_map_1 <- reactive({
-  req(world_polygons())
-  world_polygons() %>%
+  req(world_polygons_map_1())
+  world_polygons_map_1() %>%
     filter(continent != "Antarctica")
 })
 point_data_map_1 <- reactiveVal(NULL)
@@ -90,7 +90,7 @@ output$value_range_slider_map_1 <- renderUI({
     )
   })
   
-  r <- original_raster()
+  r <- original_raster_map_1()
   raster_values_map_1 <- values(r, na.rm = TRUE)
   
   if (length(raster_values_map_1) == 0) return(NULL)
@@ -116,7 +116,7 @@ output$value_range_slider_map_1 <- renderUI({
   }
   
   sliderInput("value_range", 
-              paste0(metadata$description_map_1, " Range (", metadata$unit_map_1, "):"),
+              paste0(metadata_map_1$description, " Range (", metadata_map_1$unit, "):"),
               min = floor(value_range_map_1[1] * (10^decimals)) / (10^decimals),
               max = ceiling(value_range_map_1[2] * (10^decimals)) / (10^decimals),
               value = value_range_map_1,
@@ -128,13 +128,13 @@ output$value_range_slider_map_1 <- renderUI({
 output$data_info_map_1 <- renderText({
   req(current_raster_map_1(), input$climate_variable_map_1)
   
-  r <- current_raster()
+  r <- current_raster_map_1()
   values_data_map_1 <- values(r, na.rm = TRUE)
   
-  if (!is.null(variable_metadata[["'",input$climate_variable_map_1,"'"]][["'",input$data_type_map_1,"'"]])) {
-    metadata_map_1 <- variable_metadata[["'",input$climate_variable_map_1,"'"]][["'",input$data_type_map_1,"'"]]
+  if (!is.null(variable_metadata[[paste0("'",input$climate_variable_map_1,"'")]][[paste0("'",input$data_type_map_1,"'")]])) {
+    metadata_map_1 <- variable_metadata[[paste0("'",input$climate_variable_map_1,"'")]][[paste0("'",input$data_type_map_1,"'")]]
   } else {
-    metadata_map_1 <- variable_metadata[["'",input$climate_variable_map_1,"'"]]
+    metadata_map_1 <- variable_metadata[[paste0("'",input$climate_variable_map_1,"'")]]
   }
   
   if (length(values_data_map_1) == 0) {
@@ -158,6 +158,7 @@ output$data_info_map_1 <- renderText({
 #Click Reaction
 output$click_info_map_1 <- renderText({
   info <- clicked_point_map_1()
+
   if (is.null(info)) return("Click on the map to see details.")
   
   variable_label_map_1 <- if (!is.null(current_metadata_map_1())) {
@@ -167,11 +168,12 @@ output$click_info_map_1 <- renderText({
   }
   
   val_text <- if (!is.null(info$value) && !is.na(info$value)) {
+    print(info$value)
     round(info$value, 3)
   } else {
     "NA"
   }
-  
+
   paste0(
     "Latitude: ", round(info$lat, 5), "\n",
     "Longitude: ", round(info$lng, 5), "\n",
@@ -179,16 +181,16 @@ output$click_info_map_1 <- renderText({
   )
 })
 
-# Initial blank map with world bounds restriction
-output$climate_map_map_1 <- renderLeaflet({
-  leaflet(options = leafletOptions(
-    worldCopyJump = FALSE,
-    maxBounds = world_bounds,
-    maxBoundsViscosity = 1.0
-  )) %>%
-    addTiles() %>%
-    setView(lng = 0, lat = 0, zoom = 2)
-})
+# # Initial blank map with world bounds restriction
+# output$climate_map_1 <- renderLeaflet({
+#   leaflet(options = leafletOptions(
+#     worldCopyJump = FALSE,
+#     maxBounds = world_bounds,
+#     maxBoundsViscosity = 1.0
+#   )) %>%
+#     addTiles() %>%
+#     setView(lng = 0, lat = 0, zoom = 3)
+# })
 
 # Load raster when selections change
 observe({
@@ -203,7 +205,7 @@ observe({
   tryCatch({
     # Get the normal (default) raster path
     tiff_path_map_1 <- climate_data_options[[input$climate_variable_map_1]][[input$data_type_map_1]][[input$time_period_map_1]]
-    
+
     # If user selected masked version, adjust path
     if (!is.null(tiff_path_map_1) && input$use_masked_raster_map_1) {
       tiff_path_map_1 <- sub("\\.tif$", "_masked.tif", tiff_path_map_1)
@@ -212,15 +214,15 @@ observe({
     cat("File path:", tiff_path_map_1, "\n")
     
   }, error = function(e) {
-    showNotification("⚠️ Error resolving file path.", type = "error")
+    showNotification(paste("⚠️ Error resolving file path:",e), type = "error")
     return()
   })
 
   tryCatch({
-    showNotification(
-      paste("Loading raster file:", basename(tiff_path_map_1)),
-      type = "message", duration = 4
-    )
+    # showNotification(
+    #   paste("Loading raster file:", basename(tiff_path_map_1)),
+    #   type = "message", duration = 4
+    # )
     
     r <- rast(tiff_path_map_1)
     
@@ -231,12 +233,12 @@ observe({
     r <- crop(r, ext(-180, 180, -85, 85))
     
     gauss_kernel_map_1 <- matrix(c(1,2,1,2,4,2,1,2,1), nrow = 3) / 16
-    r <- focal(r, w = gauss_kernel, fun = sum, na.policy = "omit")
+    r <- focal(r, w = gauss_kernel_map_1, fun = sum, na.policy = "omit")
     
     # Store after fully processed
     original_raster_map_1(r)
     current_raster_map_1(r)
-    
+
     if (!is.null(variable_metadata[[input$climate_variable_map_1]][[input$data_type_map_1]])) {
       current_metadata_map_1(variable_metadata[[input$climate_variable_map_1]][[input$data_type_map_1]])
     } else {
@@ -244,6 +246,7 @@ observe({
     }
     
   }, error = function(e) {
+    print(e)
   })
 })
 
@@ -274,6 +277,7 @@ observe({
 
 # Update map when current_raster changes
 observe({
+
   req(current_raster_map_1(), current_metadata_map_1())
   
   r <- current_raster_map_1()
@@ -297,27 +301,27 @@ observe({
     )
   } else {
     # All other variables use normal palette (no alpha)
-    pal <- colorNumeric(
-      palette = metadata$color_palette_map_1,
+    pal_map_1 <- colorNumeric(
+      palette = metadata_map_1$color_palette,
       domain = color_range_map_1,
       na.color = "transparent"
     )
   }
   
-  legend_title <- paste0(
+  legend_title_map_1 <- paste0(
     "Variable: ", input$climate_variable_map_1, "<br>",
     "Type: ", input$data_type_map_1, "<br>",
     "Term: ", input$time_period_map_1, "<br>",
-    "Units: ", metadata$unit_map_1
+    "Units: ", metadata_map_1$unit
   )
   
-  map_proxy <- leafletProxy("climate_map_map_1") %>%
-    clearImages_map_1() %>%
-    clearControls_map_1() %>%
-    clearShapes_map_1() %>%
-    addRasterImage_map_1(
+  map_proxy_map_1 <- leafletProxy("climate_map_1") %>%
+    clearImages() %>%
+    clearControls() %>%
+    clearShapes() %>%
+    addRasterImage(
       r, 
-      colors = pal, 
+      colors = pal_map_1, 
       opacity = 0.8,
       project = TRUE,
       group = "raster"
@@ -353,6 +357,9 @@ observe({
 # --- NEW CODE START ---
 observeEvent(input$climate_map_click_map_1, {
   click_map_1 <- input$climate_map_click_map_1
+  
+  print(click_map_1)
+  
   if (is.null(click_map_1)) return()
   
   lat_map_1 <- click$lat_map_1
@@ -386,7 +393,7 @@ observeEvent(input$climate_map_click_map_1, {
   )
   
   # Add popup to map
-  leafletProxy("climate_map_map_1") %>%
+  leafletProxy("climate_map_1") %>%
     clearPopups_map_1() %>%
     addPopups_map_1(lng = lng_map_1, lat = lat_map_1, popup = popup_text_map_1)
 })

@@ -512,17 +512,58 @@ ui <- fluidPage(
     
     tags$div(
       style = "display: flex; flex-direction: column; height: 100vh;",
+      
       tags$div(
         style = "height: 50%; position: relative; width: 100%;",
-        leafletOutput("map1", width = "100%", height = "100%"),
+        
+        # Main map (for Social Inequality, Weak Governance, and Socio-Ecological Vulnerability with Inequity)
+        conditionalPanel(
+          condition = "input.indicator_category_map_1 == 'Social Inequality' || input.indicator_category_map_1 == 'Weak Governance' || (input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'Inequity')",
+          leafletOutput("map1", width = "100%", height = "50vh")
+        ),
+        
+        # Climate Risk map
+        conditionalPanel(
+          condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'Climate Risk'",
+          leafletOutput("climate_map_1", width = "100%", height = "50vh")
+        ),
+        
+        # ND Gain map
+        conditionalPanel(
+          condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'ND Gain'",
+          leafletOutput("nd_gain_map_1", width = "100%", height = "50vh")
+        ),
+        
+        #leafletOutput("map1", width = "100%", height = "100%"),
         tags$div(
           style = "position: absolute; top: 30px; right: 50px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);",
           "Map 1"
         )
       ),
+      
+      
       tags$div(
         style = "height: 50%; position: relative; width: 100%;",
-        leafletOutput("map2", width = "100%", height = "100%"),
+        #leafletOutput("map2", width = "100%", height = "100%"),
+        
+        # Main map (for Social Inequality, Weak Governance, and Socio-Ecological Vulnerability with Inequity)
+        conditionalPanel(
+          condition = "input.indicator_category_map_2 == 'Social Inequality' || input.indicator_category_map_2 == 'Weak Governance' || (input.indicator_category_map_2 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_2 == 'Inequity')",
+          leafletOutput("map2", width = "100%", height = "50vh")
+        ),
+        
+        # Climate Risk map
+        conditionalPanel(
+          condition = "input.indicator_category_map_2 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_2 == 'Climate Risk'",
+          leafletOutput("climate_map_2", width = "100%", height = "50vh")
+        ),
+        
+        # ND Gain map
+        conditionalPanel(
+          condition = "input.indicator_category_map_2 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_2 == 'ND Gain'",
+          leafletOutput("nd_gain_map_2", width = "100%", height = "50vh")
+        ),
+        
         tags$div(
           style = "position: absolute; top: 10px; right: 50px; background: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px; font-weight: 600; font-size: 14px; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.15);",
           "Map 2"
@@ -973,7 +1014,7 @@ ui <- fluidPage(
       # MAP 1 CONTROLS
       tags$div(
         class = "control-group",
-        tags$div(class = "control-title", "Map 1 Controls"),
+        tags$div(class = "control-title", "Map 1 Controls", style="color: darkblue"),
         selectizeInput("comparison_country_search_map_1", "Search Country:",
                        choices = NULL, selected = NULL,
                        options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
@@ -981,6 +1022,7 @@ ui <- fluidPage(
         #            choices = composite_choices, selected = "Weak Governance"),
         selectInput("indicator_category_map_1", "Theme:", #Composite Score:
                     choices = composite_choices, selected = "Social Inequality"),
+        
         conditionalPanel(
           condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability'",
           selectInput("composite_choice_map_1", "Composite Score:",
@@ -990,7 +1032,6 @@ ui <- fluidPage(
           condition = "input.indicator_category_map_1 == 'Social Inequality' || input.indicator_category_map_1 == 'Weak Governance' || (input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'Inequity')",
           selectInput("variable_choice_map_1", "Variable:", choices = NULL),
         ),   
-        
         
         conditionalPanel(
           condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'ND Gain'",
@@ -1022,6 +1063,12 @@ ui <- fluidPage(
           
           uiOutput("data_type_selector_map_1"),
           uiOutput("time_period_selector_map_1"),
+          
+          checkboxInput(
+            "use_masked_raster_map_1",
+            label = "Show only Exclusive Economic Zones (EEZs)",
+            value = FALSE
+          ),
           
           tags$div(class = "control-title", "Data Filters"),
           
@@ -1081,15 +1128,103 @@ ui <- fluidPage(
         }
       ")),
         class = "control-group",
-        tags$div(class = "control-title", "Map 2 Controls"), 
-        selectizeInput("country_search_map_2", "Search Country:",
+        tags$div(class = "control-title", "Map 2 Controls", style="color: darkblue"), 
+        
+        
+        selectizeInput("comparison_country_search_map_2", "Search Country:",
                        choices = NULL, selected = NULL,
                        options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
-        selectInput("indicator_category", "Theme:", 
-                    choices = composite_choices, selected = "Weak Governance"),
-        selectInput("indicator_category_map_2", "Composite Score:",
+        #selectInput("indicator_category", "Theme:", 
+        #            choices = composite_choices, selected = "Weak Governance"),
+        selectInput("indicator_category_map_2", "Theme:", #Composite Score:
                     choices = composite_choices, selected = "Social Inequality"),
-        selectInput("variable_choice_map_2", "Variable:", choices = NULL)
+        
+        conditionalPanel(
+          condition = "input.indicator_category_map_2 == 'Socio-Ecological Vulnerability'",
+          selectInput("composite_choice_map_2", "Composite Score:",
+                      choices = names(composite_data_options), selected = "Inequity")
+        ),        
+        conditionalPanel(
+          condition = "input.indicator_category_map_2 == 'Social Inequality' || input.indicator_category_map_2 == 'Weak Governance' || (input.indicator_category_map_2 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_2 == 'Inequity')",
+          selectInput("variable_choice_map_2", "Variable:", choices = NULL),
+        ),   
+        
+        conditionalPanel(
+          condition = "input.indicator_category_map_2 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_2 == 'ND Gain'",
+          
+          # tags$div(
+          #   class = "control-group",
+          selectInput(inputId = "variable_nd_map_2",
+                      label = "Choose a variable/indicator:",
+                      choices = gainVars,
+                      selected = "Value..gain"),
+          
+          sliderInput(inputId = "nd_year_map_2",
+                      label = "Choose a year:",
+                      min = 1995,
+                      max = 2022,
+                      value = 1995,
+                      sep = "",
+                      animate = TRUE)
+        ),
+        
+        conditionalPanel(
+          condition = "input.indicator_category_map_2 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_2 == 'Climate Risk'",
+          
+          selectInput(
+            "climate_variable_map_2", 
+            "Select Climate Variable:", 
+            choices = names(climate_data_options)
+          ),
+          
+          uiOutput("data_type_selector_map_2"),
+          uiOutput("time_period_selector_map_2"),
+          
+          checkboxInput(
+            "use_masked_raster_map_2",
+            label = "Show only Exclusive Economic Zones (EEZs)",
+            value = FALSE
+          ),
+          
+          tags$div(class = "control-title", "Data Filters"),
+          
+          uiOutput("value_range_slider_map_2"),
+          uiOutput("manual_min_input_map_2"),
+          uiOutput("manual_max_input_map_2"),
+          
+          radioButtons(
+            "filter_mode_map_2", 
+            "Filter Mode:",
+            choices = list(
+              "Show All Data" = "none",
+              "Show Values in Range" = "range",
+              "Show Above Threshold" = "above", 
+              "Show Below Threshold" = "below"
+            ),
+            selected = "none"
+          ),
+          
+          actionButton(
+            "reset_filters_map_2", 
+            "Reset Filters", 
+            class = "btn-outline-secondary btn-sm",
+            style = "margin-top: 10px;"
+          ),
+          
+          tags$div(class = "control-title", "Data Summary"),
+          
+          div(
+            style = "font-family: Arial, sans-serif;",
+            verbatimTextOutput("data_info_map_2")
+          ),
+          
+          verbatimTextOutput("click_info_map_2")
+        )
+        
+        
+        
+        
+        
       ),
       # 
       # tags$div(
@@ -1098,6 +1233,9 @@ ui <- fluidPage(
       #          style = "font-size: 12px; color: #6c757d; font-style: italic;")
       # )
     ),
+    
+    
+    
     
     tags$div(
       class = "panel-section",

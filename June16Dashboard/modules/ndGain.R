@@ -186,7 +186,7 @@ observe({
       lng = coords[, 1],
       lat = coords[, 2],
       radius = 6,
-      fillColor = ~pal(val_col), 
+      fillColor = ~pal(val_col),
       fillOpacity = 0.8,
       stroke = FALSE,
       label = ~paste0(Name, ": ", round(val_col, 3))
