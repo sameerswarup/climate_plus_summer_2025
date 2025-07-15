@@ -404,13 +404,13 @@ observeEvent({
 })
 
 observeEvent({
-  input$country_search_map_2; input$indicator_category_map_2; input$variable_choice_map_2
+  input$comparison_country_search_map_2; input$indicator_category_map_2; input$variable_choice_map_2  # Fixed this line
 }, {
   req(input$indicator_category_map_2)
   req(input$variable_choice_map_2)
   req(map_initialized())
   
-  selected_country(input$country_search_map_2)
+  selected_country(input$comparison_country_search_map_2)  # And this line
   
   update_comparison_map_2_layers_only()
 })
