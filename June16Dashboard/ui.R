@@ -680,6 +680,8 @@ ui <- fluidPage(
                  tags$i(class = "fas fa-chart-line"), "Country Analysis"),
         tags$div(class = "menu-item", `data-section` = "comparison",
                  tags$i(class = "fas fa-balance-scale"), "Comparison"),
+        tags$div(class = "menu-item", `data-section` = "data-overview",  
+                 tags$i(class = "fas fa-sitemap"), "Data Overview"),
         tags$div(class = "menu-item", `data-section` = "about",
                  tags$i(class = "fas fa-info-circle"), "About")
       )
@@ -1309,18 +1311,434 @@ ui <- fluidPage(
       # )
     ),
     
-    tags$div(
-      class = "control-group",
-      tags$div(class = "control-title", "Map Display Options"),
-      tags$div(
-        class = "form-check",
-        checkboxInput(
-          "satellite_view_comparison", 
-          label = "Street map view", 
-          value = FALSE  # Unchecked = satellite (default), Checked = street map
+    tags$style(HTML("
+ .data-tree {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.4;
+    margin: 10px 0;
+  }
+  
+  .data-overview-content {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  
+  .tree-node {
+    margin: 4px 0;
+    padding-left: 0;
+  }
+  
+  .category-level-1 {
+    margin-bottom: 16px;
+  }
+  
+  .category-level-1 > .node-label {
+    background: linear-gradient(135deg, #1e3a8a, #1e40af);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.3);
+  }
+  
+  .category-description {
+    color: #6b7280;
+    font-size: 11px;
+    font-style: italic;
+    margin: 4px 0 12px 0;
+    padding: 8px 12px;
+    background: rgba(248, 249, 250, 0.8);
+    border-radius: 4px;
+    border-left: 3px solid rgba(30, 58, 138, 0.3);
+  }
+  
+  .category-level-2 > .node-label {
+    background: rgba(30, 58, 138, 0.1);
+    color: #1e3a8a;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    margin: 6px 0 6px 20px;
+    border-left: 3px solid #1e3a8a;
+  }
+  
+  .variable-node {
+    margin-left: 40px;
+    padding: 8px 12px;
+    background: rgba(248, 249, 250, 0.5);
+    border-radius: 4px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  }
+  
+  .variable-label {
+    color: #1e3a8a;
+    font-weight: 600;
+    font-size: 12px;
+    margin-bottom: 4px;
+    display: block;
+  }
+  
+  .variable-description {
+    color: #4b5563;
+    font-size: 11px;
+    line-height: 1.3;
+    margin-bottom: 6px;
+    font-style: italic;
+  }
+  
+  .variable-code {
+    color: #6b7280;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: rgba(0, 0, 0, 0.04);
+    padding: 2px 6px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-top: 2px;
+    margin-right: 8px;
+  }
+  
+  .data-source-link {
+    display: inline-block;
+    color: #1e3a8a;
+    font-size: 10px;
+    font-weight: 500;
+    text-decoration: none;
+    background: rgba(30, 58, 138, 0.1);
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-top: 2px;
+    transition: all 0.2s ease;
+  }
+  
+  .data-source-link:hover {
+    background: rgba(30, 58, 138, 0.2);
+    text-decoration: none;
+    color: #1e3a8a;
+    transform: translateY(-1px);
+  }
+  
+  .node-children {
+    margin-top: 8px;
+  }
+  
+  .category-level-1 .node-children {
+    border-left: 2px solid rgba(30, 58, 138, 0.2);
+    margin-left: 10px;
+    padding-left: 10px;
+  }
+")),
+    
+   # Then add this section right before your about section:
+tags$div(
+  class = "panel-section",
+  id = "data-overview-section",
+  
+  tags$div(class = "section-header",
+           tags$i(class = "fas fa-sitemap"),
+           "Data Overview"),
+  
+  tags$div(
+    class = "control-group",
+    tags$div(class = "control-title", "Project Data Structure"),
+    tags$p("This visualization shows how all variables and indicators in the High-Stakes Coastal Mapper are organized and categorized, with descriptions and data source links.",
+           style = "font-size: 12px; color: #64748b; line-height: 1.4; margin-bottom: 15px;")
+  ),
+  
+  tags$div(
+    class = "control-group data-overview-content",
+    
+    tags$div(class = "data-tree",
+      # Socio-Ecological Vulnerability
+      tags$div(class = "tree-node category-level-1",
+        tags$div(class = "node-label", "Socio-Ecological Vulnerability"),
+        tags$div(class = "category-description", "Measures coastal communities' exposure to damaged marine environments, including threats to sea life, reliance on ocean-based food and jobs, and vulnerability to rising sea levels."),
+        tags$div(class = "node-children",
+          tags$div(class = "tree-node category-level-2",
+            tags$div(class = "node-label", "Composite Score"),
+            tags$div(class = "node-children",
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Socio-Ecological Vulnerability (Composite)"),
+                tags$div(class = "variable-description", "Overall composite ranking combining all vulnerability components into a single score for coastal regions."),
+                tags$div(class = "variable-code", "vulnerab.score.rank"),
+                tags$a(class = "data-source-link", href = "https://example.com/data-methodology", target = "_blank", "Methodology")
+              )
+            )
+          ),
+          tags$div(class = "tree-node category-level-2",
+            tags$div(class = "node-label", "Components"),
+            tags$div(class = "node-children",
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Degraded Ecosystems"),
+                tags$div(class = "variable-description", "Measures the extent of environmental degradation in coastal marine ecosystems, including coral bleaching, pollution, and biodiversity loss."),
+                tags$div(class = "variable-code", "mean.count.grav.V2.log.sc"),
+                tags$a(class = "data-source-link", href = "https://www.worldbank.org/en/topic/environment", target = "_blank", "World Bank Environmental Data")
+              ),
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Relative Deprivation Index"),
+                tags$div(class = "variable-description", "Composite measure of poverty and social deprivation including access to healthcare, education, and basic services in coastal communities."),
+                tags$div(class = "variable-code", "povmap.grdi.v1.sc"),
+                tags$a(class = "data-source-link", href = "https://www.worldbank.org/en/topic/poverty", target = "_blank", "World Bank Poverty Data")
+              ),
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Coastal Climate Vulnerability"),
+                tags$div(class = "variable-description", "Percentage of population living in low-elevation coastal zones vulnerable to sea level rise and extreme weather events."),
+                tags$div(class = "variable-code", "perc.pop.world.coastal.merit.10m.log.sc"),
+                tags$a(class = "data-source-link", href = "https://www.climatecentral.org/", target = "_blank", "Climate Central")
+              ),
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Nutritional Dependence"),
+                tags$div(class = "variable-description", "Reliance on marine resources for protein and nutritional security, particularly fish and seafood consumption per capita."),
+                tags$div(class = "variable-code", "Nutritional.dependence.sc"),
+                tags$a(class = "data-source-link", href = "https://www.fao.org/fishery/en", target = "_blank", "FAO Fisheries Data")
+              )
+            )
+          )
+        )
+      ),
+      
+      # Social Inequality
+      tags$div(class = "tree-node category-level-1",
+        tags$div(class = "node-label", "Social Inequality"),
+        tags$div(class = "category-description", "Measures economic and social disparities through gender wage gaps, income distribution differences, and unequal health outcomes across different population groups."),
+        tags$div(class = "node-children",
+          tags$div(class = "tree-node category-level-2",
+            tags$div(class = "node-label", "Composite Score"),
+            tags$div(class = "node-children",
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Social Inequality (Composite)"),
+                tags$div(class = "variable-description", "Overall ranking combining gender, income, and health inequality metrics into a single composite measure."),
+                tags$div(class = "variable-code", "ineq.score.rank"),
+                tags$a(class = "data-source-link", href = "https://example.com/inequality-methodology", target = "_blank", "Methodology")
+              )
+            )
+          ),
+          tags$div(class = "tree-node category-level-2",
+            tags$div(class = "node-label", "Components"),
+            tags$div(class = "node-children",
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Gender Inequality"),
+                tags$div(class = "variable-description", "Measures disparities between men and women in areas of reproductive health, empowerment, and labor market participation."),
+                tags$div(class = "variable-code", "gender.ineq.sc"),
+                tags$a(class = "data-source-link", href = "https://hdr.undp.org/data-center/thematic-composite-indices/gender-inequality-index", target = "_blank", "UNDP Gender Index")
+              ),
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Income Inequality"),
+                tags$div(class = "variable-description", "Gini coefficient and other measures of income distribution disparities within countries and regions."),
+                tags$div(class = "variable-code", "income.ineq.sc"),
+                tags$a(class = "data-source-link", href = "https://data.worldbank.org/indicator/SI.POV.GINI", target = "_blank", "World Bank Gini Data")
+              ),
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Inequality Adjusted Life Expectancy"),
+                tags$div(class = "variable-description", "Life expectancy adjusted for inequality in distribution of expected years of life across the population."),
+                tags$div(class = "variable-code", "le.ineq.log.sc"),
+                tags$a(class = "data-source-link", href = "https://hdr.undp.org/", target = "_blank", "UNDP Human Development")
+              )
+            )
+          )
+        )
+      ),
+      
+      # Weak Governance
+      tags$div(class = "tree-node category-level-1",
+        tags$div(class = "node-label", "Weak Governance"),
+        tags$div(class = "category-description", "Measures how well governments function through public service quality, business regulation effectiveness, law enforcement, corruption prevention, political stability, and citizen participation."),
+        tags$div(class = "node-children",
+          tags$div(class = "tree-node category-level-2",
+            tags$div(class = "node-label", "Composite Score"),
+            tags$div(class = "node-children",
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Weak Governance (Composite)"),
+                tags$div(class = "variable-description", "Overall ranking combining all governance indicators from the World Bank Worldwide Governance Indicators project."),
+                tags$div(class = "variable-code", "gov.score.rank"),
+                tags$a(class = "data-source-link", href = "https://info.worldbank.org/governance/wgi/", target = "_blank", "World Bank WGI")
+              )
+            )
+          ),
+          tags$div(class = "tree-node category-level-2",
+            tags$div(class = "node-label", "Components"),
+            tags$div(class = "node-children",
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Government Ineffectiveness"),
+                tags$div(class = "variable-description", "Quality of public services, civil service, policy formulation and implementation, and government commitment to policies."),
+                tags$div(class = "variable-code", "Gov_effect.sc"),
+                tags$a(class = "data-source-link", href = "https://info.worldbank.org/governance/wgi/", target = "_blank", "WGI Government Effectiveness")
+              ),
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Poor Regulatory Quality"),
+                tags$div(class = "variable-description", "Government's ability to formulate and implement sound policies and regulations that promote private sector development."),
+                tags$div(class = "variable-code", "Reg_quality.sc"),
+                tags$a(class = "data-source-link", href = "https://info.worldbank.org/governance/wgi/", target = "_blank", "WGI Regulatory Quality")
+              ),
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Weak Rule of Law"),
+                tags$div(class = "variable-description", "Confidence in and abiding by rules of society, including contract enforcement, property rights, police, and courts."),
+                tags$div(class = "variable-code", "Rule_law.sc"),
+                tags$a(class = "data-source-link", href = "https://info.worldbank.org/governance/wgi/", target = "_blank", "WGI Rule of Law")
+              ),
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Weak Control of Corruption"),
+                tags$div(class = "variable-description", "Extent to which public power is exercised for private gain, including petty and grand forms of corruption."),
+                tags$div(class = "variable-code", "control_corr.sc"),
+                tags$a(class = "data-source-link", href = "https://info.worldbank.org/governance/wgi/", target = "_blank", "WGI Control of Corruption")
+              ),
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Low Voice and Accountability"),
+                tags$div(class = "variable-description", "Citizens' ability to participate in selecting their government, freedom of expression, association, and free media."),
+                tags$div(class = "variable-code", "Voice_account.sc"),
+                tags$a(class = "data-source-link", href = "https://info.worldbank.org/governance/wgi/", target = "_blank", " WGI Voice & Accountability")
+              ),
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Political Instability"),
+                tags$div(class = "variable-description", "Likelihood of political instability and/or politically motivated violence, including terrorism."),
+                tags$div(class = "variable-code", "Political_stab.sc"),
+                tags$a(class = "data-source-link", href = "https://info.worldbank.org/governance/wgi/", target = "_blank", " WGI Political Stability")
+              )
+            )
+          )
+        )
+      ),
+      
+      # Climate Risk Data
+      tags$div(class = "tree-node category-level-1",
+        tags$div(class = "node-label", "Climate Risk Data"),
+        tags$div(class = "category-description", "Comprehensive climate projections and current conditions from IPCC models and NOAA monitoring systems, covering ocean chemistry, sea level, temperature, and coral bleaching."),
+        tags$div(class = "node-children",
+          tags$div(class = "tree-node category-level-2",
+            tags$div(class = "node-label", "Ocean pH Data"),
+            tags$div(class = "node-children",
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Ocean Acidification Projections"),
+                tags$div(class = "variable-description", "pH change and absolute values for near-term (2021-2040), medium-term (2041-2060), and long-term (2081-2100) periods."),
+                tags$div(class = "variable-code", "IPCC Interactive Atlas"),
+                tags$a(class = "data-source-link", href = "https://interactive-atlas.ipcc.ch/", target = "_blank", "IPCC Interactive Atlas")
+              )
+            )
+          ),
+          tags$div(class = "tree-node category-level-2",
+            tags$div(class = "node-label", "Sea Level Rise"),
+            tags$div(class = "node-children",
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Sea Level Change Projections"),
+                tags$div(class = "variable-description", "Projected change in sea level relative to 1995-2014 baseline for three time periods under various emission scenarios."),
+                tags$div(class = "variable-code", "IPCC Interactive Atlas"),
+                tags$a(class = "data-source-link", href = "https://interactive-atlas.ipcc.ch/", target = "_blank", "IPCC Sea Level Data")
+              )
+            )
+          ),
+          tags$div(class = "tree-node category-level-2",
+            tags$div(class = "node-label", "Temperature Data"),
+            tags$div(class = "node-children",
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Heating Degree Days"),
+                tags$div(class = "variable-description", "Temperature-based metrics for energy demand, showing both absolute values and changes from historical baseline."),
+                tags$div(class = "variable-code", "IPCC Interactive Atlas"),
+                tags$a(class = "data-source-link", href = "https://interactive-atlas.ipcc.ch/", target = "_blank", " IPCC Temperature Data")
+              )
+            )
+          ),
+          tags$div(class = "tree-node category-level-2",
+            tags$div(class = "node-label", "Coral Bleaching"),
+            tags$div(class = "node-children",
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Degree Heating Weeks"),
+                tags$div(class = "variable-description", "Real-time coral bleaching thermal stress monitoring with daily updates showing accumulated heat stress over 12-week periods."),
+                tags$div(class = "variable-code", "NOAA Coral Reef Watch"),
+                tags$a(class = "data-source-link", href = "https://coralreefwatch.noaa.gov/", target = "_blank", "NOAA Coral Watch")
+              )
+            )
+          )
+        )
+      ),
+      
+      # ND-GAIN Indicators
+      tags$div(class = "tree-node category-level-1",
+        tags$div(class = "node-label", "ND-GAIN Indicators"),
+        tags$div(class = "category-description", "Notre Dame Global Adaptation Initiative indicators measuring countries' vulnerability to climate disruptions and readiness to leverage investment for adaptive actions (1995-2022)."),
+        tags$div(class = "node-children",
+          tags$div(class = "tree-node category-level-2",
+            tags$div(class = "node-label", "Overall Score"),
+            tags$div(class = "node-children",
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "GAIN Index"),
+                tags$div(class = "variable-description", "Overall country ranking combining vulnerability and readiness scores to measure climate adaptation capacity."),
+                tags$div(class = "variable-code", "Value..gain"),
+                tags$a(class = "data-source-link", href = "https://gain.nd.edu/our-work/country-index/", target = "_blank", "ND-GAIN Country Index")
+              )
+            )
+          ),
+          tags$div(class = "tree-node category-level-2",
+            tags$div(class = "node-label", "Vulnerability Indicators"),
+            tags$div(class = "node-children",
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Ecosystem Vulnerability"),
+                tags$div(class = "variable-description", "Vulnerability of ecosystem services to climate change impacts including biodiversity loss and habitat degradation."),
+                tags$div(class = "variable-code", "Value..ecosystems"),
+                tags$a(class = "data-source-link", href = "https://gain.nd.edu/our-work/country-index/download-data/", target = "_blank", "ND-GAIN Ecosystem Data")
+              ),
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Food Vulnerability"),
+                tags$div(class = "variable-description", "Vulnerability of food system to climate change including agricultural productivity and food security risks."),
+                tags$div(class = "variable-code", "Value..food"),
+                tags$a(class = "data-source-link", href = "https://gain.nd.edu/our-work/country-index/download-data/", target = "_blank", "ND-GAIN Food Data")
+              ),
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Health Vulnerability"),
+                tags$div(class = "variable-description", "Vulnerability of human health to climate change impacts including heat stress, disease vectors, and healthcare capacity."),
+                tags$div(class = "variable-code", "Value..health"),
+                tags$a(class = "data-source-link", href = "https://gain.nd.edu/our-work/country-index/download-data/", target = "_blank", "ND-GAIN Health Data")
+              ),
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Infrastructure Vulnerability"),
+                tags$div(class = "variable-description", "Vulnerability of critical infrastructure to climate change including transportation, energy, and communication systems."),
+                tags$div(class = "variable-code", "Value..infrastructure"),
+                tags$a(class = "data-source-link", href = "https://gain.nd.edu/our-work/country-index/download-data/", target = "_blank", " ND-GAIN Infrastructure Data")
+              )
+            )
+          ),
+          tags$div(class = "tree-node category-level-2",
+            tags$div(class = "node-label", "Readiness Indicators"),
+            tags$div(class = "node-children",
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Economic Readiness"),
+                tags$div(class = "variable-description", "Economic capacity to implement adaptation measures including investment capability and economic stability."),
+                tags$div(class = "variable-code", "Value..economic"),
+                tags$a(class = "data-source-link", href = "https://gain.nd.edu/our-work/country-index/download-data/", target = "_blank", "ND-GAIN Economic Data")
+              ),
+              tags$div(class = "tree-node variable-node",
+                tags$div(class = "variable-label", "Governance Readiness"),
+                tags$div(class = "variable-description", "Institutional and governance capacity to implement adaptation strategies including policy effectiveness and rule of law."),
+                tags$div(class = "variable-code", "Value..governance"),
+                tags$a(class = "data-source-link", href = "https://gain.nd.edu/our-work/country-index/download-data/", target = "_blank", " ND-GAIN Governance Data")
+              )
+            )
+          )
         )
       )
-    ),
+    )
+  ),
+  
+  tags$div(
+    class = "control-group",
+    tags$div(class = "control-title", "Data Sources Summary"),
+    tags$div(
+      style = "font-size: 11px; line-height: 1.4; color: #64748b;",
+      tags$p(tags$strong("Inequity Indicators:"), " Custom composite scores based on ", 
+             tags$a(href = "https://data.worldbank.org/", target = "_blank", style = "color: #1e3a8a;", "World Bank"), ", ",
+             tags$a(href = "https://www.un.org/en/", target = "_blank", style = "color: #1e3a8a;", "UN agencies"), ", and academic research data"),
+      tags$p(tags$strong("Climate Risk Data:"), " ", 
+             tags$a(href = "https://interactive-atlas.ipcc.ch/", target = "_blank", style = "color: #1e3a8a;", "IPCC Interactive Atlas"), " and ",
+             tags$a(href = "https://coralreefwatch.noaa.gov/", target = "_blank", style = "color: #1e3a8a;", "NOAA Coral Reef Watch")),
+      tags$p(tags$strong("ND-GAIN:"), " ", 
+             tags$a(href = "https://gain.nd.edu/", target = "_blank", style = "color: #1e3a8a;", "Notre Dame Global Adaptation Initiative"), " Country Index (1995-2022)"),
+      tags$p(tags$strong("Geographic Coverage:"), " 114+ coastal countries worldwide with sub-national data for selected regions")
+    )
+  )
+),
     
     tags$div(
       class = "panel-section",

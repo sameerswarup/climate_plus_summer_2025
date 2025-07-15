@@ -9,6 +9,7 @@ server <- function(input, output, session) {
   source("modules/ipcc_map_2.R", local = TRUE)
   source("modules/ndGain_map_2.R", local = TRUE)
   source("modules/countryComparison.R", local = TRUE)
+  source("modules/dataOverview.R", local = TRUE)
   
   output$map1 <- renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
