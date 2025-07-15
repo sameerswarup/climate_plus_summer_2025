@@ -12,7 +12,7 @@ server <- function(input, output, session) {
   
   output$map1 <- renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-      addProviderTiles(providers$Esri.WorldStreetMap) %>%
+      addProviderTiles(providers$Esri.WorldImagery) %>%
       htmlwidgets::onRender("
       function(el, x) {
         this.attributionControl.setPosition('topright');
@@ -23,7 +23,7 @@ server <- function(input, output, session) {
   
   output$nd_gain_map_1 <- renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-      addProviderTiles(providers$Esri.WorldStreetMap) %>%
+      addProviderTiles(providers$Esri.WorldImagery) %>%
       htmlwidgets::onRender("
       function(el, x) {
         this.attributionControl.setPosition('topright');
@@ -34,7 +34,7 @@ server <- function(input, output, session) {
   
   output$climate_map_1 <- renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-      addProviderTiles(providers$Esri.WorldStreetMap) %>%
+      addProviderTiles(providers$Esri.WorldImagery) %>%
       htmlwidgets::onRender("
       function(el, x) {
         this.attributionControl.setPosition('topright');
@@ -45,7 +45,7 @@ server <- function(input, output, session) {
   
   output$map2 <- renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-      addProviderTiles(providers$Esri.WorldStreetMap) %>%
+      addProviderTiles(providers$Esri.WorldImagery) %>%
       htmlwidgets::onRender("
       function(el, x) {
         this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
@@ -55,7 +55,7 @@ server <- function(input, output, session) {
   
   output$nd_gain_map_2 <- renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-      addProviderTiles(providers$Esri.WorldStreetMap) %>%
+      addProviderTiles(providers$Esri.WorldImagery) %>%
       htmlwidgets::onRender("
       function(el, x) {
         this.attributionControl.setPosition('topright');
@@ -66,7 +66,7 @@ server <- function(input, output, session) {
   
   output$climate_map_2 <- renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
-      addProviderTiles(providers$Esri.WorldStreetMap) %>%
+      addProviderTiles(providers$Esri.WorldImagery) %>%
       htmlwidgets::onRender("
       function(el, x) {
         this.attributionControl.setPosition('topright');
@@ -109,7 +109,7 @@ server <- function(input, output, session) {
     leafletProxy(map_id) %>% setView(lng = coords$X, lat = coords$Y, zoom = coords$zoom)
   }
   
-  create_base_map <- function(satellite = FALSE) {
+  create_base_map <- function(satellite = TRUE) {
     map <- leaflet(options = leafletOptions(
       zoomControl = FALSE,
       maxBounds = list(list(-90, -180), list(90, 180)),
@@ -348,12 +348,12 @@ server <- function(input, output, session) {
     
     if (!(var %in% names(global_data)) || all(is.na(global_data[[var]]))) {
       map_initialized(TRUE)
-      return(create_base_map(FALSE))
+      return(create_base_map(TRUE))
     }
     
     pal <- colorNumeric("Purples", domain = NULL, na.color = "#FFFFFF", reverse = FALSE)
     
-    result <- create_base_map(FALSE) %>%
+    result <- create_base_map(TRUE) %>%
       addPolygons(
         data = polygon_data,
         fillColor = ~pal(get(var)), fillOpacity = 0.7, color = ~pal(get(var)),
@@ -375,8 +375,22 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$satellite_view, {
-    tiles <- if (input$satellite_view) providers$Esri.WorldImagery else providers$Esri.WorldStreetMap
+    tiles <- if (!input$satellite_view) providers$Esri.WorldImagery else providers$Esri.WorldStreetMap
     leafletProxy("map") %>% clearTiles() %>% addProviderTiles(tiles)
+  })
+  
+  observeEvent(input$satellite_view_comparison, {
+    # When checkbox is unchecked (FALSE), show satellite view
+    # When checkbox is checked (TRUE), show street map
+    tiles <- if (!input$satellite_view_comparison) providers$Esri.WorldImagery else providers$Esri.WorldStreetMap
+    
+    # Update all comparison maps
+    leafletProxy("map1") %>% clearTiles() %>% addProviderTiles(tiles)
+    leafletProxy("map2") %>% clearTiles() %>% addProviderTiles(tiles)
+    leafletProxy("nd_gain_map_1") %>% clearTiles() %>% addProviderTiles(tiles)
+    leafletProxy("nd_gain_map_2") %>% clearTiles() %>% addProviderTiles(tiles)
+    leafletProxy("climate_map_1") %>% clearTiles() %>% addProviderTiles(tiles)
+    leafletProxy("climate_map_2") %>% clearTiles() %>% addProviderTiles(tiles)
   })
   
   output$countryDisplay <- renderText({

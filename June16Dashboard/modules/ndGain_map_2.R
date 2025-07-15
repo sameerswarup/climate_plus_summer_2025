@@ -84,9 +84,6 @@ observe({
   nd_data <- nd_year_data_map_2()
   req(!is.null(nd_data), nrow(nd_data) > 0)
   
-  print("1")
-  print(input$nd_gain_map_2)
-  
   # Join world polygons with ND-GAIN data
   data <- left_join(world_sf, nd_data, by = c("iso_a3" = "ISO3"))
   valid_vals <- na.omit(data[[input$variable_nd_map_2]])
@@ -100,8 +97,6 @@ observe({
   
   proxy <- leafletProxy("nd_gain_map_2", data = data)
   proxy %>% clearShapes() %>% clearMarkers() %>% clearControls()
-  
-  print("2")
   
   # Add this: Re-zoom to country after clearing if country is selected
   if (!is.null(countryND_map_2()) && countryND_map_2() != "" && countryND_map_2() != "Global (Default)") {

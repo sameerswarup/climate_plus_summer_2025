@@ -724,7 +724,7 @@ ui <- fluidPage(
           class = "form-check",
           checkboxInput(
             "satellite_view", 
-            label = "Satellite view", 
+            label = "Street map view", 
             value = FALSE
           )
         )
@@ -1268,12 +1268,17 @@ ui <- fluidPage(
       # )
     ),
     
-    
-    
-    
     tags$div(
-      class = "control-group",style="margin:0",
-      checkboxInput("use_comparison_country_scale", "Country-specific scale", value = FALSE)
+      class = "control-group",
+      tags$div(class = "control-title", "Map Display Options"),
+      tags$div(
+        class = "form-check",
+        checkboxInput(
+          "satellite_view_comparison", 
+          label = "Street map view", 
+          value = FALSE  # Unchecked = satellite (default), Checked = street map
+        )
+      )
     ),
     
     tags$div(
