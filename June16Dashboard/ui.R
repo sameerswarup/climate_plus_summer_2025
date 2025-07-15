@@ -537,8 +537,7 @@ ui <- fluidPage(
         }
       }
       
-/* Replace your existing .leaflet-tooltip CSS with this updated version */
-.leaflet-tooltip {
+      .leaflet-tooltip {
   background: rgba(255, 255, 255, 0.96) !important;
   border: 1px solid rgba(148, 163, 184, 0.2) !important;
   border-radius: 8px !important;
@@ -786,7 +785,7 @@ ui <- fluidPage(
                       sep = "",
                       animate = TRUE)
         ),
-
+        
         tags$div(
           class = "control-group",
           tags$div(class = "control-title", "Data Summary"),
@@ -795,7 +794,7 @@ ui <- fluidPage(
             p(strong("Score:"), textOutput("summary_score"))
           )
         ),
-
+        
         plotOutput("nd_graph", width = "95%", height = "300px"),
         
         tags$div(
@@ -1487,13 +1486,13 @@ ui <- fluidPage(
   ),
   
   tags$script(HTML("
-                   $(document).on('mousemove', function(e) {
-                     $('.leaflet-tooltip').css({
-                       'left': e.pageX + 10 + 'px',
-                       'top': e.pageY - 50 + 'px',
-                       'position': 'fixed'
-                     });
-                   });
+    $(document).ready(function() {
+    
+      // Hamburger menu click handler
+      $('#hamburger-menu').click(function(e) {
+        e.stopPropagation();
+        $('#menu-dropdown').toggleClass('show');
+      });
 
       // Close menu when clicking outside or when mouse leaves the entire menu area
       $(document).on('click', function(e) {
