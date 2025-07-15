@@ -561,9 +561,9 @@ ui <- fluidPage(
           leafletOutput("climate_map_1", width = "100%", height = "50vh")
         ),
         
-        # ND Gain map
+        # ND GAIN map
         conditionalPanel(
-          condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'ND Gain'",
+          condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'ND GAIN'",
           leafletOutput("nd_gain_map_1", width = "100%", height = "50vh")
         ),
         
@@ -591,9 +591,9 @@ ui <- fluidPage(
           leafletOutput("climate_map_2", width = "100%", height = "50vh")
         ),
         
-        # ND Gain map
+        # ND GAIN map
         conditionalPanel(
-          condition = "input.indicator_category_map_2 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_2 == 'ND Gain'",
+          condition = "input.indicator_category_map_2 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_2 == 'ND GAIN'",
           leafletOutput("nd_gain_map_2", width = "100%", height = "50vh")
         ),
         
@@ -615,9 +615,9 @@ ui <- fluidPage(
     leafletOutput("map", width = "100%", height = "100vh")
   ),
   
-  # ND Gain map
+  # ND GAIN map
   conditionalPanel(
-    condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND Gain'",
+    condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND GAIN'",
     leafletOutput("nd_gain_map", width = "100%", height = "100vh")
   ),
   
@@ -731,10 +731,10 @@ ui <- fluidPage(
       ),
       
       conditionalPanel(
-        condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND Gain'",
+        condition = "input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'ND GAIN'",
         tags$div(
           class = "control-group",
-          tags$div(class = "control-title", "What is ND Gain?"),
+          tags$div(class = "control-title", "What is ND GAIN?"),
           tags$small(
             style = "font-style: italic;",
             "The Notre Dame Global Adaptation Initiative's (ND-GAIN) Country Index is a free, open
@@ -765,14 +765,25 @@ ui <- fluidPage(
                       sep = "",
                       animate = TRUE)
         ),
+        # 
+        # tags$div(
+        #   class = "control-group",
+        #   tags$div(class = "control-title", "Data Summary"),
+        #   uiOutput("data_summary_vb")
+        # ),
+        # 
+        plotOutput("nd_graph", width = "95%", height = "330px"),
         
         tags$div(
           class = "control-group",
-          tags$div(class = "control-title", "Data Summary"),
-          uiOutput("data_summary_vb")
+          tags$div(class = "control-title", "About Indicators"),
+          tags$div(
+            style = "font-size: 12px; line-height: 1.4; color: #6c757d;",
+            tags$p(tags$strong("Readiness Indicators:"), "0 - 1, Higher is Better"),
+            tags$p(tags$strong("Vulnerability Indicators:"), "0 - 1, Lower is Better"),
+            tags$p(tags$strong("ND GAIN Index:"), "0 - 100, Higher is Better"),
+          )
         ),
-        
-        plotOutput("nd_graph", width = "95%", height = "330px"),
         
         tags$div(
           class = "control-group",
@@ -1063,7 +1074,7 @@ ui <- fluidPage(
         ),   
         
         conditionalPanel(
-          condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'ND Gain'",
+          condition = "input.indicator_category_map_1 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_1 == 'ND GAIN'",
           
           # tags$div(
           #   class = "control-group",
@@ -1173,7 +1184,7 @@ ui <- fluidPage(
         ),   
         
         conditionalPanel(
-          condition = "input.indicator_category_map_2 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_2 == 'ND Gain'",
+          condition = "input.indicator_category_map_2 == 'Socio-Ecological Vulnerability' && input.composite_choice_map_2 == 'ND GAIN'",
           
           # tags$div(
           #   class = "control-group",

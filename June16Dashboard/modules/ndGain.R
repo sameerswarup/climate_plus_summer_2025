@@ -1,3 +1,5 @@
+
+
 zoom_to_country_nd <- function(map_id, country, zoom_val = 5) {
   coords <- if (is.null(country) || country == "" || country == "Global (Default)") {
     list(X = 0, Y = 0, zoom = 1)
@@ -78,7 +80,7 @@ output$nd_gain_map <- renderLeaflet({
   pal <- colorNumeric(
     palette = "Purples",  
     domain = c(min_val_nd(), max_val_nd())
-    )
+  )
   
   leaflet(options = leafletOptions(
     worldCopyJump = FALSE,
@@ -109,8 +111,10 @@ observe({
   proxy <- leafletProxy("nd_gain_map", data = data)
   proxy %>% clearShapes() %>% clearMarkers() %>% clearControls()
   
-  zoom_to_country_nd("nd_gain_map", countryND())
-  
+  # Add this: Re-zoom to country after clearing if country is selected
+  if (!is.null(countryND()) && countryND() != "" && countryND() != "Global (Default)") {
+    zoom_to_country_nd("nd_gain_map", countryND())
+  }
   
   selected_iso <- if (!is.null(countryND())) {
     iso3 <- gain %>%
@@ -121,24 +125,23 @@ observe({
   } else NULL
   
   # Draw polygons — omit selected country
-  polygons_to_draw <- if (!is.null(selected_iso) && countryND() != "Global (Default)"){
-    data %>% filter(iso_a3 == selected_iso)
-  } else {
-    data  # show all countries for Global (Default)
-  }
+  polygons_to_draw <- if (!is.null(selected_iso)) {
+    data %>% filter(iso_a3 != selected_iso)
+  } else data
   
   proxy %>% addPolygons(
-    data = data,
-    fillColor = "transparent",  # No fill for any country
-    color = "#FFFFFF",             # Border color
+    data = polygons_to_draw,
+    fillColor = ~pal(get(input$variable_nd)),
+    fillOpacity = 0.8,
+    color = "white",
     weight = 1,
     smoothFactor = 0.5,
     label = ~paste0(Name, ": ", round(get(input$variable_nd), 4)),
     layerId = ~iso_a3,
     highlightOptions = highlightOptions(
-      weight = 4,
-      color = "#FFFFFF",
-      fillOpacity = 0.3,
+      weight = 3,
+      color = "#666",
+      fillOpacity = 0.9,
       bringToFront = TRUE
     )
   )
@@ -153,7 +156,7 @@ observe({
   )
   
   # --- POINTS ---
-  if (!is.null(countryND()) && countryND() != "Global (Default)") {
+  if (!is.null(countryND())) {
     country <- countryND()
     var <- varND()
     year_str <- as.character(year())
@@ -167,7 +170,7 @@ observe({
     if (length(cols_to_keep) == 0) return()
     
     value_column <- cols_to_keep[1]
-
+    
     filtered_year_and_country_data <- filtered_year_and_country_data %>%
       select(Name, all_of(value_column), geometry) %>%
       sf::st_as_sf()
@@ -185,7 +188,7 @@ observe({
       lng = coords[, 1],
       lat = coords[, 2],
       radius = 6,
-      fillColor = ~pal(val_col),
+      fillColor = ~pal(val_col), 
       fillOpacity = 0.8,
       stroke = FALSE,
       label = ~paste0(Name, ": ", round(val_col, 3))
@@ -201,7 +204,7 @@ output$nd_graph <- renderPlot({
   
   label <- gainVarsNames[gainVars == varND()]
   
-  ggplot(filtered, aes(x = Year, .data[[varND()]])) +
+  ggplot(filtered, aes(x = Year, y = .data[[varND()]])) +
     geom_line(
       size = 1.2,
       alpha = 0.8
@@ -275,4 +278,16 @@ observeEvent(input$nd_gain_map_shape_click, {
   req(!is.null(clicked_country))
   
   updateTextInput(session, "country_search", value = clicked_country)
+})
+
+output$data_summary_vb <- renderUI({
+  req(varND())
+  var <- varND()
+  varName <- gainVarsNames[gainVars == var]
+  iconName <- ndGainIcons[[varName]]  
+  value_box(
+    title = textOutput("variableNameAndYearOutput"),
+    showcase = icon(iconName),
+    value = textOutput("nd_year_score")
+  )
 })

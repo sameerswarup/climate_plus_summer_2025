@@ -30,6 +30,19 @@ point_data <- reactiveVal(NULL)
 ca_nd_year_data1 <- reactiveVal(NULL)
 ca_nd_year_data2 <- reactiveVal(NULL)
 
+varND <- reactive({
+  req(input$variable_nd)
+  input$variable_nd
+})
+
+varND_column <- reactive({
+  req(varND())
+  # Convert display name to column name using gainVars lookup
+  column_name <- gainVars[[varND()]]
+  req(column_name)  # Make sure the lookup succeeded
+  column_name
+})
+
 
 # Data type selector (second level dropdown)
 output$data_type_selector <- renderUI({
@@ -504,16 +517,4 @@ output$boxplot_plot <- renderPlotly({
     )
   
   ggplotly(p)
-})
-
-output$data_summary_vb <- renderUI({
-  var <- varND()
-  varName <- gainVarsNames[gainVars == var]
-  iconName <- ndGainIcons[[paste0("'", varName, "'")]]
-
-  value_box(
-    title = textOutput("variableNameAndYearOutput"),
-    showcase = icon(iconName),
-    value = textOutput("nd_year_score")
-  )
 })

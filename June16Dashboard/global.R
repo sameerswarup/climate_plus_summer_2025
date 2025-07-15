@@ -41,7 +41,7 @@ indicator_map <- list(
 composite_choices <- names(indicator_map)
 composite_arith_list <- c("vulnerab.score.rank", "ineq.score.rank", "gov.score.rank")
 
-# ND Gain Columns
+# ND GAIN Columns
 
 gainVars <- list(
   "Projected Change of Biome Distribution" = "Value..ecos_01_score",
@@ -103,7 +103,7 @@ global_level_choices <- list(
     "Income Inequality" = "income.ineq.sc",
     "Inequality Adjusted Life Expectancy" = "le.ineq.log.sc"
   ),
-  "ND Gain" = gainVars
+  "ND GAIN" = gainVars
   
 )
 
@@ -255,7 +255,7 @@ composite_data_options <- list(
                  "Coastal Climate Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc",
                  "Nutritional Dependence" = "Nutritional.dependence.sc"),
   "Climate Risk" = names(climate_data_options),
-  "ND Gain" = gainVars
+  "ND GAIN" = gainVars
 )
 
 # Variable metadata for display
@@ -294,7 +294,7 @@ variable_metadata <- list(
   )
 )
 
-# ND Gain Data
+# ND GAIN Data
 gain <- readRDS("data/gain_coastal_filtered.rds")
 
 acn_country_iso <- average_country_nogeo %>%
