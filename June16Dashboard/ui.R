@@ -759,12 +759,15 @@ ui <- fluidPage(
             value = FALSE
           )
         ),
-        tags$div(
-          class = "form-check",
-          checkboxInput(
-            "satellite_view", 
-            label = "Street map view", 
-            value = FALSE
+        conditionalPanel(
+          condition = "input.indicator_category != 'Socio-Ecological Vulnerability' || input.composite_choice != 'Climate Risk'",
+          tags$div(
+            class = "form-check",
+            checkboxInput(
+              "satellite_view", 
+              label = "Street map view", 
+              value = FALSE
+            )
           )
         )
       ),
