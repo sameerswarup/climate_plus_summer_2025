@@ -130,7 +130,11 @@ server <- function(input, output, session) {
   update_map_layers_only <- function() {
     if (!map_initialized()) return()
     
-    var <- if(is.null(input$variable_choice)) "gov.score.rank" else input$variable_choice
+    if (is.null(input$variable_choice) || input$variable_choice == "") {
+      return()
+    }
+    
+    var <- input$variable_choice
     category <- if(is.null(input$indicator_category)) "Weak Governance" else input$indicator_category
     
     country <- selected_country()

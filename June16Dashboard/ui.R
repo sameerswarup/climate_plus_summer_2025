@@ -717,7 +717,7 @@ ui <- fluidPage(
           textInput(
             "country_search", 
             label = NULL,
-            value = "",
+            value = "Global (Default)",
             placeholder = "Search for a country...",
             width = "100%"
           ),
@@ -739,7 +739,7 @@ ui <- fluidPage(
         class = "control-group",
         tags$div(class = "control-title", "Map Controls"),
         selectInput("indicator_category", "Theme:", 
-                    choices = composite_choices, selected = "Weak Governance"),
+                    choices = composite_choices, selected = "Socio-Ecological Vulnerability"),
         
         # Optional: hide composite_choice unless relevant
         conditionalPanel(
@@ -749,8 +749,7 @@ ui <- fluidPage(
         ),
         conditionalPanel(
           condition = "input.indicator_category == 'Social Inequality' || input.indicator_category == 'Weak Governance' || (input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Inequity')",
-          selectInput("variable_choice", "Variable:", choices = NULL),
-          
+          selectInput("variable_choice", "Variable:", choices = NULL)
         ),
         tags$div(
           class = "form-check",

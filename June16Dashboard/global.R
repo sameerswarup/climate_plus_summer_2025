@@ -33,9 +33,9 @@ average_country_polygons <- country_polygons_with_data
 
 # Define indicators and choices
 indicator_map <- list(
+  "Weak Governance" = "gov.score.rank",
   "Socio-Ecological Vulnerability" = "vulnerab.score.rank",
-  "Social Inequality" = "ineq.score.rank",
-  "Weak Governance" = "gov.score.rank"
+  "Social Inequality" = "ineq.score.rank"
 )
 
 composite_choices <- names(indicator_map)
