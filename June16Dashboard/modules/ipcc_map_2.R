@@ -355,15 +355,13 @@ observe({
 })
 
 # --- NEW CODE START ---
-observeEvent(input$climate_map_click_map_2, {
-  click_map_2 <- input$climate_map_click_map_2
-  
-  print(click_map_2)
+observeEvent(input$climate_map_2_click, {
+  click_map_2 <- input$climate_map_2_click
   
   if (is.null(click_map_2)) return()
   
-  lat_map_2 <- click$lat_map_2
-  lng_map_2 <- click$lng_map_2
+  lat_map_2 <- click_map_2$lat
+  lng_map_2 <- click_map_2$lng
   
   val_map_2 <- NULL
   if (!is.null(original_raster_map_2())) {
@@ -394,8 +392,8 @@ observeEvent(input$climate_map_click_map_2, {
   
   # Add popup to map
   leafletProxy("climate_map_2") %>%
-    clearPopups_map_2() %>%
-    addPopups_map_2(lng = lng_map_2, lat = lat_map_2, popup = popup_text_map_2)
+    clearPopups() %>%
+    addPopups(lng = lng_map_2, lat = lat_map_2, popup = popup_text)
 })
 # --- NEW CODE END ---
 

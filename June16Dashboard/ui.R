@@ -1205,7 +1205,7 @@ ui <- fluidPage(
           
           div(
             style = "font-family: Arial, sans-serif;",
-            verbatimTextOutput("data_info")
+            verbatimTextOutput("data_info_map_1")
           ),
           
           
@@ -1214,7 +1214,7 @@ ui <- fluidPage(
             class = "control-group",
             tags$div(class = "control-title", "Click Info"),
             
-            verbatimTextOutput("click_info")
+            verbatimTextOutput("click_info_map_1")
           )
           
         ),      
