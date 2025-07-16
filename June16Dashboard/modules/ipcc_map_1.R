@@ -158,7 +158,7 @@ output$data_info_map_1 <- renderText({
 #Click Reaction
 output$click_info_map_1 <- renderText({
   info <- clicked_point_map_1()
-
+  print("clicked")
   if (is.null(info)) return("Click on the map to see details.")
   
   variable_label_map_1 <- if (!is.null(current_metadata_map_1())) {
@@ -355,15 +355,13 @@ observe({
 })
 
 # --- NEW CODE START ---
-observeEvent(input$climate_map_click_map_1, {
-  click_map_1 <- input$climate_map_click_map_1
-  
-  print(click_map_1)
+observeEvent(input$climate_map_1_click, {
+  click_map_1 <- input$climate_map_1_click
   
   if (is.null(click_map_1)) return()
   
-  lat_map_1 <- click$lat_map_1
-  lng_map_1 <- click$lng_map_1
+  lat_map_1 <- click_map_1$lat
+  lng_map_1 <- click_map_1$lng
   
   val_map_1 <- NULL
   if (!is.null(original_raster_map_1())) {
@@ -394,8 +392,8 @@ observeEvent(input$climate_map_click_map_1, {
   
   # Add popup to map
   leafletProxy("climate_map_1") %>%
-    clearPopups_map_1() %>%
-    addPopups_map_1(lng = lng_map_1, lat = lat_map_1, popup = popup_text_map_1)
+    clearPopups() %>%
+    addPopups(lng = lng_map_1, lat = lat_map_1, popup = popup_text)
 })
 # --- NEW CODE END ---
 

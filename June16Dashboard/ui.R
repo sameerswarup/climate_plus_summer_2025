@@ -759,12 +759,15 @@ ui <- fluidPage(
             value = FALSE
           )
         ),
-        tags$div(
-          class = "form-check",
-          checkboxInput(
-            "satellite_view", 
-            label = "Street map view", 
-            value = FALSE
+        conditionalPanel(
+          condition = "input.indicator_category != 'Socio-Ecological Vulnerability' || input.composite_choice != 'Climate Risk'",
+          tags$div(
+            class = "form-check",
+            checkboxInput(
+              "satellite_view", 
+              label = "Street map view", 
+              value = FALSE
+            )
           )
         )
       ),
@@ -1205,7 +1208,7 @@ ui <- fluidPage(
           
           div(
             style = "font-family: Arial, sans-serif;",
-            verbatimTextOutput("data_info")
+            verbatimTextOutput("data_info_map_1")
           ),
           
           
@@ -1214,7 +1217,7 @@ ui <- fluidPage(
             class = "control-group",
             tags$div(class = "control-title", "Click Info"),
             
-            verbatimTextOutput("click_info")
+            verbatimTextOutput("click_info_map_1")
           )
           
         ),      
