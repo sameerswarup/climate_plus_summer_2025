@@ -83,6 +83,32 @@ server <- function(input, output, session) {
   country_dataset <- reactiveVal(NULL)
   map_initialized <- reactiveVal(FALSE)
   
+  # Add initialization flags to prevent premature updates
+  app_initialized <- reactiveVal(FALSE)
+  inputs_initialized <- reactiveVal(FALSE)
+  
+  # Initialize inputs immediately when server starts
+  observe({
+    if (!inputs_initialized()) {
+      isolate({
+        updateSelectInput(session, "indicator_category", selected = "Socio-Ecological Vulnerability")
+        updateSelectInput(session, "composite_choice", selected = "Inequity")
+        updateSelectInput(session, "variable_choice", 
+                          choices = indicator_choice_list[["Socio-Ecological Vulnerability"]],
+                          selected = "povmap.grdi.v1.sc")  # Relative Deprivation Index
+      })
+      inputs_initialized(TRUE)
+    }
+  }, priority = 1000)  # High priority to run first
+  
+  # Initialize app after inputs are set
+  observe({
+    if (!app_initialized() && inputs_initialized()) {
+      # Mark app as initialized after inputs are set
+      app_initialized(TRUE)
+    }
+  }, priority = 999)
+  
   select_country <- function(country) {
     if (is.null(country) || country == "" || country == "Global (Default)") {
       selected_country(NULL)
@@ -97,7 +123,9 @@ server <- function(input, output, session) {
       updateTextInput(session, "country_search_graphs", value = country)
       zoom_to_country("map", country)
     }
-    update_map_layers_only()
+    if (app_initialized()) {
+      update_map_layers_only()
+    }
   }
   
   zoom_to_country <- function(map_id, country, zoom_val = 5) {
@@ -128,7 +156,7 @@ server <- function(input, output, session) {
   }
   
   update_map_layers_only <- function() {
-    if (!map_initialized()) return()
+    if (!map_initialized() || !app_initialized()) return()
     cat("Country:", selected_country(), "\n")
     cat("Variable:", input$variable_choice, "\n")
     
@@ -141,7 +169,7 @@ server <- function(input, output, session) {
     }
     
     var <- input$variable_choice
-    category <- if(is.null(input$indicator_category)) "Weak Governance" else input$indicator_category
+    category <- if(is.null(input$indicator_category)) "Socio-Ecological Vulnerability" else input$indicator_category
     
     country <- selected_country()
     
@@ -161,7 +189,7 @@ server <- function(input, output, session) {
       if (!is.null(indicator_choice_list[[category]]) && var %in% indicator_choice_list[[category]]) {
         names(indicator_choice_list[[category]])[indicator_choice_list[[category]] == var]
       } else {
-        "Weak Governance" # fallback
+        "Socio-Ecological Vulnerability" # fallback
       }
     }
     
@@ -303,6 +331,7 @@ server <- function(input, output, session) {
   }
   
   observeEvent(input$indicator_category, {
+    if (!app_initialized()) return()
     
     cat("indicator_category changed to:", input$indicator_category, "\n")
     
@@ -324,27 +353,30 @@ server <- function(input, output, session) {
                         choices = composite_data_options[[first_composite]],
                         selected = composite_data_options[[first_composite]][[1]])
     }
-  })
+  }, ignoreInit = TRUE)
   
   observeEvent(input$composite_choice, {
+    if (!app_initialized()) return()
     req(input$indicator_category)
     if (!(input$indicator_category %in% c("Social Inequality", "Weak Governance"))) {
       updateSelectInput(session, "variable_choice", 
                         choices = composite_data_options[[input$composite_choice]],
                         selected = composite_data_options[[input$composite_choice]][[1]])
     }
-  })
+  }, ignoreInit = TRUE)
   
-  # observeEvent(input$country_histogram_indicator, {
-  #   req(input$country_histogram_indicator)
-  #   for (category in names(indicator_choice_list)) {
-  #     if (input$country_histogram_indicator %in% indicator_choice_list[[category]]) {
-  #       updateSelectInput(session, "indicator_category", selected = category)
-  #       updateSelectInput(session, "variable_choice", selected = input$country_histogram_indicator)
-  #       break
-  #     }
-  #   }
-  # })
+  # Re-enable sync between country analysis and map
+  observeEvent(input$country_histogram_indicator, {
+    if (!app_initialized()) return()
+    req(input$country_histogram_indicator)
+    for (category in names(indicator_choice_list)) {
+      if (input$country_histogram_indicator %in% indicator_choice_list[[category]]) {
+        updateSelectInput(session, "indicator_category", selected = category)
+        updateSelectInput(session, "variable_choice", selected = input$country_histogram_indicator)
+        break
+      }
+    }
+  }, ignoreInit = TRUE)
   
   observe({
     countries_list <- c("Global (Default)", sort(unique(average_country_nogeo$COUNTRY)))
@@ -377,9 +409,15 @@ server <- function(input, output, session) {
   })
   
   output$map <- renderLeaflet({
-    var <- "vulnerab.score.rank"
+    # Only render map after inputs are initialized
+    req(inputs_initialized())
+    req(input$variable_choice)
+    
+    # Use the current variable choice
+    var <- input$variable_choice
     req(combined_scores_global, combined_scores_global_polygons, average_country_nogeo, average_country_polygons)
     
+    # Determine data source based on variable type
     if (var %in% composite_arith_list) {
       global_data <- combined_scores_global
       polygon_data <- combined_scores_global_polygons
@@ -391,6 +429,18 @@ server <- function(input, output, session) {
     if (!(var %in% names(global_data)) || all(is.na(global_data[[var]]))) {
       map_initialized(TRUE)
       return(create_base_map(TRUE))
+    }
+    
+    # Get the correct legend title
+    category <- input$indicator_category %||% "Socio-Ecological Vulnerability"
+    legend_title <- if (var %in% composite_arith_list) {
+      category
+    } else {
+      if (!is.null(indicator_choice_list[[category]]) && var %in% indicator_choice_list[[category]]) {
+        names(indicator_choice_list[[category]])[indicator_choice_list[[category]] == var]
+      } else {
+        "Socio-Ecological Vulnerability"
+      }
     }
     
     pal <- colorNumeric("Purples", domain = NULL, na.color = "#FFFFFF", reverse = FALSE)
@@ -408,7 +458,7 @@ server <- function(input, output, session) {
         layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
       ) %>%
       addLegend(pal = pal, values = global_data[[var]][!is.na(global_data[[var]])], 
-                opacity = 0.8, title = "Socio-Ecological Vulnerability", position = "bottomright")
+                opacity = 0.8, title = legend_title, position = "bottomright")
     
     map_initialized(TRUE)
     shinyjs::hide("comparison-maps")
@@ -418,7 +468,9 @@ server <- function(input, output, session) {
   observeEvent({
     input$use_country_specific_scale; input$variable_choice
   }, {
-    update_map_layers_only()
+    if (app_initialized()) {
+      update_map_layers_only()
+    }
   })
   
   observeEvent(input$satellite_view, {
