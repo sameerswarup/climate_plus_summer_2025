@@ -168,7 +168,7 @@ server <- function(input, output, session) {
     pal <- colorNumeric("Purples", domain = NULL, na.color = "#FFFFFF", reverse = FALSE)
     
     leafletProxy("map") %>%
-      clearMarkers() %>% clearShapes() %>% clearControls()
+      clearMarkers() %>% clearControls()
     
     
     if (is.null(country) || country == "" || country == "Global (Default)") {
