@@ -193,12 +193,19 @@ output$click_info <- renderText({
 # Initial blank map with world bounds restriction
 output$climate_map <- renderLeaflet({
   leaflet(options = leafletOptions(
+    zoomControl = FALSE,
     worldCopyJump = FALSE,
     maxBounds = world_bounds,
     maxBoundsViscosity = 1.0
   )) %>%
     addProviderTiles(providers$Esri.WorldImagery) %>%
-    setView(lng = 0, lat = 0, zoom = 2)
+    setView(lng = 0, lat = 0, zoom = 2) %>%
+    htmlwidgets::onRender("
+      function(el, x) {
+        this.attributionControl.setPosition('topright');
+        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
+      }
+    ")
 })
 
 # Load raster when selections change
@@ -222,23 +229,24 @@ observe({
     
     cat("File path:", tiff_path, "\n")
     
-    if (is.null(tiff_path) || is.na(tiff_path) || !file.exists(tiff_path)) {
-      showNotification(
-        paste("⚠️ File not found:", tiff_path),
-        type = "error", duration = 5
-      )
-      return()
-    }
+    # if (is.null(tiff_path) || is.na(tiff_path) || !file.exists(tiff_path)) {
+    #   showNotification(
+    #     paste("⚠️ File not found:", tiff_path),
+    #     type = "error", duration = 5
+    #   )
+    #   return()
+    # }
   }, error = function(e) {
-    showNotification("⚠️ Error resolving file path.", type = "error")
+    print(e)
+    #showNotification("⚠️ Error resolving file path.", type = "error")
     return()
   })
 
   tryCatch({
-    showNotification(
-      paste("Loading raster file:", basename(tiff_path)),
-      type = "message", duration = 4
-    )
+    # showNotification(
+    #   paste("Loading raster file:", basename(tiff_path)),
+    #   type = "message", duration = 4
+    # )
     
     r <- rast(tiff_path)
     
@@ -251,10 +259,10 @@ observe({
     gauss_kernel <- matrix(c(1,2,1,2,4,2,1,2,1), nrow = 3) / 16
     r <- focal(r, w = gauss_kernel, fun = sum, na.policy = "omit")
     
-    if (all(is.na(values(r, na.rm = FALSE)))) {
-      showNotification("⚠️ Raster contains only NA values!", type = "warning")
-      return()
-    }
+    # if (all(is.na(values(r, na.rm = FALSE)))) {
+    #   showNotification("⚠️ Raster contains only NA values!", type = "warning")
+    #   return()
+    # }
     
     # Store after fully processed
     original_raster(r)
@@ -267,13 +275,13 @@ observe({
     }
     
     cat("✅ COMPLETED LOAD of raster file:", tiff_path, "\n")
-    showNotification(
-      paste("✅ Finished loading:", basename(tiff_path)),
-      type = "message", duration = 6
-    )
+    # showNotification(
+    #   paste("✅ Finished loading:", basename(tiff_path)),
+    #   type = "message", duration = 6
+    # )
     
   }, error = function(e) {
-    showNotification("❌ Error loading raster file.", type = "error")
+    #showNotification("❌ Error loading raster file.", type = "error")
     cat("❌ Error loading raster:", conditionMessage(e), "\n")
   })
 })

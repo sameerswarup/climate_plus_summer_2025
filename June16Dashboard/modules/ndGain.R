@@ -89,14 +89,20 @@ output$nd_gain_map <- renderLeaflet({
   )
   
   leaflet(options = leafletOptions(
+    zoomControl = FALSE,
     worldCopyJump = FALSE,
     maxBounds = world_bounds,
     maxBoundsViscosity = 1.0
   )) %>% 
     addProviderTiles(providers$Esri.WorldImagery) %>%
-    setView(lng = 0, lat = 0, zoom = 2)
+    setView(lng = 0, lat = 0, zoom = 2) %>%
+    htmlwidgets::onRender("
+      function(el, x) {
+        this.attributionControl.setPosition('topright');
+        this.zoomControl = L.control.zoom({ position: 'topright' }).addTo(this);
+      }
+    ")
 })
-
 
 observe({
   req(input$nd_year)
