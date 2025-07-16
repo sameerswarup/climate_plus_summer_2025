@@ -76,6 +76,17 @@ server <- function(input, output, session) {
     ") 
   })
   
+  # Initialize ND GAIN and Climate maps with proper bounds
+  output$nd_gain_map <- renderLeaflet({
+    create_base_map(TRUE) %>% 
+      setView(lng = 0, lat = 20, zoom = 2)
+  })
+  
+  output$climate_map <- renderLeaflet({
+    create_base_map(TRUE) %>% 
+      setView(lng = 0, lat = 20, zoom = 2)
+  })
+  
   
   
   
@@ -135,7 +146,11 @@ server <- function(input, output, session) {
       zoom_coords <- country_centroids %>% filter(COUNTRY == country) %>% select(X, Y) %>% as.list()
       if (length(zoom_coords$X) > 0) c(zoom_coords, zoom = zoom_val) else list(X = 0, Y = 20, zoom = 2)
     }
+    
+    # Update all active maps
     leafletProxy(map_id) %>% setView(lng = coords$X, lat = coords$Y, zoom = coords$zoom)
+    leafletProxy("nd_gain_map") %>% setView(lng = coords$X, lat = coords$Y, zoom = coords$zoom)
+    leafletProxy("climate_map") %>% setView(lng = coords$X, lat = coords$Y, zoom = coords$zoom)
   }
   
   create_base_map <- function(satellite = TRUE) {
@@ -475,6 +490,8 @@ server <- function(input, output, session) {
   
   observeEvent(input$satellite_view, {
     tiles <- if (!input$satellite_view) providers$Esri.WorldImagery else providers$Esri.WorldStreetMap
+    
+    # Update all main maps
     leafletProxy("map") %>% clearTiles() %>% addProviderTiles(tiles)
     leafletProxy("nd_gain_map") %>% clearTiles() %>% addProviderTiles(tiles)
     leafletProxy("climate_map") %>% clearTiles() %>% addProviderTiles(tiles)
