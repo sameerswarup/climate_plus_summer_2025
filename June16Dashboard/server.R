@@ -75,10 +75,7 @@ server <- function(input, output, session) {
       }
     ") 
   })
-  
-  
-  
-  
+
   selected_country <- reactiveVal(NULL)
   country_dataset <- reactiveVal(NULL)
   map_initialized <- reactiveVal(FALSE)
@@ -128,17 +125,21 @@ server <- function(input, output, session) {
   }
   
   update_map_layers_only <- function() {
+    cat("update_map_layers_only() called - Run #", runif(1), "\n")
+    
     if (!map_initialized()) return()
     cat("Country:", selected_country(), "\n")
     cat("Variable:", input$variable_choice, "\n")
     
-    
-    if (is.null(input$variable_choice) || input$variable_choice == "") {
-      return()
-    }
-    if (is.null(input$indicator_category) || input$indicator_category == "") {
-      return()
-    }
+    # 
+    # if (is.null(input$variable_choice) || input$variable_choice == "") {
+    #   cat("Skipping - variable_choice not ready\n")
+    #   
+    #   return()
+    # }
+    # if (is.null(input$indicator_category) || input$indicator_category == "") {
+    #   return()
+    # }
     
     var <- input$variable_choice
     category <- if(is.null(input$indicator_category)) "Weak Governance" else input$indicator_category
@@ -166,6 +167,8 @@ server <- function(input, output, session) {
     }
     
     pal <- colorNumeric("Purples", domain = NULL, na.color = "#FFFFFF", reverse = FALSE)
+
+    print("leaflet proxy about to run")
     
     leafletProxy("map") %>%
       clearMarkers() %>% clearControls()
@@ -334,7 +337,7 @@ server <- function(input, output, session) {
                         selected = composite_data_options[[input$composite_choice]][[1]])
     }
   })
-  
+  # 
   # observeEvent(input$country_histogram_indicator, {
   #   req(input$country_histogram_indicator)
   #   for (category in names(indicator_choice_list)) {
@@ -442,7 +445,7 @@ server <- function(input, output, session) {
   
   output$countryDisplay <- renderText({
     country <- selected_country()
-    if (is.null(country)) {
+    if (is.null(country) || country == "Global (Default)") {
       "Global view - Click on a country to analyze specific data"
     } else {
       paste("Currently analyzing:", country, "- Map automatically zoomed to this country")
