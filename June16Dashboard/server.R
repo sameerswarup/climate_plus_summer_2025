@@ -377,7 +377,7 @@ server <- function(input, output, session) {
   })
   
   output$map <- renderLeaflet({
-    var <- "gov.score.rank"
+    var <- "vulnerab.score.rank"
     req(combined_scores_global, combined_scores_global_polygons, average_country_nogeo, average_country_polygons)
     
     if (var %in% composite_arith_list) {
@@ -407,7 +407,8 @@ server <- function(input, output, session) {
         highlightOptions = highlightOptions(color = "#FFFFFF", weight = 4, bringToFront = TRUE, opacity = 1, fillOpacity = 0.8),
         layerId = ~COUNTRY, label = ~paste0(COUNTRY, ": ", ifelse(is.na(get(var)), "No data", round(get(var), 3)))
       ) %>%
-      addLegend(pal = pal, values = global_data[[var]][!is.na(global_data[[var]])], opacity = 0.8, title = "Weak Governance", position = "bottomright")
+      addLegend(pal = pal, values = global_data[[var]][!is.na(global_data[[var]])], 
+                opacity = 0.8, title = "Socio-Ecological Vulnerability", position = "bottomright")
     
     map_initialized(TRUE)
     shinyjs::hide("comparison-maps")
