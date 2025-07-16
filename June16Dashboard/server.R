@@ -129,8 +129,14 @@ server <- function(input, output, session) {
   
   update_map_layers_only <- function() {
     if (!map_initialized()) return()
+    cat("Country:", selected_country(), "\n")
+    cat("Variable:", input$variable_choice, "\n")
+    
     
     if (is.null(input$variable_choice) || input$variable_choice == "") {
+      return()
+    }
+    if (is.null(input$indicator_category) || input$indicator_category == "") {
       return()
     }
     
@@ -165,7 +171,7 @@ server <- function(input, output, session) {
       clearMarkers() %>% clearShapes() %>% clearControls()
     
     
-    if (is.null(country)) {
+    if (is.null(country) || country == "" || country == "Global (Default)") {
       leafletProxy("map") %>%
         addPolygons(
           data = polygon_data, labelOptions = labelOptions(
@@ -297,11 +303,18 @@ server <- function(input, output, session) {
   }
   
   observeEvent(input$indicator_category, {
+    
+    cat("indicator_category changed to:", input$indicator_category, "\n")
+    
     if (input$indicator_category %in% c("Social Inequality", "Weak Governance")) {
+      cat("Going to Social Inequality/Weak Governance branch\n")
+      
       updateSelectInput(session, "variable_choice", 
                         choices = indicator_choice_list[[input$indicator_category]],
                         selected = indicator_choice_list[[input$indicator_category]][[1]])
     } else {
+      cat("Going to else branch (Socio-Ecological Vulnerability)\n")
+      
       updateSelectInput(session, "composite_choice", 
                         choices = names(composite_data_options),
                         selected = names(composite_data_options)[1])
