@@ -940,6 +940,30 @@ ui <- fluidPage(
           tags$div(class = "control-title", "Click Info"),
           
           verbatimTextOutput("click_info")
+        ),
+        conditionalPanel(
+          condition = "input.climate_variable == 'Ocean pH' || input.climate_variable == 'Sea Level Rise' || input.climate_variable == 'Heating Degree Days'",
+          tags$div(
+            class = "control-group",
+            tags$div(class = "control-title", "CMIP6 Model Assumptions"),
+            tags$small(
+              style = "font-size: 12px; line-height: 1.4;",
+              "This CMIP6 model, used for this visualization, is based on the following assumptions:",
+              tags$ul(
+                tags$li(tags$strong("Dynamics:"), " Model assumes large-scale atmospheric and oceanic flows are solved on a grid, with smaller-scale processes like convection represented with simplified parameterizations."),
+                tags$li(tags$strong("Radiation:"), " Model assumes radiative transfer is calculated using spectral bands with defined optical properties for gases, clouds, and aerosols."),
+                tags$li(tags$strong("Clouds:"), " Model assumes cloud properties are represented as functions of temperature, humidity, and atmospheric dynamics."),
+                tags$li(tags$strong("Cloud Feedbacks:"), " Model assumes changes in cloud properties with warming are represented by parameterizations that generally produce positive feedback."),
+                tags$li(tags$strong("Aerosols:"), " Model assumes aerosols affect climate through scattering, absorption, and cloud interactions, captured with simplified parameterizations."),
+                tags$li(tags$strong("Climate Sensitivity:"), " Models assumes equilibrium climate sensitivity reflects the combined effect of feedbacks."),
+                tags$li(tags$strong("Land and Carbon Cycle:"), " Model assumes photosynthesis, respiration, and soil carbon processes can be described with equations based on temperature, CO₂ concentration, and moisture."),
+                tags$li(tags$strong("Ocean and Sea Ice:"), " Models assumes ocean circulation is resolved on grids, with subgrid-scale mixing and sea ice dynamics represented by parameterizations."),
+                tags$li(tags$strong("Chemistry:"), " Model assumes simplified chemical reactions and nutrient cycling capture the main behavior of trace gases and carbon flows."),
+                tags$li(tags$strong("Spatial Resolution:"), " Model assumes grid and subgrid parameterizations together represent key climate processes at typical resolutions of 50–200 km."),
+                tags$li(tags$strong("Forcing Data Consistency:"), " Model assumes historical and scenario-based forcings, such as greenhouse gas concentrations and land-use.")
+              )
+            )
+          )
         )
       ),
       
