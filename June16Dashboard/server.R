@@ -335,16 +335,16 @@ server <- function(input, output, session) {
     }
   })
   
-  observeEvent(input$country_histogram_indicator, {
-    req(input$country_histogram_indicator)
-    for (category in names(indicator_choice_list)) {
-      if (input$country_histogram_indicator %in% indicator_choice_list[[category]]) {
-        updateSelectInput(session, "indicator_category", selected = category)
-        updateSelectInput(session, "variable_choice", selected = input$country_histogram_indicator)
-        break
-      }
-    }
-  })
+  # observeEvent(input$country_histogram_indicator, {
+  #   req(input$country_histogram_indicator)
+  #   for (category in names(indicator_choice_list)) {
+  #     if (input$country_histogram_indicator %in% indicator_choice_list[[category]]) {
+  #       updateSelectInput(session, "indicator_category", selected = category)
+  #       updateSelectInput(session, "variable_choice", selected = input$country_histogram_indicator)
+  #       break
+  #     }
+  #   }
+  # })
   
   observe({
     countries_list <- c("Global (Default)", sort(unique(average_country_nogeo$COUNTRY)))
