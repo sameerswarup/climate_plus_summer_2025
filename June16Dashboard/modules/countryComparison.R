@@ -121,7 +121,7 @@ update_comparison_map_1_layers_only <- function() {
   leafletProxy("map1") %>%
     clearMarkers() %>% clearShapes() %>% clearControls()
   
-  if (is.null(country)) {
+  if (is.null(country) || country == "" || country == "Global (Default)") {
     # Global view - always show polygons
     leafletProxy("map1") %>%
       addPolygons(
@@ -266,7 +266,7 @@ update_comparison_map_2_layers_only <- function() {
   leafletProxy("map2") %>%
     clearMarkers() %>% clearShapes() %>% clearControls()
   
-  if (is.null(country)) {
+  if (is.null(country) || country == "" || country == "Global (Default)") {
     # Global view - always show polygons
     leafletProxy("map2") %>%
       addPolygons(
