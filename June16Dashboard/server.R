@@ -424,6 +424,8 @@ server <- function(input, output, session) {
   observeEvent(input$satellite_view, {
     tiles <- if (!input$satellite_view) providers$Esri.WorldImagery else providers$Esri.WorldStreetMap
     leafletProxy("map") %>% clearTiles() %>% addProviderTiles(tiles)
+    leafletProxy("nd_gain_map") %>% clearTiles() %>% addProviderTiles(tiles)
+    leafletProxy("climate_map") %>% clearTiles() %>% addProviderTiles(tiles)
   })
   
   observeEvent(input$satellite_view_comparison, {

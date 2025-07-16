@@ -93,7 +93,7 @@ output$nd_gain_map <- renderLeaflet({
     maxBounds = world_bounds,
     maxBoundsViscosity = 1.0
   )) %>% 
-    addTiles() %>%
+    addProviderTiles(providers$Esri.WorldImagery) %>%
     setView(lng = 0, lat = 0, zoom = 2)
 })
 
