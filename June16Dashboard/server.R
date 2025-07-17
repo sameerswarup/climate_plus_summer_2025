@@ -496,7 +496,6 @@ server <- function(input, output, session) {
     if (is.null(country)) {
       "Global view - Click on a country to analyze specific data"
     } else {
-      paste("Currently analyzing:", country, "- Map automatically zoomed to this country")
     }
   })
   
@@ -512,33 +511,20 @@ server <- function(input, output, session) {
       "povmap.grdi.v1.sc" = "Relative Deprivation Index: Assesses multidimensional poverty including limited access to essential services such as healthcare, education, clean water, and sanitation in coastal communities. Higher values indicate greater socioeconomic disadvantage.",
       
       "mean.count.grav.V2.log.sc" = "Degraded Ecosystems: Quantifies the extent of environmental degradation in coastal marine environments due to pollution, overfishing, habitat destruction, and climate change impacts. Higher values reflect more severely compromised ecosystem health.",
-      
+
       "perc.pop.world.coastal.merit.10m.log.sc" = "Coastal Climate Vulnerability: Measures the proportion of population residing in low-elevation coastal zones (below 10 meters) that face heightened exposure to sea level rise, storm surges, and extreme weather events. Higher values indicate greater climate risk exposure.",
-      
       "Nutritional.dependence.sc" = "Nutritional Dependence: Evaluates the degree to which coastal communities rely on marine resources for protein intake and nutritional security. Higher values signify greater dependency on ocean-based food systems and increased vulnerability to marine ecosystem disruption.",
-      
       "vulnerab.score.rank" = "Socio-Ecological Vulnerability (Composite): Comprehensive ranking that integrates environmental degradation, socioeconomic deprivation, coastal climate risks, and food system dependencies. Higher scores represent greater overall vulnerability to environmental and social stressors.",
-      
       "gender.ineq.sc" = "Gender Inequality: Measures disparities between men and women across dimensions of reproductive health, educational attainment, political representation, and economic participation. Higher values indicate more pronounced gender-based inequalities in opportunities and outcomes.",
-      
       "income.ineq.sc" = "Income Inequality: Quantifies the distribution of income across population segments, primarily using measures such as the Gini coefficient. Higher values reflect greater concentration of wealth among fewer individuals and wider income disparities.",
-      
       "le.ineq.log.sc" = "Health Inequality: Assesses disparities in life expectancy and health outcomes between different socioeconomic groups within a population. Higher values indicate larger health gaps between advantaged and disadvantaged populations.",
-      
       "ineq.score.rank" = "Social Inequality (Composite): Aggregate measure combining gender, income, and health inequalities to provide an overall assessment of social stratification. Higher rankings indicate more pervasive inequality across multiple social dimensions.",
-      
       "Gov_effect.sc" = "Government Effectiveness: Evaluates the quality of public service delivery, civil service competence, policy formulation and implementation, and institutional capacity. Higher values indicate weaker governmental performance and reduced public sector effectiveness.",
-      
       "Reg_quality.sc" = "Regulatory Quality: Assesses the government's capacity to develop and implement sound policies that facilitate private sector development and economic growth. Higher values reflect poor regulatory frameworks that hinder business operations and investment.",
-      
       "Rule_law.sc" = "Rule of Law: Measures the extent to which institutional frameworks support contract enforcement, property rights protection, judicial independence, and legal system integrity. Higher values indicate weaker legal institutions and reduced confidence in legal processes.",
-      
       "control_corr.sc" = "Control of Corruption: Evaluates the prevalence of corruption in public institutions and the misuse of public authority for private benefit. Higher values indicate more widespread corruption and weaker anti-corruption mechanisms.",
-      
       "Voice_account.sc" = "Voice and Accountability: Assesses citizens' capacity to participate in political processes, hold government accountable, and exercise fundamental freedoms including expression and association. Higher values reflect more restricted democratic participation and civic engagement.",
-      
       "Political_stab.sc" = "Political Stability: Measures the likelihood of political instability, violence, and unconstitutional government changes including terrorism and civil unrest. Higher values indicate elevated risks of political disruption and governmental instability.",
-      
       "gov.score.rank" = "Governance (Composite): Comprehensive assessment integrating all governance dimensions including effectiveness, regulatory quality, rule of law, corruption control, accountability, and political stability. Higher rankings indicate weaker overall governance performance across institutional domains."
     )
     
