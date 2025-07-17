@@ -109,6 +109,8 @@ observe({
   nd_data <- nd_year_data()
   req(!is.null(nd_data), nrow(nd_data) > 0)
   
+  
+  year <- input$nd_year 
   # Join world polygons with ND-GAIN data
   data <- left_join(world_sf, nd_data, by = c("iso_a3" = "ISO3"))
   valid_vals <- na.omit(data[[input$variable_nd]])
@@ -163,7 +165,7 @@ observe({
     pal = pal,
     values = valid_vals,
     opacity = 0.9,
-    title = paste0(label, " Score"),
+    title = paste0(label, " Score", " (", year, ")"),
     position = "bottomright"
   )
   
