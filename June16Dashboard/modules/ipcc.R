@@ -63,10 +63,16 @@ output$time_period_selector <- renderUI({
 output$variable_info <- renderUI({
   req(input$climate_variable)
   
-  if (!is.null(variable_metadata[[paste0("'",input$climate_variable,"'")]][[paste0("'",input$data_type,"'")]])) {
-    metadata <- variable_metadata[[paste0("'",input$climate_variable,"'")]][[paste0("'",input$data_type,"'")]]
-  } else {
-    metadata <- variable_metadata[[paste0("'",input$climate_variable,"'")]]
+  metadata <- NULL
+  
+  if (!is.null(variable_metadata[[input$climate_variable]][[input$data_type]])) {
+    metadata <- variable_metadata[[input$climate_variable]][[input$data_type]]
+  } else if (!is.null(variable_metadata[[input$climate_variable]])) {
+    metadata <- variable_metadata[[input$climate_variable]]
+  }
+  
+  if (is.null(metadata)) {
+    return(NULL)
   }
   
   tags$div(
