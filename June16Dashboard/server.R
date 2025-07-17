@@ -529,6 +529,21 @@ server <- function(input, output, session) {
   })
   
   get_variable_description <- function(var) {
+    
+    climate_descriptions <- list(
+      "Ocean pH" = "Ocean pH: Measures ocean acidity levels and projected changes from climate change. Ocean acidification occurs when CO2 dissolves in seawater, making it more acidic and threatening marine ecosystems, particularly coral reefs and shellfish. Lower pH values indicate more acidic conditions.",
+      
+      "Sea Level Rise" = "Sea Level Rise: Projected increase in global sea levels due to thermal expansion of seawater and melting ice sheets. Rising sea levels threaten coastal communities, infrastructure, and ecosystems through flooding, erosion, and saltwater intrusion into freshwater systems.",
+      
+      "Heating Degree Days" = "Heating Degree Days: Temperature-based metric measuring energy demand for heating buildings. Changes in heating degree days indicate shifting climate patterns and energy needs. Higher values suggest cooler temperatures requiring more heating energy.",
+      
+      "Coral Bleaching Heat" = "Coral Bleaching Heat: Degree Heating Weeks measure accumulated thermal stress on coral reefs over 12-week periods. When ocean temperatures exceed normal ranges, corals expel their symbiotic algae, causing bleaching. Higher values indicate greater heat stress and bleaching risk."
+    )
+    
+    if (!is.null(input$climate_variable) && input$climate_variable %in% names(climate_descriptions)) {
+      return(climate_descriptions[[input$climate_variable]])
+    }
+    
     descriptions <- list(
       "povmap.grdi.v1.sc" = "Relative Deprivation Index: Assesses multidimensional poverty including limited access to essential services such as healthcare, education, clean water, and sanitation in coastal communities. Higher values indicate greater socioeconomic disadvantage.",
       
