@@ -969,16 +969,7 @@ ui <- fluidPage(
         )
       ),
       
-      tags$div(
-        class = "control-group",
-        tags$div(class = "control-title", "About Composite Scores"),
-        tags$div(
-          style = "font-size: 12px; line-height: 1.4; color: #6c757d;",
-          tags$p(tags$strong("Weak Governance:"), "Government effectiveness, regulatory quality, rule of law, corruption control."),
-          tags$p(tags$strong("Social Inequality:"), "Gender gaps, income distribution, health outcome disparities."),
-          tags$p(tags$strong("Socio-Ecological Vulnerability:"), "Environmental degradation, coastal risks, nutritional dependencies.")
-        )
-      ),
+      uiOutput("dynamic_about_section"),
     ),
     
     tags$div(
