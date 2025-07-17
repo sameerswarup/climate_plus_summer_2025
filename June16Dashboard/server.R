@@ -75,9 +75,7 @@ server <- function(input, output, session) {
       }
     ") 
   })
-<<<<<<< HEAD
 
-=======
   
   # Initialize ND GAIN and Climate maps with proper bounds
   output$nd_gain_map <- renderLeaflet({
@@ -91,9 +89,6 @@ server <- function(input, output, session) {
   })
   
   
-  
-  
->>>>>>> 8e23e09fc5473bf7645b35fc81f145f992a7ed48
   selected_country <- reactiveVal(NULL)
   country_dataset <- reactiveVal(NULL)
   map_initialized <- reactiveVal(FALSE)
@@ -175,13 +170,8 @@ server <- function(input, output, session) {
   }
   
   update_map_layers_only <- function() {
-<<<<<<< HEAD
-    cat("update_map_layers_only() called - Run #", runif(1), "\n")
-    
-    if (!map_initialized()) return()
-=======
+
     if (!map_initialized() || !app_initialized()) return()
->>>>>>> 8e23e09fc5473bf7645b35fc81f145f992a7ed48
     cat("Country:", selected_country(), "\n")
     cat("Variable:", input$variable_choice, "\n")
     

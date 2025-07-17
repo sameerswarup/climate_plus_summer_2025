@@ -301,6 +301,15 @@ acn_country_iso <- average_country_nogeo %>%
   select(COUNTRY, iso_a3) %>%
   st_drop_geometry()
 
+# Add France, Montenegro, Norway, Ethiopia, and Libya to acn_country_iso
+
+new_entries <- data.frame(
+  COUNTRY = c("France", "Montenegro", "Norway", "Ethiopia", "Libya"),
+  iso_a3 = c("FRA", "MNE", "NOR", "ETH", "LBY")
+)
+
+acn_country_iso <- rbind(acn_country_iso, new_entries)
+
 gain <- gain %>%
   left_join(acn_country_iso, by = c("ISO3" = "iso_a3")) %>%
   mutate(Name = COUNTRY) %>%   # Replace Name with the joined COUNTRY
