@@ -507,8 +507,8 @@ server <- function(input, output, session) {
     leafletProxy("map2") %>% clearTiles() %>% addProviderTiles(tiles)
     leafletProxy("nd_gain_map_1") %>% clearTiles() %>% addProviderTiles(tiles)
     leafletProxy("nd_gain_map_2") %>% clearTiles() %>% addProviderTiles(tiles)
-    leafletProxy("climate_map_1") %>% clearTiles() %>% addProviderTiles(tiles)
-    leafletProxy("climate_map_2") %>% clearTiles() %>% addProviderTiles(tiles)
+    # leafletProxy("climate_map_1") %>% clearTiles() %>% addProviderTiles(tiles)
+    # leafletProxy("climate_map_2") %>% clearTiles() %>% addProviderTiles(tiles)
   })
   
   output$countryDisplay <- renderText({
