@@ -87,10 +87,7 @@ server <- function(input, output, session) {
       setView(lng = 0, lat = 20, zoom = 2)
   })
   
-<<<<<<< HEAD
-  
-=======
->>>>>>> 84470af8597a1e70391123a8c560533930cdf47d
+
   selected_country <- reactiveVal(NULL)
   country_dataset <- reactiveVal(NULL)
   map_initialized <- reactiveVal(FALSE)

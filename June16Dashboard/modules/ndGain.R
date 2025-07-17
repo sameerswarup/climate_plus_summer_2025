@@ -216,6 +216,7 @@ output$nd_graph <- renderPlot({
   
   label <- gainVarsNames[gainVars == varND()]
   
+
   ggplot(filtered, aes(x = Year, y = .data[[varND()]])) +
     geom_line(
       size = 1.2,
