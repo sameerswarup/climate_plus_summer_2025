@@ -969,14 +969,7 @@ ui <- fluidPage(
         )
       ),
       
-      tags$div(
-        class = "control-group",
-        tags$div(class = "control-title", "About Selected Variable"),
-        tags$div(
-          style = "font-size: 12px; line-height: 1.4; color: #6c757d;",
-          textOutput("simple_variable_description")
-        )
-      ),
+      uiOutput("dynamic_about_section"),
     ),
     
     tags$div(
