@@ -3,7 +3,6 @@ server <- function(input, output, session) {
   source("modules/countryAnalysisModule.R", local = TRUE)
   source("modules/ipcc.R", local = TRUE)
   source("modules/ndGain.R", local = TRUE)
-  
   source("modules/ipcc_map_1.R", local = TRUE)
   source("modules/ndGain_map_1.R", local = TRUE)
   source("modules/ipcc_map_2.R", local = TRUE)

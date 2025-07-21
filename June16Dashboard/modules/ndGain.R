@@ -295,6 +295,8 @@ observeEvent(input$nd_gain_map_shape_click, {
   
   updateTextInput(session, "country_search", value = clicked_country)
 })
+
+
 output$summary_title <- renderText({
   req(varND(), year(), countryND())
   
