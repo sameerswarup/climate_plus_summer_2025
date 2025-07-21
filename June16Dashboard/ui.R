@@ -808,17 +808,24 @@ ui <- fluidPage(
                       animate = TRUE)
         ),
         
-        tags$div(
-          class = "control-group",
-          tags$div(class = "control-title", "Data Summary"),
-          wellPanel(
-            h4(textOutput("summary_title")),
-            p(strong("Score:"), textOutput("summary_score"))
+        conditionalPanel(
+          condition = "input.country_search !=  'Global (Default)'",
+          tags$div(
+            class = "control-group",
+            tags$div(class = "control-title", "Data Summary"),
+            wellPanel(
+              h4(textOutput("summary_title")),
+              p(strong("Score:"), textOutput("summary_score"))
+            )
           )
         ),
         
-        plotOutput("nd_graph", width = "95%", height = "300px"),
+        conditionalPanel(
+          condition = "input.country_search !=  'Global (Default)'",
+          plotOutput("nd_graph", width = "95%", height = "300px"),
+        ),
         
+
         tags$div(
           class = "control-group",
           tags$div(class = "control-title", "About Indicators"),

@@ -12,6 +12,15 @@ library(rnaturalearth)
 print(">>> global.R is running <<<")
 print(list.files())
 
+country_polygons <- ne_countries(scale = "medium", returnclass = "sf")
+
+country_centroids_sf <- country_polygons %>%
+  select(admin, geometry) %>%
+  mutate(geometry = st_centroid(geometry))
+
+
+
+
 df <- readRDS("data/inequity_filtered5k.rds") %>%
   st_transform(4326)
 
@@ -23,12 +32,8 @@ df_country <- df %>%
 countryCodes <- suppressWarnings(read.csv("data/countries_codes_and_coordinates.csv"))
 
 # Load country polygons - these will be used for borders and highlighting
-country_polygons <- ne_countries(scale = "medium", returnclass = "sf")
 
 # Create centroids for point data
-country_centroids_sf <- country_polygons %>%
-  select(admin, geometry) %>%
-  mutate(geometry = st_centroid(geometry))
 
 # Load original data
 # gov <- readRDS("data/governance_scores.rds")

@@ -183,6 +183,8 @@ Filter out landlocked data
 
 fullData <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/filteredNDGainData.rds")
 inequity <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/inequity_filtered5k.rds")
+
+
 inequity_filtered <- inequity %>%
   select(name_en, iso_a3.x) %>%
   st_drop_geometry()
@@ -199,11 +201,24 @@ inequity_filtered <- inequity_filtered %>%
 world_data_coastal <- gain %>%
   filter(ISO3 %in% inequity_filtered$iso_a3.x)
 
+fra <- fullData %>%
+  filter(ISO3 == "FRA")
+nor<- fullData %>%
+  filter(ISO3 == "NOR")
+eth<- fullData %>%
+  filter(ISO3 == "ETH")
+lby<- fullData %>%
+  filter(ISO3 == "LBY")
+mne<- fullData %>%
+  filter(ISO3 == "MNE")
+
+combined <- rbind(world_data_coastal, fra, nor, eth, lby, mne)
+
 folder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/EthanDashboardCopy/temp_time_series_map/data"
 
 new_file <- file.path(folder, "gain_coastal_filtered.rds")
 
-saveRDS(world_data_coastal, new_file)
+saveRDS(combined, new_file)
 
 ```
 

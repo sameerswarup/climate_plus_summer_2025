@@ -75,6 +75,7 @@ server <- function(input, output, session) {
       }
     ") 
   })
+
   
   output$nd_gain_map <- renderLeaflet({
     create_base_map(TRUE) %>% 
@@ -86,6 +87,7 @@ server <- function(input, output, session) {
       setView(lng = 0, lat = 20, zoom = 2)
   })
   
+
   selected_country <- reactiveVal(NULL)
   country_dataset <- reactiveVal(NULL)
   map_initialized <- reactiveVal(FALSE)
@@ -162,17 +164,20 @@ server <- function(input, output, session) {
   }
   
   update_map_layers_only <- function() {
+
     if (!map_initialized() || !app_initialized()) return()
     cat("Country:", selected_country(), "\n")
     cat("Variable:", input$variable_choice, "\n")
     
-    
-    if (is.null(input$variable_choice) || input$variable_choice == "") {
-      return()
-    }
-    if (is.null(input$indicator_category) || input$indicator_category == "") {
-      return()
-    }
+    # 
+    # if (is.null(input$variable_choice) || input$variable_choice == "") {
+    #   cat("Skipping - variable_choice not ready\n")
+    #   
+    #   return()
+    # }
+    # if (is.null(input$indicator_category) || input$indicator_category == "") {
+    #   return()
+    # }
     
     var <- input$variable_choice
     category <- if(is.null(input$indicator_category)) "Socio-Ecological Vulnerability" else input$indicator_category
@@ -200,6 +205,8 @@ server <- function(input, output, session) {
     }
     
     pal <- colorNumeric("Purples", domain = NULL, na.color = "#FFFFFF", reverse = FALSE)
+
+    print("leaflet proxy about to run")
     
     leafletProxy("map") %>%
       clearMarkers() %>% clearControls()
@@ -367,6 +374,7 @@ server <- function(input, output, session) {
                         choices = composite_data_options[[input$composite_choice]],
                         selected = composite_data_options[[input$composite_choice]][[1]])
     }
+
   }, ignoreInit = TRUE)
   
   observeEvent(input$country_histogram_indicator, {
@@ -380,7 +388,7 @@ server <- function(input, output, session) {
       }
     }
   }, ignoreInit = TRUE)
-  
+
   observe({
     countries_list <- c("Global (Default)", sort(unique(average_country_nogeo$COUNTRY)))
     updateSelectizeInput(session, "comparison_country_search_map_1", choices = countries_list, selected = "Global (Default)", server = TRUE)
@@ -493,7 +501,7 @@ server <- function(input, output, session) {
   
   output$countryDisplay <- renderText({
     country <- selected_country()
-    if (is.null(country)) {
+    if (is.null(country) || country == "Global (Default)") {
       "Global view - Click on a country to analyze specific data"
     } else {
       paste("Currently analyzing:", country, "- Map automatically zoomed to this country")
