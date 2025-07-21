@@ -477,7 +477,7 @@ server <- function(input, output, session) {
     
     leafletProxy("map") %>% clearTiles() %>% addProviderTiles(tiles)
     leafletProxy("nd_gain_map") %>% clearTiles() %>% addProviderTiles(tiles)
-    leafletProxy("climate_map") %>% clearTiles() %>% addProviderTiles(tiles)
+    # leafletProxy("climate_map") %>% clearTiles() %>% addProviderTiles(tiles)
   })
   
   observeEvent(input$satellite_view_comparison, {

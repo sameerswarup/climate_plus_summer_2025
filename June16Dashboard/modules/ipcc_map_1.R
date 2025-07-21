@@ -217,6 +217,9 @@ observe({
     showNotification(paste("⚠️ Error resolving file path:",e), type = "error")
     return()
   })
+  
+  tiles <- if (input$climate_variable_map_1 != "Coral Bleaching Heat") providers$Esri.WorldImagery else providers$Esri.WorldStreetMap
+  leafletProxy("climate_map_1") %>% clearTiles() %>% addProviderTiles(tiles)
 
   tryCatch({
     # showNotification(

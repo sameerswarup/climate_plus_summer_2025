@@ -218,6 +218,9 @@ observe({
     return()
   })
 
+  tiles <- if (input$climate_variable_map_2 != "Coral Bleaching Heat") providers$Esri.WorldImagery else providers$Esri.WorldStreetMap
+  #leafletProxy("climate_map_2") %>% clearTiles() %>% addProviderTiles(tiles)
+  
   tryCatch({
     # showNotification(
     #   paste("Loading raster file:", basename(tiff_path_map_2)),
