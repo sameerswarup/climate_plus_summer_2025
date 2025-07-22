@@ -1,0 +1,169 @@
+---
+title: "ND GAIN Pre-Processing"
+output: html_document
+date: "2025-06-23"
+---
+
+This code was used to compile CSV files containing data for different variables that comprise the Notre Dame Global Adaptation Initiative Country Index. The vulnerability and readiness indicators were originally each stored in different files, with data for 182 United Nations countries for all years between 1995 and 2022.
+
+```{r}
+library(shiny)
+library(leaflet)
+library(dplyr)
+library(sf)
+library(viridis)
+library(tidyverse)
+library(qs)
+library(pryr)
+library(rnaturalearth)
+```
+
+Import all relevant indicator files and convert them to a long format, where rows are separated first by country and then by year (1995-2022).
+
+```{r}
+
+# Import data
+
+input_folder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators"
+
+# Path name for output folder
+
+output_folder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators/long versions"
+
+# List of files to be converted
+
+files <- list.files(input_folder, full.names = TRUE)
+
+# Loop through all files and convert to long format
+
+for (file in files) {
+  
+  if (! grepl("\\.csv$", file)) {
+    break
+  }
+  
+  data <- read.csv(file)
+  
+  file_name <- basename(file)  # "heal_05_score.csv"
+
+  prefix <- sub("\\.csv$", "", file_name)
+  
+  label <- paste0("Value: ", prefix)
+  
+  # New long version of data
+  
+  data_long <- data %>%
+  pivot_longer(
+    cols = starts_with("X"),
+    names_to = "Year",
+    values_to = label
+  ) %>%
+  mutate(Year = as.integer(sub("X", "", Year)))
+  
+  # New path name
+  
+  new_file <- file.path(output_folder, paste0("long_", file_name))
+  
+  # Writing new long version of dataset to folder
+  
+  write.csv(data_long, new_file, row.names = FALSE)
+  
+}
+
+```
+
+Combined all of the long versions of datasets into one, with same format of country and name. Used the ecos_01 score as the base dataset where all other datasets were combined into.
+
+```{r}
+
+baseData <- read.csv("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators/long versions/long_ecos_01_score.csv")
+
+```
+
+Joined all the other long datasets into the base dataset.
+
+```{r}
+
+# Path name of Long Versions Folder
+
+longVersionsFolder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators/long versions"
+
+longFiles <- list.files(longVersionsFolder, full.names = TRUE)
+
+# Combined all the files into one long file.
+
+for (file in longFiles) {
+  if (file == "/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators/long versions/long_ecos_01_score.csv") {
+    next
+  }
+  data <- read.csv(file)
+  baseData <- left_join(baseData, data)
+}
+
+```
+Export combined GAIN data.
+
+```{r}
+
+new_file <- file.path(longVersionsFolder, "filteredNDGainData.rds")
+saveRDS(baseData, new_file)
+
+```
+
+Filter out data for landlocked countries, as data for those are not relevant for this interactive dashboard.
+
+```{r}
+
+# Full long version of ND GAIN data, filtered for just the relevant indicators
+
+fullData <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/filteredNDGainData.rds")
+
+# Contextual inequity data, which only has data for coastal countries.
+
+inequity <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/inequity_filtered5k.rds")
+
+# Filtered to only have columns for name and ISO3 code.
+
+inequity_filtered <- inequity %>%
+  select(name_en, iso_a3.x) %>%
+  st_drop_geometry()
+
+inequity_filtered <- inequity_filtered %>%
+  distinct(iso_a3.x, .keep_all = TRUE)
+
+```
+
+
+
+```{r}
+
+# Filter so that only rows are left are those that have an ISO3 code that is also in the inequity ISO3 codes.
+
+world_data_coastal <- gain %>%
+  filter(ISO3 %in% inequity_filtered$iso_a3.x)
+
+# Add France, Norway, Ethiopia, Libya, and Montenegro, which are missing from the contextual inequity dataset.
+
+fra <- fullData %>%
+  filter(ISO3 == "FRA")
+nor<- fullData %>%
+  filter(ISO3 == "NOR")
+eth<- fullData %>%
+  filter(ISO3 == "ETH")
+lby<- fullData %>%
+  filter(ISO3 == "LBY")
+mne<- fullData %>%
+  filter(ISO3 == "MNE")
+
+combined <- rbind(world_data_coastal, fra, nor, eth, lby, mne)
+
+folder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/EthanDashboardCopy/temp_time_series_map/data"
+
+# Final file path.
+
+new_file <- file.path(folder, "gain_coastal_filtered.rds")
+
+saveRDS(combined, new_file)
+
+```
+

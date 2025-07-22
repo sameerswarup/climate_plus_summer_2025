@@ -1,12 +1,11 @@
 server <- function(input, output, session) {
   
   source("modules/countryAnalysisModule.R", local = TRUE)
-  source("modules/ipcc.R", local = TRUE)
+  source("modules/climateRisk.R", local = TRUE)
   source("modules/ndGain.R", local = TRUE)
-  
-  source("modules/ipcc_map_1.R", local = TRUE)
+  source("modules/climate_risk_map_1.R", local = TRUE)
   source("modules/ndGain_map_1.R", local = TRUE)
-  source("modules/ipcc_map_2.R", local = TRUE)
+  source("modules/climate_risk_map_2.R", local = TRUE)
   source("modules/ndGain_map_2.R", local = TRUE)
   source("modules/countryComparison.R", local = TRUE)
   source("modules/dataOverview.R", local = TRUE)

@@ -1,0 +1,107 @@
+---
+title: "mergeNDandInequity"
+output: html_document
+date: "2025-07-08"
+---
+
+The mergeNDandInequity.RMD code was used to map the time-series ND GAIN data to each of the 800,000+ points filtered in the contextual inequity dataset. While doing this would still cause every point in a country to have the same ND GAIN score, this allows for a point-level resolution for this dataset as well. This markdown file was also used to create a dataset with regional averages for all scores.
+
+```{r setup, include=FALSE}
+
+library(shiny)
+library(leaflet)
+library(terra)
+library(bslib)
+library(shiny)
+library(leaflet)
+library(dplyr)
+library(sf)
+library(viridis)
+library(tidyverse)
+library(qs)
+library(pryr)
+library(rnaturalearth)
+library(shinyjs)
+library(ggthemes)
+library(plotly)
+
+gain <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/gain_coastal_filtered.rds")
+ineq <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/inequity_filtered5k.rds")
+wide <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/wide_global_temp_anomaly_1990_2025 copy 2.rds")
+```
+
+Creating a dataset where data points were grouped by region (NAME_2), and indicator scores were averaged across the points in each regino.
+
+```{r}
+
+# Create inequity dataset without geometry.
+
+ineq_no_geo <- ineq %>%
+  st_drop_geometry()
+
+# Create regional dataset with regional averages.
+
+reg <- ineq %>%
+  group_by(NAME_2) %>%
+  summarize(
+    ID = first(ID),
+    name_en = first(name_en),
+    iso_a3.x = first(iso_a3.x),
+    NAME_1 = first(NAME_1),
+    across(mean.count.grav.V2.log.sc:hierachical.score.rank.ineq, mean, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+```
+
+SaveRDS file.
+
+```{r}
+filepath = "/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/regional_scores_of_inequity_filtered_5k.rds"
+reg %>%
+  st_drop_geometry()
+
+saveRDS(reg, filepath)
+
+```
+
+Create new wide version of gain to be combined with contextual inequity dataset 800,000+ points. column names were organized by score and year.
+
+```{r}
+
+gain_wide <- gain %>%
+  pivot_wider(
+    id_cols = c(ISO3, Name),
+    names_from = Year,
+    values_from = -c(ISO3, Name, Year),
+    names_sep = "__"
+  )
+
+filepath = "/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/gain_wide.rds"
+
+saveRDS(gain_wide, filepath)
+
+```
+
+Assign GAIN scores and indicators to each of the 800,000+ points according to country.
+
+```{r}
+
+joined <- full_join(ineq, gain_wide, by = join_by(iso_a3.x == ISO3))
+joined <- joined %>%
+  select(-c(4:40))
+
+# Removed inequity indicators to make file smaller (and contextual inequity dataset has its own file anyways).
+
+```
+
+Save it to interactive dashboard's data folder.
+
+```{r}
+
+filepath = "/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/gain_wide_points.rds"
+
+saveRDS(joined, filepath)
+
+```
+

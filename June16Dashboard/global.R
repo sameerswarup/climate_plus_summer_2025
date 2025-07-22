@@ -17,32 +17,36 @@ library(ggthemes)
 library(plotly)
 
 # Load the main datasets
+# Context inequity dataset
 df <- readRDS("data/inequity_filtered5k.rds") %>%
   st_transform(4326)
 
+# Same dataset with geometry (country polygons)
 country_polygons_with_data <- readRDS("data/country_polygons_with_data.rds")
 country_centroids_with_data <- readRDS("data/country_centroids_with_data.rds")
 
+# Contextual inequity dataset with scores averaged by region
 df_regional <- readRDS("data/regional_scores_of_inequity_filtered_5k.rds")
 
 # Set up the main datasets for the app
 combined_scores_global <- country_centroids_with_data
 combined_scores_global_polygons <- country_polygons_with_data
-average_country_nogeo <- country_centroids_with_data
-average_country_polygons <- country_polygons_with_data
 
-# Define indicators and choices
+# Contextual inequity dataset with scores averaged by country 
+average_country_nogeo <- country_centroids_with_data # No country polygons
+average_country_polygons <- country_polygons_with_data # With country polygons
+
+# Define indicators and choices for the main 3 themes (contextual inequtiy themes)
 indicator_map <- list(
   "Weak Governance" = "gov.score.rank",
   "Socio-Ecological Vulnerability" = "vulnerab.score.rank",
   "Social Inequality" = "ineq.score.rank"
 )
 
+# List of choices (Weak Governance, Socio-Ecological Vulnerability, Social Inequality)
 composite_choices <- names(indicator_map)
-composite_arith_list <- c("vulnerab.score.rank", "ineq.score.rank", "gov.score.rank")
 
-# ND GAIN Columns
-
+# Columns in ND GAIN dataset with respective variable names
 gainVars <- list(
   "Projected Change of Biome Distribution" = "Value..ecos_01_score",
   "Projected Change of Marine Biodiversity" = "Value..ecos_02_score",
@@ -62,33 +66,14 @@ gainVars <- list(
   "Infrastructure Vulnerability" = "Value..infrastructure"
 )
 
-# Indicator descriptions
+# Main 3 theme descriptions
 indicator_descriptions <- list(
   "Socio-Ecological Vulnerability" = "Measures coastal communities' exposure to damaged marine environments, including threats to sea life, reliance on ocean-based food and jobs, and vulnerability to rising sea levels.",
   "Social Inequality" = "Measures economic and social disparities through gender wage gaps, income distribution differences, and unequal health outcomes across different population groups.",
   "Weak Governance" = "Measures how well governments function through public service quality, business regulation effectiveness, law enforcement, corruption prevention, political stability, and citizen participation in decision-making."
 )
 
-gainVars <- list(
-  "Projected Change of Biome Distribution" = "Value..ecos_01_score",
-  "Projected Change of Marine Biodiversity" = "Value..ecos_02_score",
-  "Projected Change of Warm Periods" = "Value..habi_01_score",
-  "Projected Change of Deaths from Climate Change Induced Diseases" = "Value..heal_01_score",
-  "Projected Change in Vector-Borne Diseases" = "Value..heal_02_score",
-  "Dependency on External Resource for Health Services" = "Value..heal_03_score",
-  "Medical Staff" = "Value..heal_05_score",
-  "Projected Change of Sea Level Rise Impacts" = "Value..infr_02_score",
-  "Population Living Under 5m Above Sea Level" = "Value..infr_04_score",
-  "Economic Readiness" = "Value..economic",
-  "Ecosystem Vulnerability" = "Value..ecosystems",
-  "Food Vulnerability" = "Value..food",
-  "Governance Readiness" = "Value..governance",
-  "GAIN" = "Value..gain",
-  "Health Vulnerability" = "Value..health",
-  "Infrastructure Vulnerability" = "Value..infrastructure"
-)
-
-# Global level choices for analysis
+# Global level choices for Country Analysis page
 global_level_choices <- list(
   "Inequity" = list(
     "Nutritional Dependence" = "Nutritional.dependence.sc",
@@ -145,8 +130,10 @@ country_centroids <- country_centroids_with_data %>%
   select(COUNTRY, X, Y) %>%
   filter(!is.na(X) & !is.na(Y) & is.finite(X) & is.finite(Y))
 
+# Descriptions for each contextual inequity variable
 inequity_data_descriptions <- read.csv("data/inequity_data_descriptions.csv")
 
+# Variables within each contextual inequity theme
 indicator_choice_list <- list(
   "Socio-Ecological Vulnerability" = c("Socio-Ecological Vulnerability (Composite)" = "vulnerab.score.rank",
                                        "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
@@ -167,10 +154,8 @@ indicator_choice_list <- list(
 )
 
 
-# IPCC and ND GAIN
-
+# Shape files for all countries
 world_sf <- ne_countries(scale = "medium", returnclass = "sf")
-
 world_sf <- world_sf[world_sf$continent != "Antarctica", ]
 
 
@@ -246,8 +231,7 @@ climate_data_options <- list(
   )
 )
 
-# Composite score options
-
+# Composite score options within each of the main 3 themes
 composite_data_options <- list(
   "Inequity" = c("Socio-Ecological Vulnerability (Composite)" = "vulnerab.score.rank",
                  "Degraded Ecosystems" = "mean.count.grav.V2.log.sc",
@@ -294,63 +278,49 @@ variable_metadata <- list(
   )
 )
 
-# ND GAIN Data
+# Load main ND GAIN dataset
 gain <- readRDS("data/gain_coastal_filtered.rds")
 
+# Data frame with just the country and ISO3 columns of average_country_nogeo
 acn_country_iso <- average_country_nogeo %>%
   select(COUNTRY, iso_a3) %>%
   st_drop_geometry()
 
 # Add France, Montenegro, Norway, Ethiopia, and Libya to acn_country_iso
-
 new_entries <- data.frame(
   COUNTRY = c("France", "Montenegro", "Norway", "Ethiopia", "Libya"),
   iso_a3 = c("FRA", "MNE", "NOR", "ETH", "LBY")
 )
 
+# New list of countries to be included
 acn_country_iso <- rbind(acn_country_iso, new_entries)
 
+# Add new countries to GAIN
 gain <- gain %>%
   left_join(acn_country_iso, by = c("ISO3" = "iso_a3")) %>%
   mutate(Name = COUNTRY) %>%   # Replace Name with the joined COUNTRY
   select(-COUNTRY)
 
+# List of unique country names
 country_names <- unique(gain$Name)
+
+# List of unique GAIN variables
 gainVarsNames <- names(gainVars)
 
-# Get min_val and max_val of all values across time
-
+# Get min_val and max_val of all values across time for ND GAIN
 ndNamedCols <- unlist(gainVars, use.names = FALSE)
 
-# Indicator Descriptions
-
+# Indicator Descriptions for ND GAIN
 ndGainDescriptions <- read.csv("data/ndgain_indicator_descriptions.csv")
 
-# Icons
-ndGainIcons <- list(
-  "Projected Change of Biome Distribution" = "mountain-sun",
-  "Projected Change of Marine Biodiversity" = "fish",
-  "Projected Change of Warm Periods" = "temperature-high",
-  "Projected Change of Deaths from Climate Change Induced Diseases" = "disease",
-  "Projected Change in Vector-Borne Diseases" = "square-virus",
-  "Dependency on External Resource for Health Services" = "kit-medical",
-  "Medical Staff" = "user-nurse",
-  "Projected Change of Sea Level Rise Impacts" = "water",
-  "Population Living Under 5m Above Sea Level" = "people-group",
-  "Economic Readiness" = "money-bill-transfer",
-  "Ecosystem Vulnerability" = "seedling",
-  "Food Vulnerability" = "wheat-awn-circle-exclamation",
-  "Governance Readiness" = "person-chalkboard",
-  "GAIN" = "tree",
-  "Health Vulnerability" = "virus-covid",
-  "Infrastructure Vulnerability" = "building-circle-exclamation"
-)
-
+# Wide version of ND GAIN for 800,000+ points
 gain_wide_points <- readRDS("data/gain_wide_points.rds")
 
+# Calculate the world average of each score
 world_average <- average_country_nogeo %>%
   summarise(across(where(is.numeric), mean, na.rm = TRUE))
 
+# Filter to only the countries needed in acn_country_iso
 gain_wide_points <- gain_wide_points %>%
   left_join(acn_country_iso, by = c("iso_a3.x" = "iso_a3")) %>%
   mutate(Name = COUNTRY) %>%

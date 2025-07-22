@@ -1916,7 +1916,7 @@ ui <- fluidPage(
               style = "display: flex; align-items: center; gap: 12px; padding: 10px; background: rgba(248, 249, 250, 0.8); border-radius: 8px; border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.3s ease; cursor: pointer; text-decoration: none; color: inherit;",
               onmouseover = "this.style.transform = 'translateY(-2px)'; this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)'; this.style.background = 'rgba(13, 110, 253, 0.05)';",
               onmouseout = "this.style.transform = 'translateY(0)'; this.style.boxShadow = 'none'; this.style.background = 'rgba(248, 249, 250, 0.8)';",
-              href = "https://github.com/ethanchou",
+              href = "https://www.linkedin.com/in/ethancho05/",
               target = "_blank",
               tags$img(
                 src = "ethancho.png",
