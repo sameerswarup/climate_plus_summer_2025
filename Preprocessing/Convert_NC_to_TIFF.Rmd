@@ -1,9 +1,15 @@
+---
+title: "Convert_NC_to_TIFF"
+output: html_document
+---
+
+```{r}
 # Load required package
 library(terra)
 
 # Set directory containing .nc files
-input_dir <- "LeonardEDA/nc_shiny_app/Coral_Bleaching_data/NC_Files"
-output_dir <- "LeonardEDA/nc_shiny_app/Coral_Bleaching_data"
+input_dir <- "../Data/Dashboard Data/Coral_Bleaching_data/NC_Files"
+output_dir <- "../Data/Dashboard Data/Coral_Bleaching_data"
 
 # Create output directory if it doesn't exist
 if (!dir.exists(output_dir)) {
@@ -48,3 +54,4 @@ for (nc_file in nc_files) {
     message("  -> Failed to read file.")
   }
 }
+```
