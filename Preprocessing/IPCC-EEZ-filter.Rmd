@@ -3,3 +3,87 @@ title: "IPCC-EEZ-filter"
 output: html_document
 ---
 
+This code was used to filters GeoTIFF raster data from the IPCC WGI Interactive Atlas to retain only the pixel values that fall within global Exclusive Economic Zones (EEZs), as defined by the International Hydrographic Organization’s [World EEZ v12](https://www.google.com/search?q=iho+world+eez&sca_esv=397bf5706f45ee43&sxsrf=AE3TifPPtJIQ7_bTM4mDIMB2h6SVg4WaRA%3A1753196356770&ei=RKd_aM7dLoqf5NoPweTR8Q4&ved=0ahUKEwjOj8Sw3dCOAxWKD1kFHUFyNO4Q4dUDCBA&uact=5&oq=iho+world+eez&gs_lp=Egxnd3Mtd2l6LXNlcnAiDWlobyB3b3JsZCBlZXoyBRAhGKABMgUQIRigATIFECEYoAEyBRAhGKABMgUQIRigATIFECEYnwVIvBtQrANY8hpwAXgEkAEBmAGOAqAB2AuqAQU2LjYuMbgBA8gBAPgBAZgCEKACwAvCAgQQABhHwgIEECMYJ8ICChAjGIAEGCcYigXCAg0QIxjwBRiABBgnGIoFwgILEAAYgAQYkQIYigXCAgoQABiABBhDGIoFwgIQEC4YgAQYQxjHARiKBRivAcICDRAuGIAEGEMY1AIYigXCAgsQABiABBixAxiDAcICCBAAGIAEGLEDwgIREC4YgAQYsQMY0QMYgwEYxwHCAhEQLhiABBiSAxjHARiOBRivAcICCxAAGIAEGLEDGMkDwgILEAAYgAQYkgMYigXCAgoQABiABBixAxgKwgIQEC4YgAQY0QMYFBiHAhjHAcICBRAAGIAEwgIKEAAYgAQYFBiHAsICChAAGIAEGMkDGArCAggQABgWGAoYHsICBhAAGBYYHsICCxAAGIAEGIYDGIoFwgIIEAAYgAQYogTCAgUQIRirApgDAIgGAZAGCJIHBTkuNi4xoAfTa7IHBTUuNi4xuAe1C8IHBjAuMTEuNcgHJw&sclient=gws-wiz-serp) shapefile (released 2023-10-25, 122 MB).
+
+```{r}
+library(sf)
+library(terra)
+```
+
+Define data paths and load the EEZ shapefile.
+
+```{r}
+data_path <- "../Dashboard/data/IPCC_data"
+eez_file <- paste0(data_path, "eez_v12.shp")
+
+eez <- st_read(eez_file)
+
+# Check and fix longitudes
+if (st_bbox(eez)$xmin >= 0 & st_bbox(eez)$xmax > 180) {
+  message("Detected 0-360 longitude. Shifting to -180 to 180...")
+  eez <- st_wrap_dateline(eez, options = c("WRAPDATELINE=YES"))
+}
+```
+
+Ensure longitude values are in the -180/180 range to match IPCC raster files.
+
+```{r}
+# Check and fix longitudes
+if (st_bbox(eez)$xmin >= 0 & st_bbox(eez)$xmax > 180) {
+  message("Detected 0-360 longitude. Shifting to -180 to 180...")
+  eez <- st_wrap_dateline(eez, options = c("WRAPDATELINE=YES"))
+}
+```
+
+Define list of IPCC GeoTiff files to process.
+
+```{r}
+raster_files <- c(
+  "pH_change_long_term.tif",
+  "pH_change_medium_term.tif",
+  "pH_change_near_term.tif",
+  "pH_value_long_term.tif",
+  "pH_value_medium_term.tif",
+  "pH_value_near_term.tif",
+  "SLR_long_term.tif",
+  "SLR_medium_term.tif",
+  "SLR_near_term.tif",
+  "DH_Long_Term_Value.tif",
+  "DH_Medium_Term_Value.tif",
+  "DH_Near_Term_Value.tif",
+  "DH_Long_Term_Change.tif",
+  "DH_Medium_Term_Change.tif",
+  "DH_Near_Term_Change.tif"
+)
+```
+
+Loop through each raster file, apply EEZ mask, and export masked rasters.
+
+```{r}
+for (fname in raster_files) {
+  raster_path <- paste0(data_path, fname)
+  
+  message("\nProcessing: ", fname)
+  r <- rast(raster_path)
+  
+  # Ensure EEZ is in the same CRS as raster
+  eez_proj <- st_transform(eez, crs(r))
+  eez_vect <- vect(eez_proj)
+  
+  # Crop and mask
+  r_crop <- crop(r, eez_vect)
+  r_masked <- mask(r_crop, eez_vect)
+  
+  # Force extent to global if you want to ensure output is always -180/180/-90/90
+  target_ext <- ext(-180, 180, -90, 90)
+  r_masked <- extend(r_masked, target_ext, fill=NA)
+  
+  # Write output
+  out_name <- sub("\\.tif$", "_masked.tif", fname)
+  out_path <- paste0(data_path, out_name)
+  
+  writeRaster(r_masked, out_path, format="GTiff", overwrite=TRUE)
+  
+  message("Saved masked raster: ", out_path)
+}
+```
