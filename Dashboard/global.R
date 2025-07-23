@@ -45,6 +45,7 @@ indicator_map <- list(
 
 # List of choices (Weak Governance, Socio-Ecological Vulnerability, Social Inequality)
 composite_choices <- names(indicator_map)
+composite_arith_list <- c("vulnerab.score.rank", "ineq.score.rank", "gov.score.rank")
 
 # Columns in ND GAIN dataset with respective variable names
 gainVars <- list(
