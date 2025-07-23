@@ -12,8 +12,6 @@ This repository contains the R code for the processing of several coastal datase
 
 ## **Citation**
 
-------------------------------------------------------------------------
-
 The datasets were collected from the following sources:
 
 -   Chen, C. et al. (2015), University of Notre Dame Global Adaptation Initiative Country Index Technical Report . University of Notre Dame. <https://gain.nd.edu/assets/581554/nd_gain_countryindex_technicalreport_2024.pdf> 
@@ -26,8 +24,6 @@ The datasets were collected from the following sources:
 
 ## **R Packages Required**
 
-------------------------------------------------------------------------
-
 -   shiny, shinyjs, leaflet, and bslib to develop the UI of the dashboard. shiny was used for building the dashboard, bslib for customizing features, and leaflet for displaying the four different datasets on a global map.
 
 -   ggplot2, ggthemes, and plotly were used for the various data visualizations displayed throughout the dashboard.
@@ -39,8 +35,6 @@ The datasets were collected from the following sources:
 -   viridis provided different color palettes used in legends, maps, and plots.
 
 ## **Data Pre-Processing Code**
-
-------------------------------------------------------------------------
 
 **Notre Dame Global Adaptation Initiative Country Index**
 
@@ -58,8 +52,6 @@ The datasets were collected from the following sources:
 
 ## **Dashboard Workflow**
 
-------------------------------------------------------------------------
-
 1.  First, it’s important to understand the structure of the data, specifically whether it's organized by country or some other format, as well as whether the data is just a data frame, is a shape file, or is a raster file. The contextual inequity data and ND GAIN data both have columns that classify which country a data point is part of, so if datasets have country data then it will be easier to display on a point-level resolution on the interactive dashboard.
 
 2.  Next, it is important to process the data. If the data is national-level, filter the countries to only include coastal countries. If the data has a sub-national resolution, filter the points to only include those that are coastal. This dashboard classified coastal regions as those containing a point within 5 km of the coast. 5 km works, but the threshold can also be increased to 10 km.
@@ -73,8 +65,6 @@ The datasets were collected from the following sources:
 6.  The Country Analysis page contains all data that can be visualized in some type of graph. Country-level data can be displayed on the global scale scatterplot, and point-level data can be used for country-level and regional analysis. It is important to restructure the lists and vectors used for the various dropdowns throughout the Country Analysis page to implement new variables. As of now, there is also a slider for ND GAIN data so that users can choose which year of ND GAIN they would like to visualize in the global scale scatter plot. Regional averages for contextual inequity were calculated by averaging all data points with the same NAME_2 column value of the contextual inequity dataset. 
 
 ## **Dashboard Code & Modules**
-
-------------------------------------------------------------------------
 
 The code for the dashboard created in R Shiny is split into three main sections:
 
@@ -101,8 +91,6 @@ Due to the large amount of code, the server file was split into several modules 
 Miscellaneous files were placed in the **www** folder, including Duke University logos and profile pictures of members of the Mapping High Stakes Coastal Zone Data+/Climate+ team.
 
 ## **Acknowledgements**
-
-------------------------------------------------------------------------
 
 Thank you to Dr. David Gill and Sameer Swarup from the Duke Ocean Synthesis Lab for
 
