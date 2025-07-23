@@ -3,6 +3,8 @@ title: "polygon"
 format: html
 ---
 
+Load in necessary libraries.
+
 ```{r}
 # create_polygon_dataset.R
 # Run this script ONCE to create a properly aligned polygon dataset
@@ -10,17 +12,29 @@ format: html
 library(dplyr)
 library(sf)
 library(rnaturalearth)
+```
 
+Read in spatial data with inequity scores and transform CRS to WGS84.
+
+```{r}
 # Load your original inequity data
 df <- readRDS("inequity_filtered5k.rds") %>%
   st_transform(4326)
 
 print(paste("Original data has", nrow(df), "rows and", length(unique(df$COUNTRY)), "unique countries"))
+```
 
+Load global country polygon data.
+
+```{r}
 # Get external high-quality polygon data
 world_polygons <- ne_countries(scale = "medium", returnclass = "sf") %>%
   select(admin, iso_a3, continent, subregion, geometry)
+```
 
+Define country matching function.
+
+```{r}
 # Enhanced country name mapping based on your data
 create_country_mapping <- function(inequity_countries, world_countries) {
   
@@ -80,14 +94,22 @@ create_country_mapping <- function(inequity_countries, world_countries) {
   
   return(mapping_df)
 }
+```
 
+Match countries between datasets.
+
+```{r}
 # Get unique countries from your data
 inequity_countries <- unique(df$COUNTRY)
 inequity_countries <- inequity_countries[!is.na(inequity_countries)]
 
 # Create country mapping
 country_mapping <- create_country_mapping(inequity_countries, world_polygons)
+```
 
+Create and filter polygon dataset.
+
+```{r}
 # Create matched polygon dataset
 matched_polygons <- country_mapping %>%
   left_join(world_polygons, by = c("world_country" = "admin")) %>%
@@ -110,7 +132,11 @@ if (length(unmatched_countries) > 0) {
   cat(paste(unmatched_countries, collapse = "\n"))
   cat("\n")
 }
+```
 
+Aggregate inequity data by country.
+
+```{r}
 # Create aggregated country-level data from your inequity dataset
 country_aggregated_data <- df %>%
   st_drop_geometry() %>%
@@ -123,14 +149,22 @@ country_aggregated_data <- df %>%
     across(where(is.character), ~ first(.x[!is.na(.x)])),
     .groups = 'drop'
   )
+```
 
+Combine data with polygons.
+
+```{r}
 # Combine aggregated data with matched polygons
 country_polygons_with_data <- matched_polygons %>%
   left_join(country_aggregated_data, by = "COUNTRY") %>%
   filter(!is.na(vulnerab.score.rank) | !is.na(ineq.score.rank) | !is.na(gov.score.rank))
 
 print(paste("Final dataset has", nrow(country_polygons_with_data), "countries with both geometry and data"))
+```
 
+Save final polygon and centroid datasets.
+
+```{r}
 # Save the polygon dataset
 saveRDS(country_polygons_with_data, "country_polygons_with_data.rds")
 
@@ -139,14 +173,22 @@ country_centroids_with_data <- country_polygons_with_data %>%
   mutate(geometry = st_centroid(geometry))
 
 saveRDS(country_centroids_with_data, "country_centroids_with_data.rds")
+```
 
+Export country lookup table.
+
+```{r}
 # Create a simple lookup table for country info
 country_info <- country_polygons_with_data %>%
   st_drop_geometry() %>%
   select(COUNTRY, iso_a3, continent, subregion)
 
 write.csv(country_info, "country_info.csv", row.names = FALSE)
+```
 
+Summary and data quality check.
+
+```{r}
 # Print summary statistics
 cat("\n=== DATASET CREATION SUMMARY ===\n")
 cat(paste("Original inequity data:", nrow(df), "rows,", length(inequity_countries), "countries\n"))
@@ -175,5 +217,4 @@ cat("\nFiles created:\n")
 cat("- data/country_polygons_with_data.rds (country polygons with all data)\n")
 cat("- data/country_centroids_with_data.rds (country centroids with all data)\n") 
 cat("- data/country_info.csv (country lookup table)\n")
-
 ```
