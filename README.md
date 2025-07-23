@@ -36,6 +36,10 @@ The datasets were collected from the following sources:
 
 ## **Data Pre-Processing Code**
 
+**Contextual Inequity**
+
+-   The **matchInequityPolygons** code constructs a spatially aligned, country-level polygon dataset by combining subnational contextual inequity scores (stored in a spatial RDS file) with high-resolution global administrative boundaries. This merged dataset enables country-level geographic visualization and analysis of governance, inequality, and vulnerability indicators. The script includes country name harmonization, geometric joining, aggregation of subnational scores, and generation of both polygonal and centroid-based outputs.
+
 **Notre Dame Global Adaptation Initiative Country Index**
 
 -   The **NDGAINpreprocessing.RMD** code was used to compile CSV files containing data for different variables that comprise the Notre Dame Global Adaptation Initiative Country Index. The vulnerability and readiness indicators were originally each stored in different files, with data for 182 United Nations countries for all years between 1995 and 2022.
@@ -44,7 +48,7 @@ The datasets were collected from the following sources:
 
 **Intergovernmental Panel on Climate Change**
 
--   The **IPCC-EEZ-filter.RMD** script filters GeoTIFF raster data from the IPCC WGI Interactive Atlas to retain only the pixel values that fall within global Exclusive Economic Zones (EEZs), as defined by the International Hydrographic Organization’s[ World EEZ v12](https://www.google.com/search?q=iho+world+eez&sca_esv=397bf5706f45ee43&sxsrf=AE3TifPPtJIQ7_bTM4mDIMB2h6SVg4WaRA%3A1753196356770&ei=RKd_aM7dLoqf5NoPweTR8Q4&ved=0ahUKEwjOj8Sw3dCOAxWKD1kFHUFyNO4Q4dUDCBA&uact=5&oq=iho+world+eez&gs_lp=Egxnd3Mtd2l6LXNlcnAiDWlobyB3b3JsZCBlZXoyBRAhGKABMgUQIRigATIFECEYoAEyBRAhGKABMgUQIRigATIFECEYnwVIvBtQrANY8hpwAXgEkAEBmAGOAqAB2AuqAQU2LjYuMbgBA8gBAPgBAZgCEKACwAvCAgQQABhHwgIEECMYJ8ICChAjGIAEGCcYigXCAg0QIxjwBRiABBgnGIoFwgILEAAYgAQYkQIYigXCAgoQABiABBhDGIoFwgIQEC4YgAQYQxjHARiKBRivAcICDRAuGIAEGEMY1AIYigXCAgsQABiABBixAxiDAcICCBAAGIAEGLEDwgIREC4YgAQYsQMY0QMYgwEYxwHCAhEQLhiABBiSAxjHARiOBRivAcICCxAAGIAEGLEDGMkDwgILEAAYgAQYkgMYigXCAgoQABiABBixAxgKwgIQEC4YgAQY0QMYFBiHAhjHAcICBRAAGIAEwgIKEAAYgAQYFBiHAsICChAAGIAEGMkDGArCAggQABgWGAoYHsICBhAAGBYYHsICCxAAGIAEGIYDGIoFwgIIEAAYgAQYogTCAgUQIRirApgDAIgGAZAGCJIHBTkuNi4xoAfTa7IHBTUuNi4xuAe1C8IHBjAuMTEuNcgHJw&sclient=gws-wiz-serp) shapefile (released 2023-10-25, 122 MB). To perform the masking, the EEZ shapefile is first reprojected to match the coordinate reference system (CRS) of each raster. The raster is then cropped and masked using the reprojected EEZ boundaries. If desired, the final output raster can be extended to a global bounding box of -180 to 180 longitude and -90 to 90 latitude to ensure consistent spatial extent across all outputs.
+-   The **IPCC-EEZ-filter.RMD** script filters GeoTIFF raster data from the IPCC WGI Interactive Atlas to retain only the pixel values that fall within global Exclusive Economic Zones (EEZs), as defined by the International Hydrographic Organization’s[World EEZ v12](https://www.google.com/search?q=iho+world+eez&sca_esv=397bf5706f45ee43&sxsrf=AE3TifPPtJIQ7_bTM4mDIMB2h6SVg4WaRA%3A1753196356770&ei=RKd_aM7dLoqf5NoPweTR8Q4&ved=0ahUKEwjOj8Sw3dCOAxWKD1kFHUFyNO4Q4dUDCBA&uact=5&oq=iho+world+eez&gs_lp=Egxnd3Mtd2l6LXNlcnAiDWlobyB3b3JsZCBlZXoyBRAhGKABMgUQIRigATIFECEYoAEyBRAhGKABMgUQIRigATIFECEYnwVIvBtQrANY8hpwAXgEkAEBmAGOAqAB2AuqAQU2LjYuMbgBA8gBAPgBAZgCEKACwAvCAgQQABhHwgIEECMYJ8ICChAjGIAEGCcYigXCAg0QIxjwBRiABBgnGIoFwgILEAAYgAQYkQIYigXCAgoQABiABBhDGIoFwgIQEC4YgAQYQxjHARiKBRivAcICDRAuGIAEGEMY1AIYigXCAgsQABiABBixAxiDAcICCBAAGIAEGLEDwgIREC4YgAQYsQMY0QMYgwEYxwHCAhEQLhiABBiSAxjHARiOBRivAcICCxAAGIAEGLEDGMkDwgILEAAYgAQYkgMYigXCAgoQABiABBixAxgKwgIQEC4YgAQY0QMYFBiHAhjHAcICBRAAGIAEwgIKEAAYgAQYFBiHAsICChAAGIAEGMkDGArCAggQABgWGAoYHsICBhAAGBYYHsICCxAAGIAEGIYDGIoFwgIIEAAYgAQYogTCAgUQIRirApgDAIgGAZAGCJIHBTkuNi4xoAfTa7IHBTUuNi4xuAe1C8IHBjAuMTEuNcgHJw&sclient=gws-wiz-serp) shapefile (released 2023-10-25, 122 MB). To perform the masking, the EEZ shapefile is first reprojected to match the coordinate reference system (CRS) of each raster. The raster is then cropped and masked using the reprojected EEZ boundaries. If desired, the final output raster can be extended to a global bounding box of -180 to 180 longitude and -90 to 90 latitude to ensure consistent spatial extent across all outputs.
 
 **National Oceanic and Atmospheric Administration**
 
@@ -98,6 +102,6 @@ sponsoring this project and providing us with important insight, guidance, and f
 
 throughout the entire program. This project was also supported by the Data+ and Climate+ team, most notably Gregory Herschlag, Ariel Dawn, Kyle Bradbury, and Katie Cloud. 
 
-The conceptual framework and majority of underlying data for this project came from the following reference:	
+The conceptual framework and majority of underlying data for this project came from the following reference:
 
 Gill, D.A., D'Agata, S., Blythe, J.L., Claudet, J., Ban, N.C.,  Annasawmy, P., Bennett, N., Di Franco, A., Epstein, G., Evans, L., et al. 2025. Investing smarter and deeper to advance equity in high-stakes coastal locations, in review
