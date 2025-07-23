@@ -48,7 +48,7 @@ The datasets were collected from the following sources:
 
 **National Oceanic and Atmospheric Administration**
 
--   We used the Coral Reef Watch Satellite Monitoring data from NOAA and focused on visualizing the Coral Bleaching Data. The code for this is located in the **IPCC-EEZ-filter.RMD.** The files are originally in NetCDF file formats and we convert them to GeoTiff using the processing code located at “Preprocessing/Convert_NC_to_TIFF.rmd”.
+-   We used the Coral Reef Watch Satellite Monitoring data from NOAA and focused on visualizing the Coral Bleaching Data measured in Degree Heating Week. Current available data is for April 2025 but more data can be added as they become available on the Coral Reef Watch website. The code for this is located in the **IPCC-EEZ-filter.RMD.** The files are originally in NetCDF the file formats so convert them to GeoTiff using the processing code located at “Preprocessing/Convert_NC_to_TIFF.rmd”, which is necessary so Leaflet can render them.
 
 ## **Dashboard Workflow**
 
