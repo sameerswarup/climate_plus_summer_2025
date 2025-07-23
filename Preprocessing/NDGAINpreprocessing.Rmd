@@ -24,11 +24,11 @@ Import all relevant indicator files and convert them to a long format, where row
 
 # Import data
 
-input_folder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators"
+input_folder <- "../Data/ND GAIN/resources/indicators/relevant_indicators"
 
 # Path name for output folder
 
-output_folder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators/long versions"
+output_folder <- "../Data/ND GAIN/resources/indicators/relevant_indicators/long versions"
 
 # List of files to be converted
 
@@ -76,7 +76,7 @@ Combined all of the long versions of datasets into one, with same format of coun
 
 ```{r}
 
-baseData <- read.csv("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators/long versions/long_ecos_01_score.csv")
+baseData <- read.csv("../Data/ND GAIN/resources/indicators/relevant_indicators/long versions/long_ecos_01_score.csv")
 
 ```
 
@@ -86,14 +86,14 @@ Joined all the other long datasets into the base dataset.
 
 # Path name of Long Versions Folder
 
-longVersionsFolder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators/long versions"
+longVersionsFolder <- "../Data/ND GAIN/resources/indicators/relevant_indicators/long versions"
 
 longFiles <- list.files(longVersionsFolder, full.names = TRUE)
 
 # Combined all the files into one long file.
 
 for (file in longFiles) {
-  if (file == "/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/ND GAIN/resources/indicators/relevant_indicators/long versions/long_ecos_01_score.csv") {
+  if (file == "../Data/ND GAIN/resources/indicators/relevant_indicators/long versions/long_ecos_01_score.csv") {
     next
   }
   data <- read.csv(file)
@@ -116,11 +116,11 @@ Filter out data for landlocked countries, as data for those are not relevant for
 
 # Full long version of ND GAIN data, filtered for just the relevant indicators
 
-fullData <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/Data/Primary Datasets/filteredNDGainData.rds")
+fullData <- readRDS("../Data/Dashboard Data/filteredNDGainData.rds")
 
 # Contextual inequity data, which only has data for coastal countries.
 
-inequity <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/inequity_filtered5k.rds")
+inequity <- readRDS("../Data/Dashboard Data/inequity_filtered5k.rds")
 
 # Filtered to only have columns for name and ISO3 code.
 
@@ -157,7 +157,7 @@ mne<- fullData %>%
 
 combined <- rbind(world_data_coastal, fra, nor, eth, lby, mne)
 
-folder <- "/Users/student/Desktop/Data+/climate_plus_summer_2025/EthanDashboardCopy/temp_time_series_map/data"
+folder <- "../Data/Dashboard Data"
 
 # Final file path.
 

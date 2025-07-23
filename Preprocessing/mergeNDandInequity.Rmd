@@ -25,9 +25,9 @@ library(shinyjs)
 library(ggthemes)
 library(plotly)
 
-gain <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/gain_coastal_filtered.rds")
-ineq <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/inequity_filtered5k.rds")
-wide <- readRDS("/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/wide_global_temp_anomaly_1990_2025 copy 2.rds")
+gain <- readRDS("../Data/Dashboard Data/gain_coastal_filtered.rds")
+ineq <- readRDS("../Data/Dashboard Data/inequity_filtered5k.rds")
+wide <- readRDS("../Data/Dashboard Data/wide_global_temp_anomaly_1990_2025 copy 2.rds")
 ```
 
 Creating a dataset where data points were grouped by region (NAME_2), and indicator scores were averaged across the points in each regino.
@@ -57,7 +57,7 @@ reg <- ineq %>%
 SaveRDS file.
 
 ```{r}
-filepath = "/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/regional_scores_of_inequity_filtered_5k.rds"
+filepath = "../Data/Dashboard Data/regional_scores_of_inequity_filtered_5k.rds"
 reg %>%
   st_drop_geometry()
 
@@ -77,7 +77,7 @@ gain_wide <- gain %>%
     names_sep = "__"
   )
 
-filepath = "/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/gain_wide.rds"
+filepath = "../Data/Dashboard Data/gain_wide.rds"
 
 saveRDS(gain_wide, filepath)
 
@@ -99,7 +99,7 @@ Save it to interactive dashboard's data folder.
 
 ```{r}
 
-filepath = "/Users/student/Desktop/Data+/climate_plus_summer_2025/June16Dashboard/data/gain_wide_points.rds"
+filepath = "../Data/Dashboard Data/gain_wide_points.rds"
 
 saveRDS(joined, filepath)
 
