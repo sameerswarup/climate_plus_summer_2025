@@ -692,7 +692,7 @@ ui <- fluidPage(
     tags$div(
       class = "header-section",
       tags$img(
-        src = "dukelogo.jpg",
+        src = "Duke_University_logo.png",
         alt = "Duke University",
         style = "max-width: 200px; height: auto; max-height: 60px; margin-bottom: 15px;"
       ),
