@@ -144,11 +144,22 @@ observe({
   req(input$nd_year)
   nd_data <- nd_year_data()
   req(!is.null(nd_data), nrow(nd_data) > 0)
-  
   year <- input$nd_year 
+  print(nd_data)
+  print("------------------")
+  nor <-nd_data %>%
+    filter(ISO3 == "NOR")
+  print(nor)
+  print("------------------")
   
   # Join world polygons with ND-GAIN data
   data <- left_join(world_sf, nd_data, by = c("iso_a3" = "ISO3"))
+  print(data)
+  print("------------------")
+  
+  nor <- data %>%
+    filter(iso_a3 == "NOR")
+  print(nor)
   valid_vals <- na.omit(data[[input$variable_nd]])
   req(length(valid_vals) > 0)
   

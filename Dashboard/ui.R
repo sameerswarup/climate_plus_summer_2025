@@ -710,6 +710,8 @@ ui <- fluidPage(
       class = "panel-section active",
       id = "map-section",
       
+      # Map Controls Section
+      
       tags$div(
         class = "control-group",
         tags$div(class = "control-title", "Country Search"),
@@ -725,6 +727,9 @@ ui <- fluidPage(
           ),
           tags$div(id = "country_suggestions")
         ),
+        
+        # Action button for global view, zooms back out to show entire world.
+        
         actionButton(
           "global_view_button", 
           tags$div(
@@ -740,15 +745,21 @@ ui <- fluidPage(
       tags$div(
         class = "control-group",
         tags$div(class = "control-title", "Map Controls"),
+        
+        # Choose between the three contextual inequity themes, Socio-Ecological
+        # Vulnerability, Social Inequality, and Weak Governance
         selectInput("indicator_category", "Theme:", 
                     choices = composite_choices, selected = "Socio-Ecological Vulnerability"),
         
         # Optional: hide composite_choice unless relevant
+        # Choose the composite score within each theme
         conditionalPanel(
           condition = "input.indicator_category == 'Socio-Ecological Vulnerability'",
           selectInput("composite_choice", "Composite Score:",
                       choices = names(composite_data_options), selected = "Inequity")
         ),
+        
+        # Choose the variable within the composite scores.
         conditionalPanel(
           condition = "input.indicator_category == 'Social Inequality' || input.indicator_category == 'Weak Governance' || (input.indicator_category == 'Socio-Ecological Vulnerability' && input.composite_choice == 'Inequity')",
           selectInput("variable_choice", "Variable:", choices = NULL)
