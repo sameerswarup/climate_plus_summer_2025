@@ -34,46 +34,46 @@ data_to_export <- reactiveVal(average_country_nogeo)
 
 # Export the data
 observe( {
-  # print("inside")
-  # country <- input$country_search_data_export
-  # unused_inequity_columns <- c("Economic.dependence.sc","income.ineq.change.sc","le.ineq.change.sc")
-  # 
-  # if (is.null(country) || country == "" || country == "Global (Default)") {
-  #   filtered_data <- average_country_nogeo
+  print("inside")
+  country <- input$country_search_data_export
+  unused_inequity_columns <- c("Economic.dependence.sc","income.ineq.change.sc","le.ineq.change.sc")
+
+  if (is.null(country) || country == "" || country == "Global (Default)") {
+    filtered_data <- average_country_nogeo
+  }
+  else
+  {
+    filtered_data <- df %>% filter(COUNTRY == country)
+  }
+
+
+  # Pick Columns
+  if (nrow(filtered_data) > 0) {
+
+    if(input$indicator_category_data_export == "All Themes"){
+      data_to_export(filtered_data)
+    }
+    else if(input$indicator_category_data_export == "Socio-Ecological Vulnerability" && input$composite_choice_data_export == "Inequity"){
+      data_to_export(filtered_data[ , !(names(filtered_data) %in% c(unname(indicator_choice_list[["Social Inequality"]]), unname(indicator_choice_list[["Weak Governance"]]), unused_inequity_columns))])
+    }
+    else if(input$indicator_category_data_export == "Social Inequality"){
+      data_to_export(filtered_data[ , !(names(filtered_data) %in% c(unname(indicator_choice_list[["Socio-Ecological Vulnerability"]]), unname(indicator_choice_list[["Weak Governance"]]), unused_inequity_columns))])
+    }
+    else if(input$indicator_category_data_export == "Weak Governance"){
+      data_to_export(filtered_data[ , !(names(filtered_data) %in% c(unname(indicator_choice_list[["Social Inequality"]]), unname(indicator_choice_list[["Socio-Ecological Vulnerability"]]), unused_inequity_columns))])
+    }
+  }
+
+  # if(!is.null(data_to_export)){
+  #   save_path <- tclvalue(tkgetSaveFile(
+  #     filetypes = "{{CSV Files} {.csv}} {{All files} *}",
+  #     defaultextension = ".csv"
+  #   ))
+  #
+  #   if (nzchar(save_path)) {
+  #     write.csv(data_to_export, save_path, row.names = FALSE)
+  #   }
   # }
-  # else
-  # {
-  #   filtered_data <- df %>% filter(COUNTRY == country)
-  # }
-  # 
-  # 
-  # # Pick Columns
-  # if (nrow(filtered_data) > 0) {
-  #   
-  #   if(input$indicator_category_data_export == "All Themes"){
-  #     data_to_export(filtered_data)
-  #   }
-  #   else if(input$indicator_category_data_export == "Socio-Ecological Vulnerability" && input$composite_choice_data_export == "Inequity"){
-  #     data_to_export(filtered_data[ , !(names(filtered_data) %in% c(unname(indicator_choice_list[["Social Inequality"]]), unname(indicator_choice_list[["Weak Governance"]]), unused_inequity_columns))])
-  #   }
-  #   else if(input$indicator_category_data_export == "Social Inequality"){
-  #     data_to_export(filtered_data[ , !(names(filtered_data) %in% c(unname(indicator_choice_list[["Socio-Ecological Vulnerability"]]), unname(indicator_choice_list[["Weak Governance"]]), unused_inequity_columns))])
-  #   }
-  #   else if(input$indicator_category_data_export == "Weak Governance"){
-  #     data_to_export(filtered_data[ , !(names(filtered_data) %in% c(unname(indicator_choice_list[["Social Inequality"]]), unname(indicator_choice_list[["Socio-Ecological Vulnerability"]]), unused_inequity_columns))])
-  #   }
-  # }
-  # 
-  # # if(!is.null(data_to_export)){
-  # #   save_path <- tclvalue(tkgetSaveFile(
-  # #     filetypes = "{{CSV Files} {.csv}} {{All files} *}",
-  # #     defaultextension = ".csv"
-  # #   ))
-  # #   
-  # #   if (nzchar(save_path)) {
-  # #     write.csv(data_to_export, save_path, row.names = FALSE)
-  # #   }
-  # # }
   
   
 })
@@ -91,6 +91,7 @@ output$export_data_handler <- downloadHandler(
   }
 )
 
+outputOptions(output, "export_data_handler", suspendWhenHidden = FALSE)
 
 
 
