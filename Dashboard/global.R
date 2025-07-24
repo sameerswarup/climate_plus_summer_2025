@@ -159,6 +159,11 @@ indicator_choice_list <- list(
 # Shape files for all countries
 world_sf <- ne_countries(scale = "medium", returnclass = "sf")
 world_sf <- world_sf[world_sf$continent != "Antarctica", ]
+world_sf <- world_sf[-(162:168), ]
+
+# Fix France and Norway in world_sf
+world_sf$iso_a3[world_sf$name == "Norway"] <- "NOR"
+world_sf$iso_a3[world_sf$name == "France"] <- "FRA"
 
 
 # Expanded climate variable options
@@ -327,3 +332,25 @@ gain_wide_points <- gain_wide_points %>%
   left_join(acn_country_iso, by = c("iso_a3.x" = "iso_a3")) %>%
   mutate(Name = COUNTRY) %>%
   select(-COUNTRY)
+
+# Add Russia polygon to datasets
+russia_polygon <- world_sf %>%
+  filter(name_it == "Russia") %>%
+  pull(geometry)
+average_country_polygons$geometry[average_country_polygons$COUNTRY == "Russia"] <- russia_polygon
+country_polygons_with_data$geometry[country_polygons_with_data$COUNTRY == "Russia"] <- russia_polygon
+combined_scores_global_polygons$geometry[combined_scores_global_polygons$COUNTRY == "Russia"] <- russia_polygon
+russia_point <- st_centroid(russia_polygon)
+russia_point <- st_sfc(russia_point, crs = st_crs(average_country_nogeo))
+average_country_nogeo$geometry[average_country_nogeo$COUNTRY == "Russia"] <- russia_point
+country_centroids_with_data$geometry[average_country_nogeo$COUNTRY == "Russia"] <- russia_point
+combined_scores_global$geometry[combined_scores_global$COUNTRY == "Russia"] <- russia_point
+coords <- st_coordinates(russia_point)
+lon <- coords[1]
+lat <- coords[2]
+russia_row <- data.frame(
+  COUNTRY = "Russia",
+  X = lon,
+  Y = lat
+)
+country_centroids <- bind_rows(country_centroids, russia_row)
