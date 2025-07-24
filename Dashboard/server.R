@@ -3,11 +3,13 @@ server <- function(input, output, session) {
   source("modules/countryAnalysisModule.R", local = TRUE)
   source("modules/climateRisk.R", local = TRUE)
   source("modules/ndGain.R", local = TRUE)
-  source("modules/climate_risk_map_1.R", local = TRUE)
+  source("modules/climateRisk_map_1.R", local = TRUE)
   source("modules/ndGain_map_1.R", local = TRUE)
-  source("modules/climate_risk_map_2.R", local = TRUE)
+  source("modules/climateRisk_map_2.R", local = TRUE)
   source("modules/ndGain_map_2.R", local = TRUE)
   source("modules/countryComparison.R", local = TRUE)
+  source("modules/dataExport.R", local = TRUE)
+  
 
   output$map1 <- renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
@@ -391,6 +393,7 @@ server <- function(input, output, session) {
     countries_list <- c("Global (Default)", sort(unique(average_country_nogeo$COUNTRY)))
     updateSelectizeInput(session, "comparison_country_search_map_1", choices = countries_list, selected = "Global (Default)", server = TRUE)
     updateSelectizeInput(session, "comparison_country_search_map_2", choices = countries_list, selected = "Global (Default)", server = TRUE)
+    updateSelectizeInput(session, "country_search_data_export", choices = countries_list, selected = "Global (Default)", server = TRUE)
     session$sendCustomMessage("updateCountriesList", countries_list)
   })
   

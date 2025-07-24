@@ -1345,21 +1345,21 @@ ui <- fluidPage(
       
       tags$div(
         class = "control-group",
-        selectizeInput("comparison_country_search_data_export", "Search Country:",
+        selectizeInput("country_search_data_export", "Search Country:",
                        choices = NULL, selected = NULL,
                        options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
         selectInput("indicator_category_data_export", "Theme:", #Composite Score:
-                    choices = composite_choices, selected = "Social Inequality"),
+                    choices = c("All Themes", composite_choices), selected = 'All Themes'),
         
         conditionalPanel(
           condition = "input.indicator_category_data_export == 'Socio-Ecological Vulnerability'",
           selectInput("composite_choice_data_export", "Composite Score:",
                       choices = names(composite_data_options), selected = "Inequity")
         ),        
-        conditionalPanel(
-          condition = "input.indicator_category_data_export == 'Social Inequality' || input.indicator_category_data_export == 'Weak Governance' || (input.indicator_category_data_export == 'Socio-Ecological Vulnerability' && input.composite_choice_data_export == 'Inequity')",
-          selectInput("variable_choice_data_export", "Variable:", choices = NULL),
-        ),   
+        # conditionalPanel(
+        #   condition = "input.indicator_category_data_export == 'Social Inequality' || input.indicator_category_data_export == 'Weak Governance' || (input.indicator_category_data_export == 'Socio-Ecological Vulnerability' && input.composite_choice_data_export == 'Inequity')",
+        #   selectInput("variable_choice_data_export", "Variable:", choices = NULL),
+        # ),   
         
         conditionalPanel(
           condition = "input.indicator_category_data_export == 'Socio-Ecological Vulnerability' && input.composite_choice_data_export == 'ND GAIN'",
@@ -1390,20 +1390,24 @@ ui <- fluidPage(
           uiOutput("data_type_selector_data_export"),
           uiOutput("time_period_selector_data_export"),
           
-        ),    
-        actionButton(
-          "export_data", 
-          "Export Data...", 
-          class = "btn-outline-secondary btn-sm",
-          style = "margin-top: 10px;"
+        ),   
+        tags$div(style = "text-align: center;",
+                 downloadButton("export_data_handler", "Export Data...")
+                 
         ),
+        # actionButton(
+        #   "export_data", 
+        #   "Export Data...", 
+        #   class = "btn-outline-secondary btn-sm",
+        #   style = "margin-top: 10px;"
+        # ),
       ),
       tags$div(
         class = "control-group",
         tags$div(class = "control-title", "Data Export Overview"),
         tags$div(
           style = "font-size: 11px; line-height: 1.4; color: #64748b;",
-          tags$p(" Select the options you have and click on the 'Export Data...' button to export it to CSV format.")
+          tags$p(" Select the options and click the 'Export Data...' button to export the data in CSV format.")
         )
       )
     ),
