@@ -36,6 +36,10 @@ The datasets were collected from the following sources:
 
 ## **Data Pre-Processing Code**
 
+**Contextual Inequity**
+
+-   The **matchInequityPolygons** code constructs a spatially aligned, country-level polygon dataset by combining subnational contextual inequity scores (stored in a spatial RDS file) with high-resolution global administrative boundaries. This merged dataset enables country-level geographic visualization and analysis of governance, inequality, and vulnerability indicators. The script includes country name harmonization, geometric joining, aggregation of subnational scores, and generation of both polygonal and centroid-based outputs.
+
 **Notre Dame Global Adaptation Initiative Country Index**
 
 -   The **NDGAINpreprocessing.RMD** code was used to compile CSV files containing data for different variables that comprise the Notre Dame Global Adaptation Initiative Country Index. The vulnerability and readiness indicators were originally each stored in different files, with data for 182 United Nations countries for all years between 1995 and 2022.
