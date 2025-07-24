@@ -1,18 +1,27 @@
 # COUNTRY ANALYSIS MODULE
 
+# Reactive value that stores the country selected in the country search bar
 CA_country_search <- reactiveVal(NULL)
+
+# Reactive value that contains a list of the regions inside the selected country
 CA_region_names <- reactiveVal(NULL)
 
+# Observes the text input of the country search and updates the reactive
+# value accordingly
 observeEvent(input$country_search_graphs, {
   CA_country_search(input$country_search_graphs)
 })
 
+# Text output that displays which country was chosen and is stored
+# inside CA_country_search()
 output$CA_country <- renderText({
   text <- CA_country_search()
   return(paste0("Target Country: ", text)
 )
 })
 
+# Observes whenever the country search changes and updates the regions
+# reactive value to contain all the coastal regions in the selected country.
 observeEvent(input$country_search_graphs, {
   req(CA_country_search())
   country <- CA_country_search()
@@ -26,6 +35,8 @@ observeEvent(input$country_search_graphs, {
   updateSelectInput(session, "ca_region_chooser", choices = CA_region_names(), selected = CA_region_names()[1])
 })
 
+# Renders a text output that says "Choose a Coastal Region in: ____" for 
+# the regional analysis section
 output$region_country_text <- renderText({
   req(CA_country_search())
   country <- CA_country_search()
@@ -34,9 +45,14 @@ output$region_country_text <- renderText({
 
 # Get regional dataset from df by filter NAME2
 
+# Reactive value for the chosen region in the dropdown for regional analysis
 currentRegion <- reactiveVal(NULL)
+
+# Reactive value that contains the filtered dataset only for the chosen region
 regional_dataset <- reactiveVal(NULL)
 
+# Updates region-related reactive values accordingly currentRegion()
+# and regional_dataset()
 observeEvent(input$ca_region_chooser, {
   req(input$ca_region_chooser)
   currentRegion(input$ca_region_chooser)
@@ -49,7 +65,9 @@ observeEvent(input$ca_region_chooser, {
   regional_dataset(filtered)
 })
 
-# Plotting functions
+# Main generalizable function for creating a scatter plot. Takes in a dataset,
+# an x-axis column name, y-axis column name, choices, and a pre-set title 
+# based on whether the graph is global-scale or country-scale. Uses ggplot.
 create_scatter_plot <- function(data, x_col, y_col, choices, title) {
   if (is.null(data) || is.null(x_col) || is.na(x_col) || is.null(y_col) || is.na(y_col) ||
       !(x_col %in% names(data)) || !(y_col %in% names(data))) return()
@@ -93,6 +111,9 @@ create_scatter_plot <- function(data, x_col, y_col, choices, title) {
   
 }
 
+
+# Generalizable function for calculating the Pearson and Spearman correlation
+# coefficients that are shown below each scatter plot.
 calculate_correlation <- function(data, x_col, y_col) {
   
   if (identical(data, average_country_nogeo)) {
@@ -135,7 +156,8 @@ calculate_correlation <- function(data, x_col, y_col) {
         "\nSpearman Coefficient (rho) =", round(spr_cor_result, 4))
 }
 
-# Global analysis modal
+# Global analysis modal that pops up when you press the action button. Just a 
+# pop-up window that shows the global-scale scatter plot and all of its controls.
 observeEvent(input$global_scale_button, {
   showModal(modalDialog(
     title = "Global Scale Analysis",
@@ -179,7 +201,9 @@ observeEvent(input$global_scale_button, {
   ))
 })
 
-# Reactive plot functions
+# Reactive plot functions. This is reactive so that multiple outputs can be
+# made for the sidebar and for the pop-up windows, as two outputs cannot have
+# the same name in Shiny otherwise they don't show up.
 REAcustom_scatter <- reactive({
   if (is.null(selected_country())) {
     return(NULL)
@@ -190,6 +214,8 @@ REAcustom_scatter <- reactive({
   create_scatter_plot(country_dataset(), input$first_indicator, input$second_indicator, country_choices, selected_country())
 })
 
+# Reactive plot functions for the regional scatter plot.
+
 REAregional_scatter <- reactive({
   if(is.null(currentRegion())) {
     return(NULL)
@@ -199,6 +225,8 @@ REAregional_scatter <- reactive({
                        "Coastal Vulnerability" = "perc.pop.world.coastal.merit.10m.log.sc")
   create_scatter_plot(regional_dataset(), input$regional_first_indicator, input$regional_second_indicator, country_choices, currentRegion())
 })
+
+# Reactive plot functions for the global scatter plot.
 
 REAglobal_custom_scatter <- reactive({
   req(input$first_indicator_global, input$second_indicator_global)
@@ -237,21 +265,23 @@ REAglobal_custom_scatter <- reactive({
   )
 })
 
+# Render plot output for the global custom scatter plot.
 output$global_custom_scatter <- renderPlot({
   req(REAglobal_custom_scatter)
   REAglobal_custom_scatter()
 })
 
+# Text output that shows the Pearson and Spearman correlation coefficients.
 output$correlation <- renderText({
   calculate_correlation(country_dataset(), input$first_indicator, input$second_indicator)
 })
 
+# Text output that shows the Pearson and Spearman correlation coefficients on a global scale.
 output$global_correlation <- renderText({
   calculate_correlation(average_country_nogeo, input$first_indicator_global, input$second_indicator_global)
 })
 
-
-
+# Reactive plot function for the country-level histogram.
 REArenderHistogram <- reactive({
   if (is.null(selected_country())) {
     return(NULL)
@@ -286,7 +316,8 @@ REArenderHistogram <- reactive({
     ) 
 })
 
-# Plot outputs
+# Plot outputs which incorporate the aforementioned reactive plot functions.
+# Each of these outputs is connected to a plotOutput() function in ui.R.
 output$custom_scatter <- renderPlot({
   req(REAcustom_scatter())
   REAcustom_scatter()
@@ -317,6 +348,8 @@ renderHistogram <- renderPlot({
   REArenderHistogram()
 })
 
+# Because the same histogram is displayed twice in the sidebar and in the pop-up
+# window, in order to avoid overlapping output names renderHistogram is used for both.
 output$country_histogram_zoom <- renderHistogram
 output$country_histogram <- renderHistogram
 
@@ -328,7 +361,7 @@ output$global_correlation <- renderText({
   calculate_correlation(average_country_nogeo, input$first_indicator_global, input$second_indicator_global)
 })
 
-# Modal dialogs for zoomed plots
+# Modal dialogs for zoomed plots. This one is for the country scale scatterplot.
 observeEvent(input$scatter_zoom, {
   showModal(modalDialog(
     title = "Country Scale Scatterplot",
@@ -346,6 +379,7 @@ observeEvent(input$scatter_zoom, {
   ))
 })
 
+# Pop-up modal for the country-level histogram.
 observeEvent(input$histogram_zoom, {
   showModal(modalDialog(
     title = "Country Scale Histogram",
@@ -363,24 +397,9 @@ observeEvent(input$histogram_zoom, {
   ))
 })
 
-observeEvent(input$regional_scatter_zoom, {
-  showModal(modalDialog(
-    title = "Region Scale Scatterplot",
-    size = "l",
-    plotOutput("regional_scatter_zoom", height = "400px"),
-    tags$br(),
-    
-    tags$div(style = "text-align: center;",
-             downloadButton("downloadRegionalScatter", "Download Plot")
-             
-    ),      
-    tags$br(),
-    verbatimTextOutput("correlation"),
-    footer = modalButton("Close")
-  ))
-})
 
-# Download handlers
+# Download handlers for downloading the plots as pngs. These download buttons are
+# included in the pop-up modals.
 output$downloadCustomScatter <- downloadHandler(
   filename = function() {
     paste('plot-', Sys.time(), '.png', sep='')
@@ -393,10 +412,10 @@ output$downloadCustomScatter <- downloadHandler(
       width = 14,
       height = 6
     )
-    
   }
 )
 
+# Download button for the global custom scatterplot.
 output$downloadGlobalCustomScatter <- downloadHandler(
   filename = function() {
     paste('plot-', Sys.time(), '.png', sep='')
@@ -414,6 +433,7 @@ output$downloadGlobalCustomScatter <- downloadHandler(
   
 )
 
+# Download button for the histogram.
 output$downloadHistogram <- downloadHandler(
   filename = function() {
     paste('plot-', Sys.Date(), '.png', sep='')
@@ -430,23 +450,28 @@ output$downloadHistogram <- downloadHandler(
   contentType = "image/png"
 )
 
-
-
-# Descriptions of indicators
+# Descriptions of indicators that show below each dropdown when chosen.
+# List of reactive values for cleaner code.
 clicked_scores <- list(
   first_global = reactiveVal(NULL),
   second_global = reactiveVal(NULL),
   first_country = reactiveVal(NULL),
   second_country = reactiveVal(NULL)
 )
+
+# Reactive value for the clicked score for the histogram.
 clicked_score_country_histogram = reactiveVal(NULL)
 
+# Observers the inputs of each of the indicator dropdowns and assigns them
+# to each reactive value accordingly.
 observe({
   clicked_scores$first_country(input$first_indicator)
   clicked_scores$second_country(input$second_indicator)
   clicked_score_country_histogram(input$country_histogram_indicator)
 })
 
+# Code to go through each of the indicators and find the description that
+# matches each one in the inequity_data_descriptions data frame.
 observe_map <- list(
   first_indicator_global = "first_global",
   second_indicator_global = "second_global",
@@ -460,6 +485,8 @@ lapply(names(observe_map), function(id) {
   })
 })
 
+# Pulls the description for chosen indicator.
+# Generalizable function for text output of the indicator descriptions.
 description_output <- function(score_reactive) {
   renderText({
     req(score_reactive())
@@ -469,6 +496,7 @@ description_output <- function(score_reactive) {
   })
 }
 
+# Text output for each of the descriptions in the Country Analysis page.
 output$first_indicator_country_description <- description_output(clicked_scores$first_country)
 output$second_indicator_country_description <- description_output(clicked_scores$second_country)
 output$first_indicator_global_description <- description_output(clicked_scores$first_global)
@@ -481,6 +509,9 @@ observeEvent(input$country_histogram_indicator, {
   clicked_score_country_histogram(input$country_histogram_indicator)
 })
 
+# suspendWhenHidden = FALSE set so that the reactive values and everything
+# are loaded even when a certain event is not triggered, so that all graphs show
+# up immediately when the page is loaded.
 outputOptions(output, "country_histogram", suspendWhenHidden = FALSE)
 outputOptions(output, "custom_scatter", suspendWhenHidden = FALSE)
 outputOptions(output, "first_indicator_country_description", suspendWhenHidden = FALSE)
@@ -488,15 +519,14 @@ outputOptions(output, "second_indicator_country_description", suspendWhenHidden 
 outputOptions(output, "country_histogram_description", suspendWhenHidden = FALSE)
 outputOptions(output, "regional_scatter", suspendWhenHidden = FALSE)
 
-
+# Implementing ND GAIN into country analysis.
 output$ca_nd_gain_slider <- renderUI({
-  
   first <- input$first_indicator_global
   second <- input$second_indicator_global
-  
-  
 })
 
+# Seeing the sliders for ND GAIN and assigning the necessary ND GAIN indicator
+# data for every country.
 observeEvent(c(input$first_indicator_global,
                input$second_indicator_global,
                input$ca_nd_year2,
@@ -528,15 +558,17 @@ observeEvent(c(input$first_indicator_global,
                  }
                })
 
-# regional average vs country average vs where that point lies
-# regional points to regional average
-
-# it could be a bar chat with three bars: international average, national average, that point
-
+# Reactive value for the average value of an indicator for an entire country.
 ra_country_average <- reactiveVal(NULL)
+
+# Reactive value for the average value of an indicator within a coastal region
+# in a country.
 ra_region_average <- reactiveVal(NULL)
+
+# Dataset for the regional analysis bar graph.
 ra_bar_graph_data <- reactiveVal(NULL)
 
+# Observes the region and country chosen and updates reactive values accordingly.
 observeEvent(
   {
     input$ca_region_chooser
@@ -550,11 +582,16 @@ observeEvent(
   region <- currentRegion()
   indicator <- input$ra_bar_graph_selector
   
+  # World average score
   world_score <- world_average %>%
     pull(.data[[indicator]])
+  
+  # Country average score
   country_score <- average_country_nogeo %>%
     filter(COUNTRY == country) %>%
     pull(.data[[indicator]])
+  
+  # Regional average score
   region_score <- df_regional %>%
     filter(NAME_2 == region) %>%
     pull(.data[[indicator]])
@@ -584,6 +621,9 @@ observeEvent(
   
 })
 
+# Renders a bar graph that compares the world, country, and regional averages
+# for a selected indicator out of Degraded Ecosystems, Relative Deprivation Index,
+# and Coastal Climate Vulnerability.
 output$ra_bar_graph <- renderPlot({
   req(ra_bar_graph_data())
   data <- ra_bar_graph_data()
@@ -611,6 +651,7 @@ output$ra_bar_graph <- renderPlot({
   
 })
 
+# Description of what a regional average actually means.
 output$region_average_description <- renderText({
   req(currentRegion(), selected_country())
   
@@ -624,6 +665,8 @@ output$region_average_description <- renderText({
   paste0("Regional: Score of selected indicator of ", current_region, " coastal region in ", current_country)
 })
 
+
+# Description of what a national average actually means.
 output$country_average_description <- renderText({
   
   req(selected_country(), CA_region_names())
@@ -638,6 +681,7 @@ output$country_average_description <- renderText({
   paste0("National: Averaged score of ", number_of_regions, " regions in ", current_country)
 })
 
+# Description of how many regions are being displayed in a country.
 output$number_of_regions_text <- renderText({
   req(selected_country(), CA_region_names())
   current_country <- selected_country()
@@ -647,6 +691,9 @@ output$number_of_regions_text <- renderText({
   paste0("Displaying ", number_of_regions, " Coastal Regions in ", current_country)
 })
 
+# suspendWhenHidden = FALSE set so that the reactive values and everything
+# are loaded even when a certain event is not triggered, so that all graphs show
+# up immediately when the page is loaded.
 outputOptions(output, "ra_bar_graph", suspendWhenHidden = FALSE)
 outputOptions(output, "region_average_description", suspendWhenHidden = FALSE)
 outputOptions(output, "number_of_regions_text", suspendWhenHidden = FALSE)
