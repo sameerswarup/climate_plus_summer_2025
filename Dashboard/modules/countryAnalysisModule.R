@@ -1,4 +1,13 @@
 # COUNTRY ANALYSIS MODULE
+# This file contains the code for the Country Analysis page, which allows users 
+# to create customizable graphs on a global, national, and regional level. Users 
+# can create global scatter plots and change the x and y axes to their global-level 
+# indicators of choice, and also see where a certain target country lies in respect 
+# to all other countries in terms of indicator scores. This file also contains the 
+# code for creating univariate and bivariate plots within a country 
+# (histograms and scatterplots), where each data point is one point in the country. 
+# Each renderPlot function dynamically filters the global dataset based on chosen countries, 
+# regions, values and years, and visualizes the filtered data frame using ggplot.  
 
 # Reactive value that stores the country selected in the country search bar
 CA_country_search <- reactiveVal(NULL)
