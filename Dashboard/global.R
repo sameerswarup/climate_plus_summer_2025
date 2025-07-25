@@ -15,6 +15,7 @@ library(rnaturalearth)
 library(shinyjs)
 library(ggthemes)
 library(plotly)
+library(shinyFiles)
 
 
 # Load the main datasets

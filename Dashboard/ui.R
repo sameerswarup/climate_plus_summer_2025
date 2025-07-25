@@ -1367,10 +1367,6 @@ ui <- fluidPage(
           selectInput("composite_choice_data_export", "Composite Score:",
                       choices = names(composite_data_options), selected = "Inequity")
         ),        
-        # conditionalPanel(
-        #   condition = "input.indicator_category_data_export == 'Social Inequality' || input.indicator_category_data_export == 'Weak Governance' || (input.indicator_category_data_export == 'Socio-Ecological Vulnerability' && input.composite_choice_data_export == 'Inequity')",
-        #   selectInput("variable_choice_data_export", "Variable:", choices = NULL),
-        # ),   
         
         conditionalPanel(
           condition = "input.indicator_category_data_export == 'Socio-Ecological Vulnerability' && input.composite_choice_data_export == 'ND GAIN'",
@@ -1402,17 +1398,22 @@ ui <- fluidPage(
           uiOutput("time_period_selector_data_export"),
           
         ),   
+        conditionalPanel(
+          condition = "input.indicator_category_data_export != 'Socio-Ecological Vulnerability' || input.composite_choice_data_export != 'Climate Risk'",
+          
         tags$div(style = "text-align: center;",
-                 downloadButton("export_data_handler", "Export Data...")
+                 downloadButton("export_data_handler", "Export Data..."))
                  
         ),
-        # actionButton(
-        #   "export_data", 
-        #   "Export Data...", 
-        #   class = "btn-outline-secondary btn-sm",
-        #   style = "margin-top: 10px;"
-        # ),
-      ),
+        conditionalPanel(
+          condition = "input.indicator_category_data_export == 'Socio-Ecological Vulnerability' && input.composite_choice_data_export == 'Climate Risk'",
+          
+          tags$div(style = "text-align: center;",
+                   shinyDirButton("folder", "Select Folder", "Choose export destination")#,
+                   #actionButton("export_btn", "Export Files"),
+          )  
+        )
+      ),  
       tags$div(
         class = "control-group",
         tags$div(class = "control-title", "Data Export Overview"),

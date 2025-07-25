@@ -34,7 +34,6 @@ data_to_export <- reactiveVal(average_country_nogeo)
 
 # Export the data
 observe( {
-  print("inside")
   country <- input$country_search_data_export
   unused_inequity_columns <- c("Economic.dependence.sc","income.ineq.change.sc","le.ineq.change.sc")
 
@@ -78,5 +77,62 @@ output$export_data_handler <- downloadHandler(
       #}
   }
 )
+
+
+# Allow user to choose a folder
+roots <- c(Home = normalizePath("~"))
+shinyDirChoose(input, "folder", roots = roots)
+
+# Reactive folder path
+folder_path <- reactive({
+  req(input$folder)
+  parseDirPath(roots, input$folder)
+})
+
+output$folder_path <- renderPrint({
+  folder_path()
+})
+
+observeEvent(input$folder, {#input$export_btn
+
+  # Try to parse the selected folder path safely
+  dest_dir <- tryCatch({
+    path <- folder_path()
+    if (length(path) == 0 || is.null(path) || is.na(path)) return(NULL)
+    normalizePath(path, mustWork = FALSE)
+  }, error = function(e) NULL)
+  
+  # Choose Source Path
+  if (input$climate_variable_data_export == "Ocean pH"){
+    source_dir <- "data/IPCC_data/"
+    files_pattern <- "^pH"
+  }
+  else if (input$climate_variable_data_export == "Coral Bleaching Heat"){
+    source_dir <- "data/Coral_Bleaching_data/"
+    files_pattern <- "^ct"
+  }
+  else if (input$climate_variable_data_export == "Sea Level Rise"){
+    source_dir <- "data/IPCC_data/"
+    files_pattern <- "^SLR"
+  }
+  else if (input$climate_variable_data_export == "Heating Degree Days"){
+    source_dir <- "data/IPCC_data/"
+    files_pattern <- "^DH"
+  }
+  
+  # List files
+  files_to_copy <- list.files(source_dir, pattern = files_pattern, full.names = TRUE)
+
+  if (length(files_to_copy) > 0){
+    
+    # Copy each file to the selected folder
+    for (file in files_to_copy) {
+      file.copy(file, file.path(dest_dir, basename(file)), overwrite = TRUE)
+    }
+    
+    showNotification(paste(length(files_to_copy), "files exported to", dest_dir))
+  }
+})
+
 
 outputOptions(output, "export_data_handler", suspendWhenHidden = FALSE)
