@@ -68,6 +68,24 @@ The datasets were collected from the following sources:
 
 6.  The Country Analysis page contains all data that can be visualized in some type of graph. Country-level data can be displayed on the global scale scatterplot, and point-level data can be used for country-level and regional analysis. It is important to restructure the lists and vectors used for the various dropdowns throughout the Country Analysis page to implement new variables. As of now, there is also a slider for ND GAIN data so that users can choose which year of ND GAIN they would like to visualize in the global scale scatter plot. Regional averages for contextual inequity were calculated by averaging all data points with the same NAME_2 column value of the contextual inequity dataset. 
 
+## **Adding New Datasets**
+
+Adding new datasets is generally the same process as outlined in the Dashboard Workflow section. 
+
+1.  Understand the structure of the data, and whether the data can be displayed on a country-level, region-level, or point-level resolution.
+
+2.  Process the data so the only countries included are coastal, as well as being available in both long and wide formats if the data is time-series. Make sure that the dataset is in shape for visualization on a Leaflet map.
+
+3.  If data can be displayed on a point-level, join it with the 800,000+ points from the contextual inequity dataset for consistency.
+
+4.  Classify whether the dataset falls under Weak Governance, Socio-Ecological Vulnerability, or Social Inequality, and update those dropdowns in ui.R and server. R accordingly.
+
+5.  Ideally make a new module for server.R for all the code related to this new dataset.
+
+6.  Display the data on Leaflet according to how the dataset is structured (country-level, regional-level, and/or point-level).
+
+7.  Implement the dataset and its variables into the Country Analysis page and its dropdowns.
+
 ## **Dashboard Code & Modules**
 
 The code for the dashboard created in R Shiny is split into three main sections:
