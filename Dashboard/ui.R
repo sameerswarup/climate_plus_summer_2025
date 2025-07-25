@@ -1356,9 +1356,13 @@ ui <- fluidPage(
       
       tags$div(
         class = "control-group",
+        conditionalPanel(
+          condition = "input.indicator_category_data_export != 'Socio-Ecological Vulnerability' || input.composite_choice_data_export != 'Climate Risk'",
+          
         selectizeInput("country_search_data_export", "Search Country:",
                        choices = NULL, selected = NULL,
                        options = list(placeholder = "Search for a country...", maxItems = 1, create = FALSE)),
+        ),
         selectInput("indicator_category_data_export", "Theme:", #Composite Score:
                     choices = c("All Themes", composite_choices), selected = 'All Themes'),
         
@@ -1367,26 +1371,26 @@ ui <- fluidPage(
           selectInput("composite_choice_data_export", "Composite Score:",
                       choices = names(composite_data_options), selected = "Inequity")
         ),        
-        # conditionalPanel(
-        #   condition = "input.indicator_category_data_export == 'Social Inequality' || input.indicator_category_data_export == 'Weak Governance' || (input.indicator_category_data_export == 'Socio-Ecological Vulnerability' && input.composite_choice_data_export == 'Inequity')",
-        #   selectInput("variable_choice_data_export", "Variable:", choices = NULL),
-        # ),   
         
         conditionalPanel(
           condition = "input.indicator_category_data_export == 'Socio-Ecological Vulnerability' && input.composite_choice_data_export == 'ND GAIN'",
           
           selectInput(inputId = "variable_nd_data_export",
-                      label = "Choose a variable/indicator:",
-                      choices = gainVars,
-                      selected = "Value..gain"),
+                      label = "Choose Year Option:",
+                      choices = c("All Years","Specific Year"),
+                      selected = "All Years"),
           
-          sliderInput(inputId = "nd_year_data_export",
+          conditionalPanel(
+            condition = "input.variable_nd_data_export == 'Specific Year'",
+          
+            sliderInput(inputId = "nd_year_data_export",
                       label = "Choose a year:",
                       min = 1995,
                       max = 2022,
                       value = 1995,
                       sep = "",
                       animate = TRUE)
+          )
         ),
         
         conditionalPanel(
@@ -1402,17 +1406,22 @@ ui <- fluidPage(
           uiOutput("time_period_selector_data_export"),
           
         ),   
-        tags$div(style = "text-align: center;",
-                 downloadButton("export_data_handler", "Export Data...")
+        conditionalPanel(
+          condition = "input.indicator_category_data_export != 'Socio-Ecological Vulnerability' || input.composite_choice_data_export != 'Climate Risk'",
+          
+          tags$div(style = "text-align: center;",
+                 downloadButton("export_data_handler", "Export Data..."))
                  
         ),
-        # actionButton(
-        #   "export_data", 
-        #   "Export Data...", 
-        #   class = "btn-outline-secondary btn-sm",
-        #   style = "margin-top: 10px;"
-        # ),
-      ),
+        conditionalPanel(
+          condition = "input.indicator_category_data_export == 'Socio-Ecological Vulnerability' && input.composite_choice_data_export == 'Climate Risk'",
+          
+          tags$div(style = "text-align: center;",
+                   shinyDirButton("folder", "Select Folder", "Choose export destination")#,
+                   #actionButton("export_btn", "Export Files"),
+          )  
+        )
+      ),  
       tags$div(
         class = "control-group",
         tags$div(class = "control-title", "Data Export Overview"),
