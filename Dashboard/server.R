@@ -1,5 +1,6 @@
 server <- function(input, output, session) {
   
+  # Load reusable server modules for different dashboard components
   source("modules/countryAnalysisModule.R", local = TRUE)
   source("modules/climateRisk.R", local = TRUE)
   source("modules/ndGain.R", local = TRUE)
@@ -10,7 +11,8 @@ server <- function(input, output, session) {
   source("modules/countryComparison.R", local = TRUE)
   source("modules/dataExport.R", local = TRUE)
   
-
+  # Initialize base leaflet maps for all six panels
+  # All maps use Esri World Imagery and reposition zoom controls
   output$map1 <- renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
       addProviderTiles(providers$Esri.WorldImagery) %>%
@@ -22,6 +24,7 @@ server <- function(input, output, session) {
     ") 
   })
   
+  # Global ND-GAIN and Climate maps
   output$nd_gain_map_1 <- renderLeaflet({
     leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
       addProviderTiles(providers$Esri.WorldImagery) %>%
@@ -87,7 +90,7 @@ server <- function(input, output, session) {
       setView(lng = 0, lat = 20, zoom = 2)
   })
   
-
+  # Internal state holders for selected country, dataset, and map/app flags
   selected_country <- reactiveVal(NULL)
   country_dataset <- reactiveVal(NULL)
   map_initialized <- reactiveVal(FALSE)
@@ -95,6 +98,7 @@ server <- function(input, output, session) {
   app_initialized <- reactiveVal(FALSE)
   inputs_initialized <- reactiveVal(FALSE)
   
+  # Set default input selections for first render
   observe({
     if (!inputs_initialized()) {
       isolate({
@@ -108,12 +112,14 @@ server <- function(input, output, session) {
     }
   }, priority = 1000)
   
+  # Mark app as initialized once inputs are ready
   observe({
     if (!app_initialized() && inputs_initialized()) {
       app_initialized(TRUE)
     }
   }, priority = 999)
   
+  # Logic to select a country, update map view, and store filtered data
   select_country <- function(country) {
     if (is.null(country) || country == "" || country == "Global (Default)") {
       selected_country(NULL)
@@ -133,6 +139,7 @@ server <- function(input, output, session) {
     }
   }
   
+  # Logic to zoom maps to a selected country using coordinates
   zoom_to_country <- function(map_id, country, zoom_val = 5) {
     coords <- if (is.null(country) || country == "Global (Default)") {
       list(X = 0, Y = 20, zoom = 2)
@@ -146,6 +153,7 @@ server <- function(input, output, session) {
     leafletProxy("climate_map") %>% setView(lng = coords$X, lat = coords$Y, zoom = coords$zoom)
   }
   
+  # Returns a leaflet map with given tile type and default bounds
   create_base_map <- function(satellite = TRUE) {
     map <- leaflet(options = leafletOptions(
       zoomControl = FALSE,
@@ -163,6 +171,7 @@ server <- function(input, output, session) {
     ") 
   }
   
+  # Dynamically updates country polygons, markers, and legend without re-rendering full map
   update_map_layers_only <- function() {
 
     if (!map_initialized() || !app_initialized()) return()
@@ -341,6 +350,7 @@ server <- function(input, output, session) {
     }
   }
   
+  # Handle category switching logic and update variable/composite choices
   observeEvent(input$indicator_category, {
     if (!app_initialized()) return()
     
@@ -366,6 +376,7 @@ server <- function(input, output, session) {
     }
   }, ignoreInit = TRUE)
   
+  # Update variable choices when composite changes
   observeEvent(input$composite_choice, {
     if (!app_initialized()) return()
     req(input$indicator_category)
@@ -377,6 +388,7 @@ server <- function(input, output, session) {
 
   }, ignoreInit = TRUE)
   
+  # When a histogram item is selected, sync dropdowns
   observeEvent(input$country_histogram_indicator, {
     if (!app_initialized()) return()
     req(input$country_histogram_indicator)
@@ -389,6 +401,7 @@ server <- function(input, output, session) {
     }
   }, ignoreInit = TRUE)
 
+  # Populate dropdowns with countries
   observe({
     countries_list <- c("Global (Default)", sort(unique(average_country_nogeo$COUNTRY)))
     updateSelectizeInput(session, "comparison_country_search_map_1", choices = countries_list, selected = "Global (Default)", server = TRUE)
@@ -397,6 +410,7 @@ server <- function(input, output, session) {
     session$sendCustomMessage("updateCountriesList", countries_list)
   })
   
+  # Handle country change from various input sources and interactions
   observeEvent(input$country_search_graphs_selected, {
     req(input$country_search_graphs_selected)
     select_country(input$country_search_graphs_selected)
@@ -420,6 +434,7 @@ server <- function(input, output, session) {
     select_country(NULL)
   })
   
+  # Renders the main comparison map (with full polygons and legend)
   output$map <- renderLeaflet({
     req(inputs_initialized())
     req(input$variable_choice)
@@ -473,6 +488,7 @@ server <- function(input, output, session) {
     return(result)
   })
   
+  # Trigger map update if country-specific scale is toggled
   observeEvent({
     input$use_country_specific_scale; input$variable_choice
   }, {
@@ -481,6 +497,7 @@ server <- function(input, output, session) {
     }
   })
   
+  # Update tile layers on satellite toggle
   observeEvent(input$satellite_view, {
     tiles <- if (!input$satellite_view) providers$Esri.WorldImagery else providers$Esri.WorldStreetMap
     
@@ -500,6 +517,7 @@ server <- function(input, output, session) {
     # leafletProxy("climate_map_2") %>% clearTiles() %>% addProviderTiles(tiles)
   })
   
+  # Dynamic text showing selected country status
   output$countryDisplay <- renderText({
     country <- selected_country()
     if (is.null(country) || country == "Global (Default)") {
@@ -509,6 +527,7 @@ server <- function(input, output, session) {
     }
   })
   
+  # Renders a small UI info box below controls for current variable
   output$dynamic_about_section <- renderUI({
     if (is.null(input$variable_choice)) {
       return(NULL)
@@ -537,6 +556,7 @@ server <- function(input, output, session) {
     )
   })
   
+  # Returns variable description string (core text logic)
   get_variable_description <- function(var) {
     descriptions <- list(
       "povmap.grdi.v1.sc" = "Relative Deprivation Index: Assesses multidimensional poverty including limited access to essential services such as healthcare, education, clean water, and sanitation in coastal communities. Higher values indicate greater socioeconomic disadvantage.",
@@ -580,6 +600,7 @@ server <- function(input, output, session) {
     return(description)
   }
   
+  # Display variable description for single map mode
   output$simple_variable_description <- renderText({
     if (is.null(input$variable_choice)) {
       return("Select a variable to see its description.")
@@ -596,6 +617,7 @@ server <- function(input, output, session) {
     return(get_variable_description(var))
   })
   
+  # Display variable description for full selection panel
   output$selected_variable_description <- renderText({
     req(input$variable_choice, input$indicator_category)
     
