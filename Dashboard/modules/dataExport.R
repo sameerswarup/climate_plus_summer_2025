@@ -35,31 +35,55 @@ data_to_export <- reactiveVal(average_country_nogeo)
 # Export the data
 observe( {
   country <- input$country_search_data_export
-  unused_inequity_columns <- c("Economic.dependence.sc","income.ineq.change.sc","le.ineq.change.sc")
-
-  if (is.null(country) || country == "" || country == "Global (Default)") {
-    filtered_data <- average_country_nogeo
-  }
-  else
+  
+  # Gather data for ND GAIN
+  if(input$indicator_category_data_export == "Socio-Ecological Vulnerability" && input$composite_choice_data_export == "ND GAIN")
   {
-    filtered_data <- df %>% filter(COUNTRY == country)
+    if (is.null(country) || country == "" || country == "Global (Default)") {
+      filtered_data <- gain
+    }
+    else
+    {
+      filtered_data <- gain %>% filter(Name == country)
+    }
+    
+    # Filter Year
+    if(input$variable_nd_data_export == "Specific Year"){
+      filtered_data <- filtered_data %>% filter(Year == input$nd_year_data_export)
+    }
+    
+    data_to_export(filtered_data)
   }
-
-
-  # Pick Columns
-  if (nrow(filtered_data) > 0) {
-
-    if(input$indicator_category_data_export == "All Themes"){
-      data_to_export(filtered_data)
+  
+  
+  else # Gather data for Inequity
+  {
+    unused_inequity_columns <- c("Economic.dependence.sc","income.ineq.change.sc","le.ineq.change.sc")
+    
+    if (is.null(country) || country == "" || country == "Global (Default)") {
+      filtered_data <- average_country_nogeo
     }
-    else if(input$indicator_category_data_export == "Socio-Ecological Vulnerability" && input$composite_choice_data_export == "Inequity"){
-      data_to_export(filtered_data[ , !(names(filtered_data) %in% c(unname(indicator_choice_list[["Social Inequality"]]), unname(indicator_choice_list[["Weak Governance"]]), unused_inequity_columns))])
+    else
+    {
+      filtered_data <- df %>% filter(COUNTRY == country)
     }
-    else if(input$indicator_category_data_export == "Social Inequality"){
-      data_to_export(filtered_data[ , !(names(filtered_data) %in% c(unname(indicator_choice_list[["Socio-Ecological Vulnerability"]]), unname(indicator_choice_list[["Weak Governance"]]), unused_inequity_columns))])
-    }
-    else if(input$indicator_category_data_export == "Weak Governance"){
-      data_to_export(filtered_data[ , !(names(filtered_data) %in% c(unname(indicator_choice_list[["Social Inequality"]]), unname(indicator_choice_list[["Socio-Ecological Vulnerability"]]), unused_inequity_columns))])
+  
+  
+    # Pick Columns
+    if (nrow(filtered_data) > 0) {
+  
+      if(input$indicator_category_data_export == "All Themes"){
+        data_to_export(filtered_data)
+      }
+      else if(input$indicator_category_data_export == "Socio-Ecological Vulnerability" && input$composite_choice_data_export == "Inequity"){
+        data_to_export(filtered_data[ , !(names(filtered_data) %in% c(unname(indicator_choice_list[["Social Inequality"]]), unname(indicator_choice_list[["Weak Governance"]]), unused_inequity_columns))])
+      }
+      else if(input$indicator_category_data_export == "Social Inequality"){
+        data_to_export(filtered_data[ , !(names(filtered_data) %in% c(unname(indicator_choice_list[["Socio-Ecological Vulnerability"]]), unname(indicator_choice_list[["Weak Governance"]]), unused_inequity_columns))])
+      }
+      else if(input$indicator_category_data_export == "Weak Governance"){
+        data_to_export(filtered_data[ , !(names(filtered_data) %in% c(unname(indicator_choice_list[["Social Inequality"]]), unname(indicator_choice_list[["Socio-Ecological Vulnerability"]]), unused_inequity_columns))])
+      }
     }
   }
   
