@@ -34,6 +34,7 @@ data_to_export <- reactiveVal(average_country_nogeo)
 
 # Export the data
 observe( {
+
   country <- input$country_search_data_export
   
   # Gather data for ND GAIN
@@ -86,7 +87,7 @@ observe( {
       }
     }
   }
-  
+
 })
 
 
@@ -119,13 +120,14 @@ output$folder_path <- renderPrint({
 
 observeEvent(input$folder, {#input$export_btn
 
+
   # Try to parse the selected folder path safely
   dest_dir <- tryCatch({
     path <- folder_path()
     if (length(path) == 0 || is.null(path) || is.na(path)) return(NULL)
     normalizePath(path, mustWork = FALSE)
   }, error = function(e) NULL)
-  
+
   # Choose Source Path
   if (input$climate_variable_data_export == "Ocean pH"){
     source_dir <- "data/IPCC_data/"
