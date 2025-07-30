@@ -215,7 +215,7 @@ server <- function(input, output, session) {
     
     pal <- colorNumeric("Purples", domain = NULL, na.color = "#FFFFFF", reverse = FALSE)
 
-    print("leaflet proxy about to run")
+    #print("leaflet proxy about to run")
     
     leafletProxy("map") %>%
       clearMarkers() %>% clearControls()

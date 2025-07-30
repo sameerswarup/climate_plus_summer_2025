@@ -158,7 +158,7 @@ output$data_info_map_1 <- renderText({
 #Click Reaction
 output$click_info_map_1 <- renderText({
   info <- clicked_point_map_1()
-  print("clicked")
+  #print("clicked")
   if (is.null(info)) return("Click on the map to see details.")
   
   variable_label_map_1 <- if (!is.null(current_metadata_map_1())) {
@@ -168,7 +168,7 @@ output$click_info_map_1 <- renderText({
   }
   
   val_text <- if (!is.null(info$value) && !is.na(info$value)) {
-    print(info$value)
+    #print(info$value)
     round(info$value, 3)
   } else {
     "NA"
@@ -369,7 +369,7 @@ observeEvent(input$climate_map_1_click, {
   val_map_1 <- NULL
   if (!is.null(original_raster_map_1())) {
     val_extracted_map_1 <- terra::extract(original_raster_map_1(), matrix(c(lng_map_1, lat_map_1), ncol = 2))
-    print(val_extracted_map_1)  # optional for debugging
+    #print(val_extracted_map_1)  # optional for debugging
     if (!is.null(val_extracted_map_1) && nrow(val_extracted_map_1) >= 1) {
       val_map_1 <- val_extracted_map_1[1, ncol(val_extracted_map_1)]
     }

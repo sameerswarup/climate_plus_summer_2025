@@ -60,7 +60,7 @@ observeEvent(c(input$nd_year,
                    filter(Name == country) %>%
                    pull(input$variable_nd)
                  
-                 print(score)
+                 #print(score)
                  
                  # Get year as a character vector
                  year <- as.character(input$nd_year)
@@ -327,7 +327,7 @@ output$indDescOutput <- renderText({
 # Prints the specific score for a country in a specific year. This is a single
 # value that will appear in the value box.
 output$nd_year_score <- renderText({
-  print(nd_year_score())
+  #print(nd_year_score())
   return(nd_year_score())
 })
 

@@ -615,9 +615,9 @@ observeEvent(
     return()
   }
   
-  print(world_score)
-  print(country_score)
-  print(region_score)
+  #print(world_score)
+  #print(country_score)
+  #print(region_score)
   
   summary_df <- data.frame(
     Level = c("World", "National", "Regional"),

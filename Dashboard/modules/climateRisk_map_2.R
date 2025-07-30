@@ -168,7 +168,7 @@ output$click_info_map_2 <- renderText({
   }
   
   val_text <- if (!is.null(info$value) && !is.na(info$value)) {
-    print(info$value)
+    #print(info$value)
     round(info$value, 3)
   } else {
     "NA"
@@ -369,7 +369,7 @@ observeEvent(input$climate_map_2_click, {
   val_map_2 <- NULL
   if (!is.null(original_raster_map_2())) {
     val_extracted_map_2 <- terra::extract(original_raster_map_2(), matrix(c(lng_map_2, lat_map_2), ncol = 2))
-    print(val_extracted_map_2)  # optional for debugging
+    #print(val_extracted_map_2)  # optional for debugging
     if (!is.null(val_extracted_map_2) && nrow(val_extracted_map_2) >= 1) {
       val_map_2 <- val_extracted_map_2[1, ncol(val_extracted_map_2)]
     }

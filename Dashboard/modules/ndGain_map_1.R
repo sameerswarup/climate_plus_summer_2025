@@ -168,7 +168,7 @@ observe({
     
     filtered_year_and_country_data$val_col <- filtered_year_and_country_data[[value_column]]
     
-    print(filtered_year_and_country_data$val_col)
+    #print(filtered_year_and_country_data$val_col)
     
     
     # Plot circle markers

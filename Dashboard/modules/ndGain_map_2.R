@@ -57,7 +57,7 @@ output$variableNameAndYearOutput <- renderText({
 })
 
 output$nd_gain_map_2 <- renderLeaflet({
-  print("2")
+  #print("2")
   
   year <- input$nd_year_map_2
   year_data <- gain %>%
@@ -169,7 +169,7 @@ observe({
     
     filtered_year_and_country_data$val_col <- filtered_year_and_country_data[[value_column]]
     
-    print(filtered_year_and_country_data$val_col)
+    #print(filtered_year_and_country_data$val_col)
     
     
     # Plot circle markers

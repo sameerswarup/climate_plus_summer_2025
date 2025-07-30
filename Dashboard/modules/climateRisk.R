@@ -409,7 +409,7 @@ observeEvent(input$climate_map_click, {
   val <- NULL
   if (!is.null(original_raster())) {
     val_extracted <- terra::extract(original_raster(), matrix(c(lng, lat), ncol = 2))
-    print(val_extracted)  # optional for debugging
+    #print(val_extracted)  # optional for debugging
     if (!is.null(val_extracted) && nrow(val_extracted) >= 1) {
       val <- val_extracted[1, ncol(val_extracted)]
     }

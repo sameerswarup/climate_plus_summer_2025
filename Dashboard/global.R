@@ -1,10 +1,8 @@
 # global.R - Simplified version
 library(shiny)
-library(leaflet)
 library(terra)
-library(bslib)
-library(shiny)
 library(leaflet)
+library(bslib)
 library(dplyr)
 library(sf)
 library(viridis)
